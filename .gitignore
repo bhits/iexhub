@@ -1,0 +1,97 @@
+# Project-specific directories #
+/IExApp/
+/validationService/
+/Service/workspace/TestValidator/
+/Service/workspace/org.openhealthtools.mdmi.cmdline/
+
+# Eclipse Artifacts #
+.settings
+# .project
+# .classpath
+.metadata
+.springBeans
+
+# Generated Artifacts #
+/Service/**/target/*
+!/Service/**/target/generated-sources
+bin
+*.class
+*.exe
+*.dll
+.sass-cache
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# NuGet Packages Directory #
+# packages
+
+# IDEA files/directories #
+.idea/
+.idea_modules/
+*.ipr
+*.iml
+*.iws
+
+# IntelliJ #
+out/
+
+# User-specific files #
+*.suo
+*.user
+*.sln.docstates
+
+# TortoiseGit project-level settings #
+/.tgitconfig
+
+# Build results #
+[Dd]ebug/
+[Rr]elease/
+x64/
+*_i.c
+*_p.c
+*.ilk
+*.meta
+*.obj
+*.pch
+*.pdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.vspscc
+*.vssscc
+.builds
+
+# Visual C++ cache files #
+ipch/
+*.aps
+*.ncb
+*.opensdf
+*.sdf
+
+# Visual Studio profiler #
+*.psess
+*.vsp
+*.vspx
+
+# Guidance Automation Toolkit #
+*.gpState
+
+# ReSharper is a .NET coding add-in #
+_ReSharper*
+
+# Windows #
+Thumbs.db
+
+# Others #
+*.roo
+*.tmp
+*.zip
+*.log
+*.DS_Store
