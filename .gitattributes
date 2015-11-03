@@ -36,6 +36,7 @@
 *.resx text
 *.project text
 *.classpath text
+*.cmd text
 
 
 # Declare files that will always have CRLF line endings on checkout.
