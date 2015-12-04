@@ -3,12 +3,14 @@ package com.InfoExchangeHub.Services;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import static java.nio.file.Files.readAllBytes;
 import static java.nio.file.Paths.get;
@@ -35,8 +37,8 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.Diagnostic;
-import org.hl7.v3.MCCIIN000002UV01;
 import org.openhealthtools.mdht.mdmi.Mdmi;
 import org.openhealthtools.mdht.mdmi.MdmiConfig;
 import org.openhealthtools.mdht.mdmi.MdmiMessage;
@@ -48,10 +50,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import PDQSupplier.src.org.hl7.v3.PRPAIN201306UV02;
-
 import com.InfoExchangeHub.Connectors.PDQQueryManager;
-import com.InfoExchangeHub.Connectors.PIXManager;
 import com.InfoExchangeHub.Connectors.XdsB;
 import com.InfoExchangeHub.Exceptions.*;
 import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub.AdhocQueryResponse;
@@ -70,6 +69,9 @@ import com.google.common.collect.Maps;
 @Path("/GetPatientData")
 public class GetPatientDataService
 {
+    /** Logger */
+    public static Logger log = Logger.getLogger(GetPatientDataService.class);
+
 	public static class Handler implements ValidationHandler
 	{
 		boolean isValid = true;
@@ -99,7 +101,7 @@ public class GetPatientDataService
 	}
 
 	private static boolean TestMode = false;
-	
+	private static String PropertiesFile = "test/IExHub.properties";
 	private static String XdsBRegistryEndpointURI = "http://ihexds.nist.gov:80/tf6/services/xdsregistryb";
 	private static String XdsBRepositoryEndpointURI = "http://ihexds.nist.gov:80/tf6/services/xdsrepositoryb";
 	private static String PDQManagerEndpointURI = "http://129.6.24.79:9090";
@@ -111,6 +113,29 @@ public class GetPatientDataService
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getPatientData(@Context HttpHeaders headers)
 	{
+		log.info("Entered getPatientData service");
+		
+		Properties props = new Properties();
+		try
+		{
+			props.load(new FileInputStream(PropertiesFile));
+			TestMode = Boolean.parseBoolean(props.getProperty("TestMode"));
+			XdsBRegistryEndpointURI = props.getProperty("XdsBRegistryEndpointURI");
+			XdsBRepositoryEndpointURI = props.getProperty("XdsBRepositoryEndpointURI");
+			PDQManagerEndpointURI = props.getProperty("PDQManagerEndpointURI");
+		}
+		catch (IOException e)
+		{
+			log.error("Error encountered loading properties file, "
+					+ PropertiesFile
+					+ ", "
+					+ e.getMessage());
+			throw new UnexpectedServerException("Error encountered loading properties file, "
+					+ PropertiesFile
+					+ ", "
+					+ e.getMessage());
+		}
+		
 		String retVal = "";
 		GetPatientDataResponse patientDataResponse = new GetPatientDataResponse();
 
@@ -120,13 +145,17 @@ public class GetPatientDataService
 			PDQQueryManager pdqQueryManager = null;
 			try
 			{
+				log.info("Instantiating XdsB connector...");
 				xdsB = new XdsB(XdsBRegistryEndpointURI,
 						XdsBRepositoryEndpointURI);
+				log.info("XdsB connector successfully started");
 				
-				pdqQueryManager = new PDQQueryManager(PDQManagerEndpointURI);
+//				pdqQueryManager = new PDQQueryManager(PDQManagerEndpointURI);
 			}
 			catch (Exception e)
 			{
+				log.error("Error encountered instantiating XdsB connector, "
+						+ e.getMessage());
 				throw new UnexpectedServerException("Error - " + e.getMessage());
 			}
 	
@@ -134,6 +163,8 @@ public class GetPatientDataService
 			{
 				MultivaluedMap<String, String> headerParams = headers.getRequestHeaders();
 				String ssoAuth = headerParams.getFirst("ssoauth");
+
+				log.info("HTTP headers successfully retrieved");
 				
 				// Extract patient ID, query start date, and query end date.  Expected format from the client is
 				//   "EnterpriseMasterRecordNumber={0}&LastName={1}&FirstName={2}&MiddleName={3}&DateOfBirth={4}&PatientGender={5}&MotherMaidenName={6}&StartDate={7}&EndDate={8}"
@@ -156,6 +187,8 @@ public class GetPatientDataService
 				String startDate = (parts[12].split("=").length == 2) ? parts[12].split("=")[1] : null;
 				String endDate = (parts[13].split("=").length == 2) ? parts[13].split("=")[1] : null;
 
+				log.info("HTTP headers successfully parsed, now calling XdsB registry...");
+				
 				// Issue PDQ query...
 //				PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.QueryPatientDemographics(firstName,
 //						lastName,
@@ -172,9 +205,11 @@ public class GetPatientDataService
 //						startDate,
 //						endDate);
 				
-				AdhocQueryResponse registryResponse = xdsB.RegistryStoredQuery(enterpriseMRN,
+				AdhocQueryResponse registryResponse = xdsB.registryStoredQuery(enterpriseMRN,
 						(startDate != null) ? DateFormat.getDateInstance().format(startDate) : null,
 						(endDate != null) ? DateFormat.getDateInstance().format(endDate) : null);
+				
+				log.info("Call to XdsB registry successful");
 				
 				// Try to retrieve documents...
 				RegistryObjectListType registryObjectList = registryResponse.getRegistryObjectList();
@@ -182,11 +217,17 @@ public class GetPatientDataService
 				if ((documentObjects != null) &&
 					(documentObjects.length > 0))
 				{
-					List<String> documentIds = new ArrayList<String>();
+					log.info("Documents found in the registry, retrieving them from the repository...");
+					
+					HashMap<String, String> documents = new HashMap<String, String>();
 					for (IdentifiableType identifiable : documentObjects)
 					{
 						if (identifiable.getClass().equals(ExtrinsicObjectType.class))
 						{
+							// Determine if the "home" attribute (homeCommunityId in XCA parlance) is present...
+							String home = ((((ExtrinsicObjectType)identifiable).getHome() != null) && (((ExtrinsicObjectType)identifiable).getHome().getPath().length() > 0)) ? ((ExtrinsicObjectType)identifiable).getHome().getPath()
+									: null;
+
 							ExternalIdentifierType[] externalIdentifiers = ((ExtrinsicObjectType)identifiable).getExternalIdentifier();
 							
 							// Find the ExternalIdentifier that has the "XDSDocumentEntry.uniqueId" value...
@@ -197,6 +238,8 @@ public class GetPatientDataService
 								if ((val != null) &&
 									(val.compareToIgnoreCase("XDSDocumentEntry.uniqueId") == 0))
 								{
+									log.info("Located XDSDocumentEntry.uniqueId ExternalIdentifier, uniqueId="
+											+ uniqueId);
 									uniqueId = externalIdentifier.getValue().getLongName();
 									break;
 								}
@@ -204,18 +247,32 @@ public class GetPatientDataService
 							
 							if (uniqueId != null)
 							{
-								documentIds.add(uniqueId);
+								documents.put(uniqueId,
+										home);
+								log.info("Document ID added: "
+										+ uniqueId
+										+ ", homeCommunityId: "
+										+ home);
 							}
 						}
 						else
 						{
-							documentIds.add(identifiable.getId().getPath());
+							String home = ((identifiable.getHome() != null) && (identifiable.getHome().getPath().length() > 0)) ? identifiable.getHome().getPath()
+									: null;
+							documents.put(identifiable.getId().getPath(),
+									home);
+							log.info("Document ID added: "
+									+ identifiable.getId().getPath()
+									+ ", homeCommunityId: "
+									+ home);
 						}
 					}
 					
-					RetrieveDocumentSetResponse documentSetResponse = xdsB.RetrieveDocumentSet(NistRepositoryId,
-							documentIds);
-	
+					log.info("Invoking XdsB repository connector retrieval...");
+					RetrieveDocumentSetResponse documentSetResponse = xdsB.retrieveDocumentSet(NistRepositoryId,
+							documents);
+					log.info("XdsB repository connector retrieval succeeded");
+
 					// Invoke appropriate map(s) to process documents in documentSetResponse...
 					DocumentResponse_type0[] docResponseArray = documentSetResponse.getRetrieveDocumentSetResponse().getRetrieveDocumentSetResponseTypeSequence_type0().getDocumentResponse();
 					if (docResponseArray != null)
@@ -224,16 +281,21 @@ public class GetPatientDataService
 						{
 							for (DocumentResponse_type0 document : docResponseArray)
 							{
+								log.info("Processing document ID="
+										+ document.getDocumentUniqueId().getLongName());
+								
 								String mimeType = docResponseArray[0].getMimeType().getLongName();
 								if (mimeType.compareToIgnoreCase("text/xml") == 0)
 								{
 									String filename = "test/" + document.getDocumentUniqueId().getLongName() + ".xml";
+									log.info("Persisting document to filesystem, filename="
+											+ filename);
 									DataHandler dh = document.getDocument();
 									File file = new File(filename);
 									FileOutputStream fileOutStream = new FileOutputStream(file);
 									dh.writeTo(fileOutStream);
 									fileOutStream.close();
-										
+
 									DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 									DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 									Document doc = dBuilder.parse(new FileInputStream(filename));
@@ -241,57 +303,80 @@ public class GetPatientDataService
 									NodeList nodes = (NodeList)xPath.evaluate("/ClinicalDocument/templateId",
 									        doc.getDocumentElement(),
 									        XPathConstants.NODESET);
-	
+
 									boolean templateFound = false;
-									for (int i = 0; i < nodes.getLength(); ++i)
+									if (nodes.getLength() > 0)
 									{
-									    String val = ((Element)nodes.item(i)).getAttribute("root");
-									    if ((val != null) &&
-									    	(val.compareToIgnoreCase("2.16.840.1.113883.10.20.22.1.2") == 0))
-									    {
-											// CCDA 1.1 validation check...
-											Handler handler = new Handler();
-											handler.setValid(true);
-//											ClinicalDocument clinicalDocument = CDAUtil.load(new FileInputStream(filename),
-//													handler);
-//											ByteArrayOutputStream output = new ByteArrayOutputStream();
-//											CDAUtil.save(clinicalDocument,
-//													output);
+										log.info("Searching for /ClinicalDocument/templateId, document ID="
+												+ document.getDocumentUniqueId().getLongName());
+										
+										for (int i = 0; i < nodes.getLength(); ++i)
+										{
+										    String val = ((Element)nodes.item(i)).getAttribute("root");
+										    if ((val != null) &&
+										    	(val.compareToIgnoreCase("2.16.840.1.113883.10.20.22.1.2") == 0))
+										    {
+										    	log.info("/ClinicalDocument/templateId node found, document ID="
+										    			+ document.getDocumentUniqueId().getLongName());
+										    	
+												// CCDA 1.1 validation check...
+												Handler handler = new Handler();
+												handler.setValid(true);
+	//											ClinicalDocument clinicalDocument = CDAUtil.load(new FileInputStream(filename),
+	//													handler);
+	//											ByteArrayOutputStream output = new ByteArrayOutputStream();
+	//											CDAUtil.save(clinicalDocument,
+	//													output);
+	
+												if (handler.isValid())
+												{
+													log.info("Invoking map, document ID="
+															+ document.getDocumentUniqueId().getLongName());
+													
+													String mapOutput = invokeMap(filename);
 
-											if (handler.isValid())
-											{
-												String mapOutput = invokeMap(filename);
-												
-												// Persist transformed CCDA to filesystem for auditing...
-												Files.write(Paths.get("test/" + document.getDocumentUniqueId().getLongName() + "_TransformedToPatientPortalXML.xml"),
-														mapOutput.getBytes());
-												
-										        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-										        factory.setNamespaceAware(true);
-										        DocumentBuilder builder = factory.newDocumentBuilder();
-										        Document mappedDoc = builder.parse(new File("test/" + document.getDocumentUniqueId().getLongName() + "_TransformedToPatientPortalXML.xml"));
-										        DOMSource source = new DOMSource(mappedDoc);
-										 
-										        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-										        
-										        Transformer transformer = transformerFactory.newTransformer(new StreamSource("test/xml2json.xsl"));
-												String jsonFilename = "test/" + document.getDocumentUniqueId().getLongName() + ".json";
-												File jsonFile = new File(jsonFilename);
-												FileOutputStream jsonFileOutStream = new FileOutputStream(jsonFile);
-										        StreamResult result = new StreamResult(jsonFileOutStream);
-										        transformer.transform(source,
-										        		result);
-												jsonFileOutStream.close();
+													log.info("Map invocation successful, document ID="
+															+ document.getDocumentUniqueId().getLongName());
 
-									            patientDataResponse.getDocuments().add(new String(readAllBytes(get(jsonFilename))));
-										    	templateFound = true;
-											}
-											else
-											{
-												patientDataResponse.getErrorMsgs().add("Document retrieved is not a valid C-CDA 1.1 document - document ID="
-														+ document.getDocumentUniqueId().getLongName());									
-											}
-									    }
+													// Persist transformed CCDA to filesystem for auditing...
+													Files.write(Paths.get("test/" + document.getDocumentUniqueId().getLongName() + "_TransformedToPatientPortalXML.xml"),
+															mapOutput.getBytes());
+
+													log.info("Persisted transformed CCDA document to filesystem, filename="
+															+ "test/"
+															+ document.getDocumentUniqueId().getLongName()
+															+ "_TransformedToPatientPortalXML.xml");
+
+											        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+											        factory.setNamespaceAware(true);
+											        DocumentBuilder builder = factory.newDocumentBuilder();
+											        Document mappedDoc = builder.parse(new File("test/" + document.getDocumentUniqueId().getLongName() + "_TransformedToPatientPortalXML.xml"));
+											        DOMSource source = new DOMSource(mappedDoc);
+											 
+											        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+											        
+											        Transformer transformer = transformerFactory.newTransformer(new StreamSource("test/xml2json.xsl"));
+													String jsonFilename = "test/" + document.getDocumentUniqueId().getLongName() + ".json";
+													File jsonFile = new File(jsonFilename);
+													FileOutputStream jsonFileOutStream = new FileOutputStream(jsonFile);
+											        StreamResult result = new StreamResult(jsonFileOutStream);
+											        transformer.transform(source,
+											        		result);
+													jsonFileOutStream.close();
+
+													log.info("Successfully transformed CCDA to JSON, filename="
+															+ jsonFilename);
+
+										            patientDataResponse.getDocuments().add(new String(readAllBytes(get(jsonFilename))));
+											    	templateFound = true;
+												}
+												else
+												{
+													patientDataResponse.getErrorMsgs().add("Document retrieved is not a valid C-CDA 1.1 document - document ID="
+															+ document.getDocumentUniqueId().getLongName());									
+												}
+										    }
+										}
 									}
 									
 									if (!templateFound)
@@ -310,6 +395,8 @@ public class GetPatientDataService
 						}
 						catch (Exception e)
 						{
+							log.error("Error encountered, "
+									+ e.getMessage());
 							throw e;
 						}
 					}
@@ -317,6 +404,8 @@ public class GetPatientDataService
 			}
 			catch (Exception e)
 			{
+				log.error("Error encountered, "
+						+ e.getMessage());
 				throw new UnexpectedServerException("Error - " + e.getMessage());
 			}
 		}
@@ -326,7 +415,7 @@ public class GetPatientDataService
 			try
 			{
 				retVal = FileUtils.readFileToString(new File("test/sampleJson.txt"));
-				return Response.status(Response.Status.OK).entity(retVal).type(MediaType.APPLICATION_XML).build();
+				return Response.status(Response.Status.OK).entity(retVal).type(MediaType.APPLICATION_JSON).build();
 			}
 			catch (Exception e)
 			{
@@ -334,7 +423,7 @@ public class GetPatientDataService
 			}
 		}
 		
-		return Response.status(Response.Status.OK).entity(patientDataResponse).type(MediaType.APPLICATION_XML).build();
+		return Response.status(Response.Status.OK).entity(patientDataResponse).type(MediaType.APPLICATION_JSON).build();
 	}
 	
 	private String invokeMap(String sourceFilename)

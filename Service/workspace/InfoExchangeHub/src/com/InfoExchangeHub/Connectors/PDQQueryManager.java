@@ -13,6 +13,7 @@ import PDQSupplier.src.com.InfoExchangeHub.Services.Client.PDQSupplier_ServiceSt
 import PDQSupplier.src.org.hl7.v3.*;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -21,17 +22,17 @@ public class PDQQueryManager
     /** Logger */
     public static Logger log = Logger.getLogger(PDQQueryManager.class);
 
-    private static ObjectFactory factory = new ObjectFactory();
-	private static String receiverApplicationName = "2.16.840.1.113883.3.72.6.5.100.556";
-	private static String receiverTelecomValue = "http://servicelocation/PDQuery";
-	private static String facilityName = "2.16.840.1.113883.3.72.6.1";
-	private static String providerOrganizationName = "HIE Portal";
-	private static String providerOrganizationContactTelecom = "555-555-5555";
-	private static String organizationOID = "2.16.840.1.113883.3.72.5.9.1";
-	private static String providerOrganizationOID = "1.2.840.114350.1.13.99998.8734";
-	private static String queryIdOID = "1.2.840.114350.1.13.28.1.18.5.999";
-	private static String otherIDsScopingOrganizationOID = "2.16.840.1.113883.3.72.5.9.1";
-	private static SOAPFactory soapFactory = OMAbstractFactory.getSOAP12Factory();
+    private final static ObjectFactory factory = new ObjectFactory();
+	private final static String receiverApplicationName = "2.16.840.1.113883.3.72.6.5.100.556";
+	private final static String receiverTelecomValue = "http://servicelocation/PDQuery";
+	private final static String facilityName = "2.16.840.1.113883.3.72.6.1";
+	private final static String providerOrganizationName = "HIE Portal";
+	private final static String providerOrganizationContactTelecom = "555-555-5555";
+	private final static String organizationOID = "2.16.840.1.113883.3.72.5.9.1";
+	private final static String providerOrganizationOID = "1.2.840.114350.1.13.99998.8734";
+	private final static String queryIdOID = "1.2.840.114350.1.13.28.1.18.5.999";
+	private final static String otherIDsScopingOrganizationOID = "2.16.840.1.113883.3.72.5.9.1";
+	private final static SOAPFactory soapFactory = OMAbstractFactory.getSOAP12Factory();
 	private static PDQSupplier_ServiceStub pdqSupplierStub = null;
 	
 	public PDQQueryManager(String endpointURI) throws AxisFault, Exception
@@ -51,7 +52,7 @@ public class PDQQueryManager
 		}
 	}
 
-	public PRPAIN201306UV02 QueryPatientDemographics(String givenName,
+	public PRPAIN201306UV02 queryPatientDemographics(String givenName,
 			String familyName,
 			String middleName,
 			String dateOfBirth,
@@ -65,7 +66,7 @@ public class PDQQueryManager
 			String patientIdDomain,
 			String otherIDsScopingOrganization) throws RemoteException
 	{
-		return QueryPatientDemographics(givenName,
+		return queryPatientDemographics(givenName,
 			familyName,
 			middleName,
 			dateOfBirth,
@@ -81,7 +82,7 @@ public class PDQQueryManager
 			-1);
 	}
 
-	public void QueryCancel(PRPAIN201306UV02 queryResult) throws RemoteException
+	public void queryCancel(PRPAIN201306UV02 queryResult) throws RemoteException
 	{
 		QUQIIN000003UV01Type qUQIIN000003UV01 = new QUQIIN000003UV01Type();
 
@@ -94,7 +95,7 @@ public class PDQQueryManager
 		qUQIIN000003UV01.setId(messageId);
 		
 		// Creation time...
-		SetCreationTime(qUQIIN000003UV01);
+		setCreationTime(qUQIIN000003UV01);
 		
 		// Interaction ID...
 		II interactionId = new II();
@@ -118,10 +119,10 @@ public class PDQQueryManager
 		qUQIIN000003UV01.setAcceptAckCode(acceptAckCode);
 		
 		// Set receiver...
-		SetReceiverQueryContinuation(qUQIIN000003UV01);
+		setReceiverQueryContinuation(qUQIIN000003UV01);
 		
 		// Set sender...
-		SetSenderQueryContinuation(qUQIIN000003UV01);
+		setSenderQueryContinuation(qUQIIN000003UV01);
 		
 		MCCIMT000300UV01Acknowledgement ack = new MCCIMT000300UV01Acknowledgement();
 		CS ackValue = new CS();
@@ -164,13 +165,13 @@ public class PDQQueryManager
 		pdqSupplierStub.pDQSupplier_QUQI_IN000003UV01_Cancel(qUQIIN000003UV01);
 	}
 	
-	public PRPAIN201306UV02 QueryContinue(PRPAIN201306UV02 queryResult) throws RemoteException
+	public PRPAIN201306UV02 queryContinue(PRPAIN201306UV02 queryResult) throws RemoteException
 	{
-		return QueryContinue(queryResult,
+		return queryContinue(queryResult,
 				-1);
 	}
 
-	public PRPAIN201306UV02 QueryContinue(PRPAIN201306UV02 queryResult,
+	public PRPAIN201306UV02 queryContinue(PRPAIN201306UV02 queryResult,
 			int resultSetSize) throws RemoteException
 	{
 		QUQIIN000003UV01Type qUQIIN000003UV01 = new QUQIIN000003UV01Type();
@@ -184,7 +185,7 @@ public class PDQQueryManager
 		qUQIIN000003UV01.setId(messageId);
 		
 		// Creation time...
-		SetCreationTime(qUQIIN000003UV01);
+		setCreationTime(qUQIIN000003UV01);
 		
 		// Interaction ID...
 		II interactionId = new II();
@@ -208,10 +209,10 @@ public class PDQQueryManager
 		qUQIIN000003UV01.setAcceptAckCode(acceptAckCode);
 		
 		// Set receiver...
-		SetReceiverQueryContinuation(qUQIIN000003UV01);
+		setReceiverQueryContinuation(qUQIIN000003UV01);
 		
 		// Set sender...
-		SetSenderQueryContinuation(qUQIIN000003UV01);
+		setSenderQueryContinuation(qUQIIN000003UV01);
 		
 		MCCIMT000300UV01Acknowledgement ack = new MCCIMT000300UV01Acknowledgement();
 		CS ackValue = new CS();
@@ -256,7 +257,7 @@ public class PDQQueryManager
 		return pdqSupplierStub.pDQSupplier_QUQI_IN000003UV01_Continue(qUQIIN000003UV01);
 	}
 	
-	public PRPAIN201306UV02 QueryPatientDemographics(String givenName,
+	public PRPAIN201306UV02 queryPatientDemographics(String givenName,
 			String familyName,
 			String middleName,
 			String dateOfBirth,
@@ -294,7 +295,7 @@ public class PDQQueryManager
 		pRPA_IN201305UV02.setId(messageId);
 		
 		// Creation time...
-		SetCreationTime(pRPA_IN201305UV02);
+		setCreationTime(pRPA_IN201305UV02);
 		
 		// Interaction ID...
 		II interactionId = new II();
@@ -318,10 +319,10 @@ public class PDQQueryManager
 		pRPA_IN201305UV02.setAcceptAckCode(acceptAckCode);
 		
 		// Set receiver...
-		SetReceiver(pRPA_IN201305UV02);
+		setReceiver(pRPA_IN201305UV02);
 		
 		// Set sender...
-		SetSender(pRPA_IN201305UV02);
+		setSender(pRPA_IN201305UV02);
 		
 		// Generate GUID portion of patient ID...
 		String guid = UUID.randomUUID().toString();
@@ -351,7 +352,7 @@ public class PDQQueryManager
 			(patientId.length() > 0))
 		{
 			PRPAMT201306UV02LivingSubjectId livingSubjectId = new PRPAMT201306UV02LivingSubjectId();
-			paramList.getLivingSubjectId().add(SetLivingSubjectId(livingSubjectId,
+			paramList.getLivingSubjectId().add(setLivingSubjectId(livingSubjectId,
 					patientId,
 					patientIdDomain));
 		}
@@ -361,7 +362,7 @@ public class PDQQueryManager
 			(gender.length() > 0))
 		{
 			PRPAMT201306UV02LivingSubjectAdministrativeGender livingSubjectAdministrativeGender = new PRPAMT201306UV02LivingSubjectAdministrativeGender();
-			paramList.getLivingSubjectAdministrativeGender().add(SetLivingSubjectAdministrativeGender(livingSubjectAdministrativeGender,
+			paramList.getLivingSubjectAdministrativeGender().add(setLivingSubjectAdministrativeGender(livingSubjectAdministrativeGender,
 					gender));
 		}
 
@@ -370,7 +371,7 @@ public class PDQQueryManager
 			(dateOfBirth.length() > 0))
 		{
 			PRPAMT201306UV02LivingSubjectBirthTime livingSubjectBirthTime = new PRPAMT201306UV02LivingSubjectBirthTime();
-			paramList.getLivingSubjectBirthTime().add(SetLivingSubjectBirthTime(livingSubjectBirthTime,
+			paramList.getLivingSubjectBirthTime().add(setLivingSubjectBirthTime(livingSubjectBirthTime,
 					dateOfBirth));
 		}
 
@@ -379,7 +380,7 @@ public class PDQQueryManager
 			(familyName.length() > 0))
 		{
 			PRPAMT201306UV02LivingSubjectName livingSubjectName = new PRPAMT201306UV02LivingSubjectName();
-			paramList.getLivingSubjectName().add(SetLivingSubjectName(livingSubjectName,
+			paramList.getLivingSubjectName().add(setLivingSubjectName(livingSubjectName,
 					familyName,
 					givenName,
 					middleName));
@@ -392,7 +393,7 @@ public class PDQQueryManager
 			((addressPostalCode != null) && (addressPostalCode.length() > 0)))
 		{
 			PRPAMT201306UV02PatientAddress patientAddress = new PRPAMT201306UV02PatientAddress(); 
-			paramList.getPatientAddress().add(SetPatientAddress(patientAddress,
+			paramList.getPatientAddress().add(setPatientAddress(patientAddress,
 					addressStreet,
 					addressCity,
 					addressState,
@@ -406,7 +407,7 @@ public class PDQQueryManager
 		{
 			// Populate otherIDsScopingOrganization...
 			PRPAMT201306UV02OtherIDsScopingOrganization otherIDsScopingOrg = new PRPAMT201306UV02OtherIDsScopingOrganization();
-			paramList.getOtherIDsScopingOrganization().add(SetOtherIDsScopingOrganization(otherIDsScopingOrg));
+			paramList.getOtherIDsScopingOrganization().add(setOtherIDsScopingOrganization(otherIDsScopingOrg));
 		}
 
 		if (resultSetSize > 0)
@@ -431,9 +432,9 @@ public class PDQQueryManager
 		return pdqSupplierStub.pDQSupplier_PRPA_IN201305UV02(pRPA_IN201305UV02);
 	}
 	
-	private void SetCreationTime(QUQIIN000003UV01Type qUQIIN000003UV01)
+	private void setCreationTime(QUQIIN000003UV01Type qUQIIN000003UV01)
 	{
-		DateTime dt = DateTime.now();
+		DateTime dt = new DateTime(DateTimeZone.UTC);
 		TS creationTime = new TS();
 		StringBuilder timeBuilder = new StringBuilder();
 		timeBuilder.append(dt.getYear());
@@ -451,9 +452,9 @@ public class PDQQueryManager
 		qUQIIN000003UV01.setCreationTime(creationTime);				
 	}
 	
-	private void SetCreationTime(PRPAIN201305UV02 pRPA_IN201305UV02)
+	private void setCreationTime(PRPAIN201305UV02 pRPA_IN201305UV02)
 	{
-		DateTime dt = DateTime.now();
+		DateTime dt = new DateTime(DateTimeZone.UTC);
 		TS creationTime = new TS();
 		StringBuilder timeBuilder = new StringBuilder();
 		timeBuilder.append(dt.getYear());
@@ -471,7 +472,7 @@ public class PDQQueryManager
 		pRPA_IN201305UV02.setCreationTime(creationTime);		
 	}
 
-	private void SetReceiverQueryContinuation(PRPAIN201305UV02 pRPA_IN201305UV02)
+	private void setReceiverQueryContinuation(PRPAIN201305UV02 pRPA_IN201305UV02)
 	{
 		MCCIMT000100UV01Receiver receiver = new MCCIMT000100UV01Receiver();
 		receiver.setTypeCode(CommunicationFunctionType.RCV);
@@ -488,7 +489,7 @@ public class PDQQueryManager
 		pRPA_IN201305UV02.getReceiver().add(receiver);
 	}
 
-	private void SetReceiverQueryContinuation(QUQIIN000003UV01Type qUQIIN000003UV01)
+	private void setReceiverQueryContinuation(QUQIIN000003UV01Type qUQIIN000003UV01)
 	{
 		MCCIMT000300UV01Receiver receiver = new MCCIMT000300UV01Receiver();
 		receiver.setTypeCode(CommunicationFunctionType.RCV);
@@ -505,7 +506,7 @@ public class PDQQueryManager
 		qUQIIN000003UV01.getReceiver().add(receiver);
 	}
 
-	private void SetReceiver(QUQIIN000003UV01Type qUQIIN000003UV01)
+	private void setReceiver(QUQIIN000003UV01Type qUQIIN000003UV01)
 	{
 		MCCIMT000300UV01Receiver receiver = new MCCIMT000300UV01Receiver();
 		receiver.setTypeCode(CommunicationFunctionType.RCV);
@@ -529,7 +530,7 @@ public class PDQQueryManager
 		qUQIIN000003UV01.getReceiver().add(receiver);
 	}
 
-	private void SetReceiver(PRPAIN201305UV02 pRPA_IN201305UV02)
+	private void setReceiver(PRPAIN201305UV02 pRPA_IN201305UV02)
 	{
 		MCCIMT000100UV01Receiver receiver = new MCCIMT000100UV01Receiver();
 		receiver.setTypeCode(CommunicationFunctionType.RCV);
@@ -553,7 +554,7 @@ public class PDQQueryManager
 		pRPA_IN201305UV02.getReceiver().add(receiver);
 	}
 
-	private void SetSenderQueryContinuation(QUQIIN000003UV01Type qUQIIN000003UV01)
+	private void setSenderQueryContinuation(QUQIIN000003UV01Type qUQIIN000003UV01)
 	{
 		MCCIMT000300UV01Sender sender = new MCCIMT000300UV01Sender();
 		sender.setTypeCode(CommunicationFunctionType.SND);
@@ -567,7 +568,7 @@ public class PDQQueryManager
 		qUQIIN000003UV01.setSender(sender);		
 	}
 
-	private void SetSender(QUQIIN000003UV01Type qUQIIN000003UV01)
+	private void setSender(QUQIIN000003UV01Type qUQIIN000003UV01)
 	{
 		MCCIMT000300UV01Sender sender = new MCCIMT000300UV01Sender();
 		sender.setTypeCode(CommunicationFunctionType.SND);
@@ -591,7 +592,7 @@ public class PDQQueryManager
 		qUQIIN000003UV01.setSender(sender);		
 	}
 	
-	private void SetSender(PRPAIN201305UV02 pRPA_IN201305UV02)
+	private void setSender(PRPAIN201305UV02 pRPA_IN201305UV02)
 	{
 		MCCIMT000100UV01Sender sender = new MCCIMT000100UV01Sender();
 		sender.setTypeCode(CommunicationFunctionType.SND);
@@ -615,7 +616,7 @@ public class PDQQueryManager
 		pRPA_IN201305UV02.setSender(sender);
 	}
 	
-	private PRPAMT201306UV02LivingSubjectName SetLivingSubjectName(PRPAMT201306UV02LivingSubjectName livingSubjectName,
+	private PRPAMT201306UV02LivingSubjectName setLivingSubjectName(PRPAMT201306UV02LivingSubjectName livingSubjectName,
 			String familyName,
 			String givenName,
 			String middleName)
@@ -660,7 +661,7 @@ public class PDQQueryManager
 		return livingSubjectName;
 	}
 	
-	private PRPAMT201306UV02LivingSubjectAdministrativeGender SetLivingSubjectAdministrativeGender(PRPAMT201306UV02LivingSubjectAdministrativeGender adminGender,
+	private PRPAMT201306UV02LivingSubjectAdministrativeGender setLivingSubjectAdministrativeGender(PRPAMT201306UV02LivingSubjectAdministrativeGender adminGender,
 			String gender)
 	{
 		CE genderValue = new CE();
@@ -674,7 +675,7 @@ public class PDQQueryManager
 		return adminGender;
 	}
 	
-	private PRPAMT201306UV02OtherIDsScopingOrganization SetOtherIDsScopingOrganization(PRPAMT201306UV02OtherIDsScopingOrganization otherIDsScopingOrganization)
+	private PRPAMT201306UV02OtherIDsScopingOrganization setOtherIDsScopingOrganization(PRPAMT201306UV02OtherIDsScopingOrganization otherIDsScopingOrganization)
 	{
 		II scopingOrganizationId = new II();
 		scopingOrganizationId.setRoot(otherIDsScopingOrganizationOID);
@@ -685,7 +686,7 @@ public class PDQQueryManager
 		return otherIDsScopingOrganization; 
 	}
 	
-	private PRPAMT201306UV02PatientAddress SetPatientAddress(PRPAMT201306UV02PatientAddress patientAddress,
+	private PRPAMT201306UV02PatientAddress setPatientAddress(PRPAMT201306UV02PatientAddress patientAddress,
 			String addressStreet,
 			String addressCity,
 			String addressState,
@@ -733,7 +734,7 @@ public class PDQQueryManager
 		return patientAddress;
 	}
 	
-	private PRPAMT201306UV02LivingSubjectBirthTime SetLivingSubjectBirthTime(PRPAMT201306UV02LivingSubjectBirthTime livingSubjectBirthTime,
+	private PRPAMT201306UV02LivingSubjectBirthTime setLivingSubjectBirthTime(PRPAMT201306UV02LivingSubjectBirthTime livingSubjectBirthTime,
 			String dateOfBirth)
 	{
 		DateTimeFormatter formatter = DateTimeFormat.forPattern("MM/dd/yyyy");
@@ -756,7 +757,7 @@ public class PDQQueryManager
 		return livingSubjectBirthTime;
 	}
 	
-	private PRPAMT201306UV02LivingSubjectId SetLivingSubjectId(PRPAMT201306UV02LivingSubjectId livingSubjectId,
+	private PRPAMT201306UV02LivingSubjectId setLivingSubjectId(PRPAMT201306UV02LivingSubjectId livingSubjectId,
 			String patientId,
 			String patientIdDomain)
 	{

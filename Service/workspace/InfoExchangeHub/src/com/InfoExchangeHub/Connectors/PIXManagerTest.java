@@ -15,10 +15,10 @@ import org.junit.*;
  */
 public class PIXManagerTest
 {
-	private static String PIXManagerEndpointURI = "http://129.6.24.79:9090";
+	private static final String PIXManagerEndpointURI = "http://129.6.24.79:9090";
 
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.PIXManager#PatientRegistryGetIdentifiers(java.lang.String, java.lang.String, boolean)}.
+	 * Test method for {@link com.InfoExchangeHub.Connectors.PIXManager#patientRegistryGetIdentifiers(java.lang.String, java.lang.String, boolean)}.
 	 */
 	@Test
 	public void testPatientRegistryGetIdentifiersWithDataSource()
@@ -29,7 +29,7 @@ public class PIXManagerTest
 		{
 			pixManager = new PIXManager(PIXManagerEndpointURI);
 			
-			PRPAIN201310UV02 pixResponse = pixManager.PatientRegistryGetIdentifiers("PIXL1",
+			PRPAIN201310UV02 pixResponse = pixManager.patientRegistryGetIdentifiers("PIXL1",
 					"2.16.840.1.113883.3.72.5.9.1",
 					true);
 		}
@@ -40,7 +40,7 @@ public class PIXManagerTest
 	}
 
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.PIXManager#PatientRegistryGetIdentifiers(java.lang.String, java.lang.String, boolean)}.
+	 * Test method for {@link com.InfoExchangeHub.Connectors.PIXManager#patientRegistryGetIdentifiers(java.lang.String, java.lang.String, boolean)}.
 	 */
 	@Test
 	public void testPatientRegistryGetIdentifiersNoDataSource()
@@ -51,7 +51,7 @@ public class PIXManagerTest
 		{
 			pixManager = new PIXManager(PIXManagerEndpointURI);
 			
-			PRPAIN201310UV02 pixResponse = pixManager.PatientRegistryGetIdentifiers("PIXL1",
+			PRPAIN201310UV02 pixResponse = pixManager.patientRegistryGetIdentifiers("PIXL1",
 					"2.16.840.1.113883.3.72.5.9.1",
 					false);
 		}
@@ -62,7 +62,7 @@ public class PIXManagerTest
 	}
 
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.PIXManager#RegisterPatient(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
+	 * Test method for {@link com.InfoExchangeHub.Connectors.PIXManager#registerPatient(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testRegisterPatient()
@@ -73,7 +73,7 @@ public class PIXManagerTest
 		{
 			pixManager = new PIXManager(PIXManagerEndpointURI);
 			
-			MCCIIN000002UV01 pixRegistrationResponse = pixManager.RegisterPatient("ALAN",
+			MCCIIN000002UV01 pixRegistrationResponse = pixManager.registerPatient("ALAN",
 					"ALPHA",
 					null,
 					"12/8/1978",

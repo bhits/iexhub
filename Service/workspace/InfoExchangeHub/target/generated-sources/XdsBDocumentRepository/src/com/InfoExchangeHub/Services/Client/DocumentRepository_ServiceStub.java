@@ -137,7 +137,7 @@ public class DocumentRepository_ServiceStub extends org.apache.axis2.client.Stub
 
         __operation.setName(new javax.xml.namespace.QName(
                 "urn:ihe:iti:xds-b:2007",
-                "documentRepository_ProvideAndRegisterDocumentSetB"));
+                "ProvideAndRegisterDocumentSetRequest"));
         _service.addOperation(__operation);
 
         _operations[1] = __operation;
@@ -299,9 +299,9 @@ public class DocumentRepository_ServiceStub extends org.apache.axis2.client.Stub
                     optimizeContent(
                         new javax.xml.namespace.QName(
                             "urn:ihe:iti:xds-b:2007",
-                            "documentRepository_ProvideAndRegisterDocumentSetB")),
+                            "ProvideAndRegisterDocumentSetRequest")),
                     new javax.xml.namespace.QName("urn:ihe:iti:xds-b:2007",
-                        "documentRepository_ProvideAndRegisterDocumentSetB"));
+                        "ProvideAndRegisterDocumentSetRequest"));
 
             //adding SOAP soap_headers
             _serviceClient.addHeadersToEnvelope(env);

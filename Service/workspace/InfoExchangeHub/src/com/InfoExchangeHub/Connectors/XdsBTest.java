@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.activation.DataHandler;
@@ -34,24 +35,27 @@ import com.InfoExchangeHub.Services.Client.DocumentRepository_ServiceStub.Retrie
 public class XdsBTest
 {
     /** Logger */
-    public static Logger log = Logger.getLogger(XdsBTest.class);
+    public static final Logger log = Logger.getLogger(XdsBTest.class);
 
-	private static String XdsBRegistryEndpointURI = "http://ihexds.nist.gov:80/tf6/services/xdsregistryb";
-	private static String XdsBRepositoryEndpointURI = "http://ihexds.nist.gov:80/tf6/services/xdsrepositoryb";
-	private static String NistRepositoryId = "1.19.6.24.109.42.1.5";
+	private static final String xdsBRegistryEndpointURI = "http://ihexds.nist.gov:80/tf6/services/xdsregistryb";
+	private static final String xdsBRepositoryEndpointURI = "http://ihexds.nist.gov:80/tf6/services/xdsrepositoryb";
+//	private static final String xdsBRegistryTLSEndpointURI = "https://ihexds.nist.gov:12091/tf6/services/xdsregistryb";
+	private static final String xdsBRegistryTLSEndpointURI = "https://188.165.194.55:10011";
+	private static final String xdsBRepositoryTLSEndpointURI = "https://ihexds.nist.gov:12091/tf6/services/xdsrepositoryb";
+
+	private static final String nistRepositoryId = "1.19.6.24.109.42.1.5";
 	private static XdsB xdsB = null;
-	private static SOAPFactory soapFactory = OMAbstractFactory.getSOAP12Factory();
+	private static final SOAPFactory soapFactory = OMAbstractFactory.getSOAP12Factory();
 
-
-	private List<String> QueryRegistry(String enterpriseMRN,
+	private HashMap<String, String> queryRegistry(String enterpriseMRN,
 			String startDate,
 			String endDate)
 	{
-		List<String> documentIds = null;
+		HashMap<String, String> documents = null;
 
 		try
 		{
-			AdhocQueryResponse registryResponse = xdsB.RegistryStoredQuery(enterpriseMRN,
+			AdhocQueryResponse registryResponse = xdsB.registryStoredQuery(enterpriseMRN,
 					(startDate != null) ? DateFormat.getDateInstance().format(startDate) : null,
 					(endDate != null) ? DateFormat.getDateInstance().format(endDate) : null);
 			
@@ -60,17 +64,21 @@ public class XdsBTest
 					soapFactory);
 			log.info(requestElement);
 			
-			// Try to retrieve document ID's...
+			// Try to retrieve document ID's and their homeCommunityId if present...
 			RegistryObjectListType registryObjectList = registryResponse.getRegistryObjectList();
 			IdentifiableType[] documentObjects = registryObjectList.getIdentifiable();
 			if ((documentObjects != null) &&
 				(documentObjects.length > 0))
 			{
-				documentIds = new ArrayList<String>();
+				documents = new HashMap<String, String>();
 				for (IdentifiableType identifiable : documentObjects)
 				{
 					if (identifiable.getClass().equals(ExtrinsicObjectType.class))
 					{
+						// Determine if the "home" attribute (homeCommunityId in XCA parlance) is present...
+						String home = ((((ExtrinsicObjectType)identifiable).getHome() != null) && (((ExtrinsicObjectType)identifiable).getHome().toString() != null) && (((ExtrinsicObjectType)identifiable).getHome().toString().length() > 0)) ? ((ExtrinsicObjectType)identifiable).getHome().toString()
+								: null;
+						
 						ExternalIdentifierType[] externalIdentifiers = ((ExtrinsicObjectType)identifiable).getExternalIdentifier();
 						
 						// Find the ExternalIdentifier that has the "XDSDocumentEntry.uniqueId" value...
@@ -88,16 +96,24 @@ public class XdsBTest
 						
 						if (uniqueId != null)
 						{
-							documentIds.add(uniqueId);
+							documents.put(uniqueId,
+									home);
 							log.info("Document ID added: "
-									+ uniqueId);
+									+ uniqueId
+									+ ", homeCommunityId: "
+									+ home);
 						}
 					}
 					else
 					{
-						documentIds.add(identifiable.getId().getPath());
+						String home = ((identifiable.getHome() != null) && (identifiable.getHome().getPath().length() > 0)) ? identifiable.getHome().getPath()
+								: null;
+						documents.put(identifiable.getId().getPath(),
+								home);
 						log.info("Document ID added: "
-								+ identifiable.getId().getPath());
+								+ identifiable.getId().getPath()
+								+ ", homeCommunityId: "
+								+ home);
 					}
 				}
 			}
@@ -108,11 +124,11 @@ public class XdsBTest
 			fail("Error - " + e.getMessage());
 		}
 		
-		return documentIds;
+		return documents;
 	}
 	
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.XdsB#RegistryStoredQuery(java.lang.String, java.lang.String, java.lang.String)}.
+	 * Test method for {@link com.InfoExchangeHub.Connectors.XdsB#registryStoredQuery(java.lang.String, java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testRegistryStoredQuery()
@@ -120,15 +136,15 @@ public class XdsBTest
 		try
 		{
 			log.info("Registry stored query (ITI-18) unit test started...");
-			xdsB = new XdsB(XdsBRegistryEndpointURI,
-					XdsBRepositoryEndpointURI);
+			xdsB = new XdsB(xdsBRegistryEndpointURI,
+					xdsBRepositoryEndpointURI);
 			
 			String enterpriseMRN = "'086666c2fd154f7^^^&1.3.6.1.4.1.21367.2005.13.20.3000&ISO'";
 			String startDate = null;
 			String endDate = null;
 
 			assertFalse("Error - no documents found",
-					QueryRegistry(enterpriseMRN, startDate, endDate).isEmpty());
+					queryRegistry(enterpriseMRN, startDate, endDate).isEmpty());
 			log.info("Registry stored query (ITI-18) unit test ending.");
 		}
 		catch (Exception e)
@@ -139,7 +155,130 @@ public class XdsBTest
 	}
 
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.XdsB#RetrieveDocumentSet(java.lang.String, java.util.List)}.
+	 * Test method for {@link com.InfoExchangeHub.Connectors.XdsB#registryStoredQuery(java.lang.String, java.lang.String, java.lang.String)}.
+	 */
+	@Test
+	public void testTLSRegistryStoredQuery()
+	{
+		try
+		{
+			log.info("Registry TLS stored query (ITI-18) unit test started...");
+			xdsB = new XdsB(xdsBRegistryTLSEndpointURI,
+					null,
+					true);
+			
+			String enterpriseMRN = "'086666c2fd154f7^^^&1.3.6.1.4.1.21367.2005.13.20.3000&ISO'";
+			String startDate = null;
+			String endDate = null;
+
+			assertFalse("Error - no documents found",
+					queryRegistry(enterpriseMRN, startDate, endDate).isEmpty());
+			log.info("Registry TLS stored query (ITI-18) unit test ending.");
+		}
+		catch (Exception e)
+		{
+			log.error("Error - " + e.getMessage());
+			fail("Error - " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Test method for {@link com.InfoExchangeHub.Connectors.XdsB#registryStoredQuery(java.lang.String, java.lang.String, java.lang.String)}.
+	 */
+	@Test
+	public void testXCARegistryStoredQuery()
+	{
+		try
+		{
+			log.info("XCA registry stored query (ITI-18/ITI-38) unit test started...");
+			xdsB = new XdsB("http://ihexds.nist.gov:12090/tf6/services/xcaregistry",
+					"http://ihexds.nist.gov:12090/tf6/services/xcarepository");
+			
+			String enterpriseMRN = "'f10f8d972aba4fd^^^&1.3.6.1.4.1.21367.2005.13.20.3000&ISO'"; 
+			//"'086666c2fd154f7^^^&1.3.6.1.4.1.21367.2005.13.20.3000&ISO'";
+			String startDate = null;
+			String endDate = null;
+
+			assertFalse("Error - no documents found",
+					queryRegistry(enterpriseMRN, startDate, endDate).isEmpty());
+			log.info("XCA registry stored query unit test ending.");
+		}
+		catch (Exception e)
+		{
+			log.error("Error - " + e.getMessage());
+			fail("Error - " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Test method for {@link com.InfoExchangeHub.Connectors.XdsB#registryStoredQuery(java.lang.String, java.lang.String, java.lang.String)}.
+	 */
+	@Test
+	public void testXCARepositoryStoredQuery()
+	{
+		try
+		{
+			log.info("XCA repository stored query unit test started...");
+			xdsB = new XdsB("http://ihexds.nist.gov:12090/tf6/services/xcaregistry",
+					"http://ihexds.nist.gov:12090/tf6/services/xcarepository");
+			
+			String enterpriseMRN = "'f10f8d972aba4fd^^^&1.3.6.1.4.1.21367.2005.13.20.3000&ISO'"; 
+			//"'086666c2fd154f7^^^&1.3.6.1.4.1.21367.2005.13.20.3000&ISO'";
+			String startDate = null;
+			String endDate = null;
+
+			HashMap<String, String> documents = queryRegistry(enterpriseMRN, startDate, endDate);
+			assertFalse("Error - no documents found",
+					documents.isEmpty());
+			
+			RetrieveDocumentSetResponse documentSetResponse = xdsB.retrieveDocumentSet(nistRepositoryId,
+					documents);
+			log.info("XDS.b document set query response in log message immediately following...");
+			OMElement requestElement = documentSetResponse.getOMElement(RetrieveDocumentSetResponse.MY_QNAME,
+					soapFactory);
+			log.info(requestElement);
+
+			DocumentResponse_type0[] docResponseArray = documentSetResponse.getRetrieveDocumentSetResponse().getRetrieveDocumentSetResponseTypeSequence_type0().getDocumentResponse();
+			assertFalse("Error - no documents returned",
+					docResponseArray.length == 0);
+			if (docResponseArray != null)
+			{
+				try
+				{
+					for (DocumentResponse_type0 document : docResponseArray)
+					{
+						String mimeType = docResponseArray[0].getMimeType().getLongName();
+						if (mimeType.compareToIgnoreCase("text/xml") == 0)
+						{
+							String filename = /*"test/"*/ "c:/temp/Output/" + document.getDocumentUniqueId().getLongName() + ".xml";
+							DataHandler dh = document.getDocument();
+							File file = new File(filename);
+							FileOutputStream fileOutStream = new FileOutputStream(file);
+							dh.writeTo(fileOutStream);
+							fileOutStream.close();
+							
+							log.info("Document written to "
+									+ filename);
+						}
+					}
+				}
+				catch (Exception e)
+				{
+					throw e;
+				}
+			}
+			
+			log.info("XCA repository stored query unit test ending.");
+		}
+		catch (Exception e)
+		{
+			log.error("Error - " + e.getMessage());
+			fail("Error - " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Test method for {@link com.InfoExchangeHub.Connectors.XdsB#retrieveDocumentSet(java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testRetrieveDocumentSet()
@@ -147,19 +286,19 @@ public class XdsBTest
 		try
 		{
 			log.info("Repository document set retrieval query (ITI-43) unit test started...");
-			xdsB = new XdsB(XdsBRegistryEndpointURI,
-					XdsBRepositoryEndpointURI);
+			xdsB = new XdsB(xdsBRegistryEndpointURI,
+					xdsBRepositoryEndpointURI);
 			
 			String enterpriseMRN = "'086666c2fd154f7^^^&1.3.6.1.4.1.21367.2005.13.20.3000&ISO'";
 			String startDate = null;
 			String endDate = null;
 
-			List<String> documentIds = QueryRegistry(enterpriseMRN, startDate, endDate);
+			HashMap<String, String> documents = queryRegistry(enterpriseMRN, startDate, endDate);
 			assertFalse("Error - no documents found",
-					documentIds.isEmpty());
+					documents.isEmpty());
 			
-			RetrieveDocumentSetResponse documentSetResponse = xdsB.RetrieveDocumentSet(NistRepositoryId,
-					documentIds);
+			RetrieveDocumentSetResponse documentSetResponse = xdsB.retrieveDocumentSet(nistRepositoryId,
+					documents);
 			log.info("XDS.b document set query response in log message immediately following...");
 			OMElement requestElement = documentSetResponse.getOMElement(RetrieveDocumentSetResponse.MY_QNAME,
 					soapFactory);
@@ -196,6 +335,73 @@ public class XdsBTest
 			}
 			
 			log.info("Repository document set retrieval query (ITI-43) unit test ending.");
+		}
+		catch (Exception e)
+		{
+			log.error("Error-" + e.getMessage());
+			fail("Error - " + e.getMessage());
+		}
+	}
+	
+	/**
+	 * Test method for {@link com.InfoExchangeHub.Connectors.XdsB#retrieveDocumentSet(java.lang.String, java.lang.String, boolean)}.
+	 */
+	@Test
+	public void testTLSRetrieveDocumentSet()
+	{
+		try
+		{
+			log.info("Repository TLS document set retrieval query (ITI-43) unit test started...");
+			xdsB = new XdsB(xdsBRegistryTLSEndpointURI,
+					xdsBRepositoryTLSEndpointURI,
+					true);
+			
+			String enterpriseMRN = "'086666c2fd154f7^^^&1.3.6.1.4.1.21367.2005.13.20.3000&ISO'";
+			String startDate = null;
+			String endDate = null;
+
+			HashMap<String, String> documents = queryRegistry(enterpriseMRN, startDate, endDate);
+			assertFalse("Error - no documents found",
+					documents.isEmpty());
+			
+			RetrieveDocumentSetResponse documentSetResponse = xdsB.retrieveDocumentSet(nistRepositoryId,
+					documents);
+			log.info("XDS.b document set query response in log message immediately following...");
+			OMElement requestElement = documentSetResponse.getOMElement(RetrieveDocumentSetResponse.MY_QNAME,
+					soapFactory);
+			log.info(requestElement);
+
+			DocumentResponse_type0[] docResponseArray = documentSetResponse.getRetrieveDocumentSetResponse().getRetrieveDocumentSetResponseTypeSequence_type0().getDocumentResponse();
+			assertFalse("Error - no documents returned",
+					docResponseArray.length == 0);
+			if (docResponseArray != null)
+			{
+				try
+				{
+					for (DocumentResponse_type0 document : docResponseArray)
+					{
+						String mimeType = docResponseArray[0].getMimeType().getLongName();
+						if (mimeType.compareToIgnoreCase("text/xml") == 0)
+						{
+							String filename = /*"test/"*/ "c:/temp/Output/" + document.getDocumentUniqueId().getLongName() + ".xml";
+							DataHandler dh = document.getDocument();
+							File file = new File(filename);
+							FileOutputStream fileOutStream = new FileOutputStream(file);
+							dh.writeTo(fileOutStream);
+							fileOutStream.close();
+							
+							log.info("Document written to "
+									+ filename);
+						}
+					}
+				}
+				catch (Exception e)
+				{
+					throw e;
+				}
+			}
+			
+			log.info("Repository TLS document set retrieval query (ITI-43) unit test ending.");
 		}
 		catch (Exception e)
 		{

@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import PIXManager.src.org.hl7.v3.*;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 import com.InfoExchangeHub.Exceptions.*;
 
@@ -24,18 +25,18 @@ public class PIXManager
     /** Logger */
     public static Logger log = Logger.getLogger(PIXManager.class);
 
-    private static String receiverApplicationName = "2.16.840.1.113883.3.72.6.5.100.556";
-	private static String receiverTelecomValue = "https://example.org/PIXQuery";
-	private static String facilityName = "2.16.840.1.113883.3.72.6.1";
-	private static String providerOrganizationName = "HIE Portal";
-	private static String providerOrganizationContactTelecom = "555-555-5555";
-	private static String organizationOID = "2.16.840.1.113883.3.72.5.9.1";
-	private static String providerOrganizationOID = "1.2.840.114350.1.13.99998.8734";
-	private static String queryIdOID = "1.2.840.114350.1.13.28.1.18.5.999";
-	private static String dataSourceOID = "2.16.840.1.113883.3.72.5.9.3";
-	private static SOAPFactory soapFactory = OMAbstractFactory.getSOAP12Factory();
+    private static final String receiverApplicationName = "2.16.840.1.113883.3.72.6.5.100.556";
+	private static final String receiverTelecomValue = "https://example.org/PIXQuery";
+	private static final String facilityName = "2.16.840.1.113883.3.72.6.1";
+	private static final String providerOrganizationName = "HIE Portal";
+	private static final String providerOrganizationContactTelecom = "555-555-5555";
+	private static final String organizationOID = "2.16.840.1.113883.3.72.5.9.1";
+	private static final String providerOrganizationOID = "1.2.840.114350.1.13.99998.8734";
+	private static final String queryIdOID = "1.2.840.114350.1.13.28.1.18.5.999";
+	private static final String dataSourceOID = "2.16.840.1.113883.3.72.5.9.3";
+	private static final SOAPFactory soapFactory = OMAbstractFactory.getSOAP12Factory();
 	private static PIXManager_ServiceStub pixManagerStub = null;
-	private static ObjectFactory objectFactory = new ObjectFactory();
+	private static final ObjectFactory objectFactory = new ObjectFactory();
 	
 	public PIXManager(String endpointURI) throws AxisFault, Exception
 	{
@@ -54,7 +55,7 @@ public class PIXManager
 		}
 	}
 	
-	public PRPAIN201310UV02 PatientRegistryGetIdentifiers(String patientId,
+	public PRPAIN201310UV02 patientRegistryGetIdentifiers(String patientId,
 			String domainOID,
 			boolean populateDataSource) throws RemoteException
 	{
@@ -75,7 +76,7 @@ public class PIXManager
 		pRPA_IN201309UV02.setId(messageId);
 		
 		// Creation time...
-		DateTime dt = DateTime.now();
+		DateTime dt = new DateTime(DateTimeZone.UTC);
 		TS creationTime = new TS();
 		StringBuilder creationTimeBuilder = new StringBuilder();
 		creationTimeBuilder.append(dt.getYear());
@@ -205,7 +206,7 @@ public class PIXManager
 		return pixManagerStub.pIXManager_PRPA_IN201309UV02(pRPA_IN201309UV02);
 	}
 	
-	public MCCIIN000002UV01 RegisterPatient(String givenName,
+	public MCCIIN000002UV01 registerPatient(String givenName,
 			String familyName,
 			String middleName,
 			String dateOfBirth,
@@ -228,7 +229,7 @@ public class PIXManager
 		pRPA_IN201301UV02.setId(messageId);
 		
 		// Creation time...
-		DateTime dt = DateTime.now();
+		DateTime dt = new DateTime(DateTimeZone.UTC);
 		TS creationTime = new TS();
 		StringBuilder creationTimeBuilder = new StringBuilder();
 		creationTimeBuilder.append(dt.getYear());
