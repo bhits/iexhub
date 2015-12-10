@@ -146,8 +146,8 @@ public class GetPatientDataService
 			try
 			{
 				log.info("Instantiating XdsB connector...");
-				xdsB = new XdsB(XdsBRegistryEndpointURI,
-						XdsBRepositoryEndpointURI);
+				xdsB = new XdsB(null,
+						null);
 				log.info("XdsB connector successfully started");
 				
 //				pdqQueryManager = new PDQQueryManager(PDQManagerEndpointURI);

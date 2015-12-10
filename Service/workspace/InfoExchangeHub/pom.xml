@@ -68,6 +68,26 @@
     </plugins>
   </build>
   <dependencies>
+	<dependency>
+          <groupId>org.antlr</groupId>
+          <artifactId>antlr4</artifactId>
+          <version>4.0</version>
+      </dependency>
+      <dependency>
+          <groupId>org.antlr</groupId>
+          <artifactId>antlr4-runtime</artifactId>
+          <version>4.2</version>
+      </dependency>
+      <dependency>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+          <version>16.0</version>
+      </dependency>
+  <dependency>
+    <groupId>org.mdmi</groupId>
+    <artifactId>org.mdmi.core</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+	</dependency>
   <dependency>
     <groupId>log4j</groupId>
     <artifactId>log4j</artifactId>
@@ -86,18 +106,23 @@
 	<dependency>
 	    <groupId>org.apache.ws.commons.axiom</groupId>
 	    <artifactId>axiom-api</artifactId>
-	    <version>1.2.14</version>
+	    <version>1.2.15</version>
 	</dependency>
     <dependency>
         <groupId>org.apache.ws.commons.axiom</groupId>
         <artifactId>axiom-impl</artifactId>
-        <version>1.2.14</version>
+        <version>1.2.15</version>
         <scope>runtime</scope>
     </dependency>
+    <dependency>
+	    <groupId>org.apache.ws.commons.axiom</groupId>
+	    <artifactId>axiom-dom</artifactId>
+	    <version>1.2.15</version>
+	</dependency>
 	<dependency>
 	    <groupId>org.apache.ws.commons.axiom</groupId>
 	    <artifactId>axiom-compat</artifactId>
-	    <version>1.2.14</version>
+	    <version>1.2.15</version>
 	</dependency>
 	<dependency>
 	    <groupId>org.apache.neethi</groupId>
@@ -142,20 +167,13 @@
 		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
-			<version>1.2</version>
+			<version>1.9</version>
 		</dependency>
-		<dependency>
-			<groupId>org.openhealthtools.mdht</groupId>
-			<artifactId>mdmi</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
-
 		<dependency>
 		    <groupId>gov.samhsa.service</groupId>
 		    <artifactId>gov.samhsa.service.validation</artifactId>
 		    <version>0.2.0-20150818.143439-2</version>
 		</dependency>
-
 		<dependency>
 			<groupId>asm</groupId>
 			<artifactId>asm</artifactId>
@@ -181,5 +199,25 @@
 			<artifactId>commons-io</artifactId>
 			<version>2.2</version>
 		</dependency>
+		<dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+        </dependency>
+        <dependency>
+		    <groupId>org.bouncycastle</groupId>
+		    <artifactId>bcprov-jdk15on</artifactId>
+		    <version>1.53</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.apache.ws.security</groupId>
+		    <artifactId>wss4j</artifactId>
+		    <version>1.5.5</version>
+		</dependency>
+        <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-mapper-asl</artifactId>
+            <version>1.9.13</version>
+        </dependency>
   </dependencies>
 </project>

@@ -90,6 +90,17 @@ public class XdsB
 		{
 			props.load(new FileInputStream(PropertiesFile));
 			DebugSSL = Boolean.parseBoolean(props.getProperty("DebugSSL"));
+			
+			// If endpoint URI's are null, then set to the values in the properties file...
+			if (registryEndpointURI == null)
+			{
+				registryEndpointURI = props.getProperty("XdsBRegistryEndpointURI");
+			}
+			
+			if (repositoryEndpointURI == null)
+			{
+				repositoryEndpointURI = props.getProperty("XdsBRepositoryEndpointURI");
+			}
 		}
 		catch (IOException e)
 		{
