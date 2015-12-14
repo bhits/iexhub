@@ -59,7 +59,7 @@ public class RegisterPatientService
 				String gender = (parts[4].split("=").length == 2) ? parts[4].split("=")[1] : null;
 
 				// PIX patient registration...
-				MCCIIN000002UV01 pixRegistrationResponse = pixManager.RegisterPatient(firstName,
+				MCCIIN000002UV01 pixRegistrationResponse = pixManager.registerPatient(firstName,
 						lastName,
 						middleName,
 						dateOfBirth,
