@@ -6,20 +6,28 @@ package com.InfoExchangeHub.Connectors;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Properties;
 
 import javax.activation.DataHandler;
 
 import org.junit.Test;
+import org.productivity.java.syslog4j.Syslog;
+import org.productivity.java.syslog4j.SyslogConfigIF;
+import org.productivity.java.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig;
 import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.soap.SOAPFactory;
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
+import com.InfoExchangeHub.Exceptions.UnexpectedServerException;
 import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub.AdhocQueryResponse;
 import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub.ExternalIdentifierType;
 import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub.ExtrinsicObjectType;
@@ -37,15 +45,22 @@ public class XdsBTest
     /** Logger */
     public static final Logger log = Logger.getLogger(XdsBTest.class);
 
-	private static final String xdsBRegistryEndpointURI = "http://ihexds.nist.gov:80/tf6/services/xdsregistryb";
-	private static final String xdsBRepositoryEndpointURI = "http://ihexds.nist.gov:80/tf6/services/xdsrepositoryb";
-//	private static final String xdsBRegistryTLSEndpointURI = "https://ihexds.nist.gov:12091/tf6/services/xdsregistryb";
+	//	private static final String xdsBRegistryTLSEndpointURI = "https://ihexds.nist.gov:12091/tf6/services/xdsregistryb";
 	private static final String xdsBRegistryTLSEndpointURI = "https://188.165.194.55:10011";
 	private static final String xdsBRepositoryTLSEndpointURI = "https://ihexds.nist.gov:12091/tf6/services/xdsrepositoryb";
+
+    private static final String KeyStoreFile = "c:/temp/1264.jks";
+	private static final String KeyStorePwd = "IEXhub";
+	private static final String CipherSuites = "TLS_RSA_WITH_AES_128_CBC_SHA";
+	private static final String HttpsProtocols = "TLSv1";
 
 	private static final String nistRepositoryId = "1.19.6.24.109.42.1.5";
 	private static XdsB xdsB = null;
 	private static final SOAPFactory soapFactory = OMAbstractFactory.getSOAP12Factory();
+
+	private static String PropertiesFile = "/temp/IExHub.properties";
+
+	private static boolean DebugSSL = false;
 
 	private HashMap<String, String> queryRegistry(String enterpriseMRN,
 			String startDate,
@@ -133,11 +148,37 @@ public class XdsBTest
 	@Test
 	public void testRegistryStoredQuery()
 	{
+		Properties props = new Properties();
+		String registryEndpointURI = null;
+		String repositoryEndpointURI = null;
+		String syslogServerHost = null;
+		int syslogServerPort = -1;
+		try
+		{
+			props.load(new FileInputStream(PropertiesFile));
+			DebugSSL = Boolean.parseBoolean(props.getProperty("DebugSSL"));
+			registryEndpointURI = props.getProperty("XdsBRegistryEndpointURI");
+			repositoryEndpointURI = props.getProperty("XdsBRepositoryEndpointURI");
+			syslogServerHost = props.getProperty("SyslogServerHost");
+			syslogServerPort = Integer.parseInt(props.getProperty("SyslogServerPort"));
+		}
+		catch (IOException e)
+		{
+			log.error("Error encountered loading properties file, "
+					+ PropertiesFile
+					+ ", "
+					+ e.getMessage());
+			throw new UnexpectedServerException("Error encountered loading properties file, "
+					+ PropertiesFile
+					+ ", "
+					+ e.getMessage());
+		}
+
 		try
 		{
 			log.info("Registry stored query (ITI-18) unit test started...");
-			xdsB = new XdsB(xdsBRegistryEndpointURI,
-					xdsBRepositoryEndpointURI);
+			xdsB = new XdsB(registryEndpointURI,
+					repositoryEndpointURI);
 			
 			String enterpriseMRN = "'086666c2fd154f7^^^&1.3.6.1.4.1.21367.2005.13.20.3000&ISO'";
 			String startDate = null;
@@ -145,6 +186,7 @@ public class XdsBTest
 
 			assertFalse("Error - no documents found",
 					queryRegistry(enterpriseMRN, startDate, endDate).isEmpty());
+			
 			log.info("Registry stored query (ITI-18) unit test ending.");
 		}
 		catch (Exception e)
@@ -283,11 +325,32 @@ public class XdsBTest
 	@Test
 	public void testRetrieveDocumentSet()
 	{
+		Properties props = new Properties();
+		String registryEndpointURI = null;
+		String repositoryEndpointURI = null;
+		try
+		{
+			props.load(new FileInputStream(PropertiesFile));
+			registryEndpointURI = props.getProperty("XdsBRegistryEndpointURI");
+			repositoryEndpointURI = props.getProperty("XdsBRepositoryEndpointURI");
+		}
+		catch (IOException e)
+		{
+			log.error("Error encountered loading properties file, "
+					+ PropertiesFile
+					+ ", "
+					+ e.getMessage());
+			throw new UnexpectedServerException("Error encountered loading properties file, "
+					+ PropertiesFile
+					+ ", "
+					+ e.getMessage());
+		}
+
 		try
 		{
 			log.info("Repository document set retrieval query (ITI-43) unit test started...");
-			xdsB = new XdsB(xdsBRegistryEndpointURI,
-					xdsBRepositoryEndpointURI);
+			xdsB = new XdsB(registryEndpointURI,
+					repositoryEndpointURI);
 			
 			String enterpriseMRN = "'086666c2fd154f7^^^&1.3.6.1.4.1.21367.2005.13.20.3000&ISO'";
 			String startDate = null;

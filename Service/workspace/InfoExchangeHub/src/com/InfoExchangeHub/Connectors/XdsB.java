@@ -1,16 +1,24 @@
 package com.InfoExchangeHub.Connectors;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Properties;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.apache.axiom.om.OMAbstractFactory;
+import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.impl.builder.StAXOMBuilder;
+import org.apache.axiom.soap.SOAPFactory;
 import org.apache.axis2.AxisFault;
 import org.apache.axis2.Constants;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.apache.neethi.Policy;
 import org.apache.neethi.PolicyEngine;
@@ -18,6 +26,13 @@ import org.apache.rampart.RampartMessageData;
 import org.apache.rampart.policy.model.CryptoConfig;
 import org.apache.rampart.policy.model.RampartConfig;
 import org.apache.rampart.policy.model.SSLConfig;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+import org.productivity.java.syslog4j.Syslog;
+import org.productivity.java.syslog4j.SyslogConfigIF;
+import org.productivity.java.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig;
 
 import com.InfoExchangeHub.Exceptions.UnexpectedServerException;
 import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub;
@@ -47,6 +62,11 @@ public class XdsB
 	private static final String CipherSuites = "TLS_RSA_WITH_AES_128_CBC_SHA";
 	private static final String HttpsProtocols = "TLSv1";
 
+	private static String Iti18AuditMsgTemplate = null;
+	private static String Iti43AuditMsgTemplate = null;
+
+	private static SyslogConfigIF sysLogConfig = null;
+	
 	/** Logger */
     public static Logger log = Logger.getLogger(XdsB.class);
 
@@ -55,13 +75,19 @@ public class XdsB
     private static DocumentRegistry_ServiceStub registryStub = null;
 	private static DocumentRepository_ServiceStub repositoryStub = null;
 
+	private static final SOAPFactory soapFactory = OMAbstractFactory.getSOAP12Factory();
+
 	private static boolean DebugSSL = false;
 
+	private static String registryEndpointURI = null;
+	private static String repositoryEndpointURI = null;
+	
 	public static void setRegistryEndpointURI(String registryEndpointURI)
 	{
 		if (registryStub != null)
 		{
 			registryStub._getServiceClient().getOptions().setTo(new org.apache.axis2.addressing.EndpointReference(registryEndpointURI));
+			XdsB.registryEndpointURI = registryEndpointURI;
 		}
 	}
 	
@@ -70,6 +96,7 @@ public class XdsB
 		if (repositoryStub != null)
 		{
 			repositoryStub._getServiceClient().getOptions().setTo(new org.apache.axis2.addressing.EndpointReference(repositoryEndpointURI));
+			XdsB.repositoryEndpointURI = repositoryEndpointURI;
 		}
 	}
 
@@ -100,6 +127,60 @@ public class XdsB
 			if (repositoryEndpointURI == null)
 			{
 				repositoryEndpointURI = props.getProperty("XdsBRepositoryEndpointURI");
+			}
+
+			XdsB.registryEndpointURI = registryEndpointURI;
+			XdsB.repositoryEndpointURI = repositoryEndpointURI;
+
+			// If Syslog server host is specified, then configure...
+			String syslogServerHost = props.getProperty("SyslogServerHost");
+			int syslogServerPort = (props.getProperty("SyslogServerPort") != null) ? Integer.parseInt(props.getProperty("SyslogServerPort"))
+					: -1;
+			if ((syslogServerHost != null) &&
+				(syslogServerPort > -1))
+			{
+				Iti18AuditMsgTemplate = props.getProperty("Iti18AuditMsgTemplate");
+				Iti43AuditMsgTemplate = props.getProperty("Iti43AuditMsgTemplate");
+				if ((Iti18AuditMsgTemplate == null) ||
+					(Iti43AuditMsgTemplate == null))
+				{
+					log.error("ITI-18 audit message template or ITI-43 audit message template not specified in properties file, "
+							+ PropertiesFile);
+					throw new UnexpectedServerException("ITI-18 audit message template or ITI-43 audit message template not specified in properties file, "
+							+ PropertiesFile);
+				}
+
+				// TCP over SSL (secure) syslog
+				System.setProperty("javax.net.ssl.keyStore",
+						(props.getProperty("KeyStoreFile") == null) ? KeyStoreFile
+								: props.getProperty("KeyStoreFile"));
+				System.setProperty("javax.net.ssl.keyStorePassword",
+						(props.getProperty("KeyStorePwd") == null) ? KeyStorePwd
+								: props.getProperty("KeyStorePwd"));
+				System.setProperty("javax.net.ssl.trustStore",
+						(props.getProperty("KeyStoreFile") == null) ? KeyStoreFile
+								: props.getProperty("KeyStoreFile"));
+				System.setProperty("javax.net.ssl.trustStorePassword",
+						(props.getProperty("KeyStorePwd") == null) ? KeyStorePwd
+								: props.getProperty("KeyStorePwd"));
+				System.setProperty("https.cipherSuites",
+						(props.getProperty("CipherSuites") == null) ? CipherSuites
+								: props.getProperty("CipherSuites"));
+				System.setProperty("https.protocols",
+						(props.getProperty("HttpsProtocols") == null) ? HttpsProtocols
+								: props.getProperty("HttpsProtocols"));
+				
+				if (DebugSSL)
+				{
+					System.setProperty("javax.net.debug",
+							"ssl");
+				}
+
+				sysLogConfig = new SSLTCPNetSyslogConfig();
+				sysLogConfig.setHost(syslogServerHost);
+				sysLogConfig.setPort(syslogServerPort);
+				Syslog.createInstance("sslTcp",
+						sysLogConfig);
 			}
 		}
 		catch (IOException e)
@@ -246,6 +327,7 @@ public class XdsB
 
 	 /**
      * Load policy file from classpath.
+	 * @throws IOException 
 	 * @throws FileNotFoundException 
      */
 //    private static org.apache.neethi.Policy loadPolicy(String xmlPath)
@@ -287,6 +369,49 @@ public class XdsB
 //        return policy;
 //    }
 
+	private void logIti18AuditMsg(String userId,
+			String queryText,
+			String patientId) throws IOException
+	{
+		String logMsg = FileUtils.readFileToString(new File(Iti18AuditMsgTemplate));
+		
+		// Substitutions...
+		patientId = patientId.replace("'",
+				"");
+		patientId = patientId.replace("&",
+				"&amp;");
+		
+		DateTime now = new DateTime(DateTimeZone.UTC);
+		DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
+		logMsg = logMsg.replace("$DateTime$",
+				fmt.print(now));
+		
+		logMsg = logMsg.replace("$AltUserId$",
+				"IExHub");
+		
+		logMsg = logMsg.replace("$IexhubIpAddress$",
+				InetAddress.getLocalHost().getHostAddress());
+		
+		logMsg = logMsg.replace("$IexhubUserId$",
+				"http://" + InetAddress.getLocalHost().getCanonicalHostName());
+		
+		logMsg = logMsg.replace("$DestinationIpAddress$",
+				XdsB.registryEndpointURI);
+		
+		logMsg = logMsg.replace("$DestinationUserId$",
+				"IExHub");
+		
+		// Query text must be Base64 encoded...
+		logMsg = logMsg.replace("$RegistryQueryMtom$",
+				Base64.encodeBase64String(queryText.getBytes()));
+		
+		logMsg = logMsg.replace("$PatientId$",
+				patientId);
+		
+		// Log the syslog message
+		Syslog.getInstance("sslTcp").info(logMsg);
+	}
+	
 	public AdhocQueryResponse registryStoredQuery(String patientID,
 			String queryStartDate,
 			String queryEndDate) throws Exception
@@ -374,6 +499,13 @@ public class XdsB
 			responseOption.setReturnType(ReturnType_type0.LeafClass);
 			request.setResponseOption(responseOption);
 	
+			OMElement requestElement = request.getOMElement(AdhocQueryRequest.MY_QNAME,
+					soapFactory);
+			String queryText = requestElement.toString();
+			logIti18AuditMsg("IExHub",
+					queryText,
+					patientID);
+
 			return registryStub.documentRegistry_RegistryStoredQuery(request);
 		}
 		catch (Exception e)
