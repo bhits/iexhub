@@ -72,6 +72,28 @@
 		    </dependency>
         </dependencies>
       </plugin>
+	  <plugin>
+		<groupId>org.codehaus.mojo</groupId>
+		<artifactId>build-helper-maven-plugin</artifactId>
+		<version>1.10</version>
+		<executions>
+			<execution>
+				<phase>generate-sources</phase>
+				<goals><goal>add-source</goal></goals>
+				<configuration>
+					<sources>
+						<source>${basedir}/target/generated-sources</source>
+					</sources>
+				</configuration>
+			</execution>
+		</executions>
+	</plugin>
+	<plugin>
+	  <groupId>org.apache.axis2</groupId>
+	  <artifactId>axis2-mar-maven-plugin</artifactId>
+	  <version>1.6.2</version>
+	  <extensions>true</extensions>
+	</plugin>
     </plugins>
   </build>
   <dependencies>
