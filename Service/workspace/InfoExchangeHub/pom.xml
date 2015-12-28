@@ -16,11 +16,18 @@
 	      </snapshots>
 	  </repository>
 	
-	  <!--  CDA Tools Release - Contains 3rd party jars not available on other Maven repositories -->
+	  <!--  CDA Tools Release (Third Party) - Contains 3rd party jars not available on other Maven repositories -->
 	  <repository>
-	      <id>cdatoolsrelease</id>
-	      <name>cdatools.com-releases</name>
+	      <id>cdatoolsrelease-ext</id>
+	      <name>cdatools.com-releases-ext</name>
 	      <url>http://www.cdatools.com:8081/artifactory/ext-release-local</url>
+	  </repository>
+	  
+	  <!--  CDA Tools Release - Contains release dependencies -->
+	  <repository>
+	      <id>cdatoolsrelease-libs</id>
+	      <name>cdatools.com-releases-libs</name>
+	      <url>http://www.cdatools.com:8081/artifactory/libs-release-local</url>
 	  </repository>
 	
 	  <!--  CDA Snapshot, Contains the latest stable build of cda plugins (consol,hitsp,etc)-->
