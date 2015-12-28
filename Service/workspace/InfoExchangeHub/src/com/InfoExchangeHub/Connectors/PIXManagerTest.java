@@ -77,7 +77,8 @@ public class PIXManagerTest
 					"ALPHA",
 					null,
 					"12/8/1978",
-					"M");
+					"M",
+					"PIX");
 	
 //			assertTrue("Error - unexpected return value for RegisterPatient message",
 //					pixRegistrationResponse.toString());

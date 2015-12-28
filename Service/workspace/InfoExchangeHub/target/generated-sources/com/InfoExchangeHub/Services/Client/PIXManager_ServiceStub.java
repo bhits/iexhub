@@ -269,7 +269,7 @@ public class PIXManager_ServiceStub extends org.apache.axis2.client.Stub {
         return returnMap;
     }
 
-    private boolean optimizeContent(javax.xml.namespace.QName opName) {
+    public boolean optimizeContent(javax.xml.namespace.QName opName) {
         if (opNameArray == null) {
             return false;
         }

@@ -369,8 +369,7 @@ public class XdsB
 //        return policy;
 //    }
 
-	private void logIti18AuditMsg(String userId,
-			String queryText,
+	private void logIti18AuditMsg(String queryText,
 			String patientId) throws IOException
 	{
 		String logMsg = FileUtils.readFileToString(new File(Iti18AuditMsgTemplate));
@@ -411,7 +410,65 @@ public class XdsB
 		// Log the syslog message
 		Syslog.getInstance("sslTcp").info(logMsg);
 	}
-	
+
+	private void logIti43AuditMsg(String documentId,
+			String repositoryUniqueId,
+			String homeCommunityId,
+			String patientId) throws IOException
+	{
+		String logMsg = FileUtils.readFileToString(new File(Iti43AuditMsgTemplate));
+		
+		// Substitutions...
+		patientId = patientId.replace("'",
+				"");
+		patientId = patientId.replace("&",
+				"&amp;");
+		
+		DateTime now = new DateTime(DateTimeZone.UTC);
+		DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
+		logMsg = logMsg.replace("$DateTime$",
+				fmt.print(now));
+		
+		logMsg = logMsg.replace("$AltUserId$",
+				"IExHub");
+		
+		logMsg = logMsg.replace("$IexhubIpAddress$",
+				InetAddress.getLocalHost().getHostAddress());
+		
+		logMsg = logMsg.replace("$IexhubUserId$",
+				"http://" + InetAddress.getLocalHost().getCanonicalHostName());
+		
+		logMsg = logMsg.replace("$DestinationIpAddress$",
+				XdsB.registryEndpointURI);
+		
+		logMsg = logMsg.replace("$DestinationUserId$",
+				"IExHub");
+		
+		// Repository ID text must be Base64 encoded...
+		logMsg = logMsg.replace("$RepositoryIdMtom$",
+				Base64.encodeBase64String(repositoryUniqueId.getBytes()));
+		
+		logMsg = logMsg.replace("$PatientId$",
+				patientId);
+		
+		logMsg = logMsg.replace("$DocumentId$",
+				documentId);
+		
+		if (homeCommunityId != null)
+		{
+			logMsg = logMsg.replace("$HomeCommunityId$",
+					homeCommunityId);
+		}
+		else
+		{
+			logMsg = logMsg.replace("$HomeCommunityId$",
+					"");
+		}
+		
+		// Log the syslog message
+		Syslog.getInstance("sslTcp").info(logMsg);
+	}
+
 	public AdhocQueryResponse registryStoredQuery(String patientID,
 			String queryStartDate,
 			String queryEndDate) throws Exception
@@ -502,8 +559,7 @@ public class XdsB
 			OMElement requestElement = request.getOMElement(AdhocQueryRequest.MY_QNAME,
 					soapFactory);
 			String queryText = requestElement.toString();
-			logIti18AuditMsg("IExHub",
-					queryText,
+			logIti18AuditMsg(queryText,
 					patientID);
 
 			return registryStub.documentRegistry_RegistryStoredQuery(request);
@@ -515,7 +571,8 @@ public class XdsB
 	}
 	
 	public RetrieveDocumentSetResponse retrieveDocumentSet(String repositoryUniqueIdVal,
-			HashMap<String, String> documents) throws Exception
+			HashMap<String, String> documents,
+			String patientId) throws Exception
 	{
 		try
 		{
@@ -524,6 +581,7 @@ public class XdsB
 			
 			for (String documentId : documents.keySet())
 			{
+				com.InfoExchangeHub.Services.Client.DocumentRepository_ServiceStub.LongName homeCommunityId = null;
 				DocumentRequest_type0 documentRequest = new DocumentRequest_type0();
 				com.InfoExchangeHub.Services.Client.DocumentRepository_ServiceStub.LongName repositoryUniqueId = new com.InfoExchangeHub.Services.Client.DocumentRepository_ServiceStub.LongName();
 				repositoryUniqueId.setLongName(repositoryUniqueIdVal);
@@ -531,7 +589,7 @@ public class XdsB
 				
 				if (documents.get(documentId) != null)
 				{
-					com.InfoExchangeHub.Services.Client.DocumentRepository_ServiceStub.LongName homeCommunityId = new com.InfoExchangeHub.Services.Client.DocumentRepository_ServiceStub.LongName();
+					homeCommunityId = new com.InfoExchangeHub.Services.Client.DocumentRepository_ServiceStub.LongName();
 					homeCommunityId.setLongName(documents.get(documentId).toString());
 					documentRequest.setHomeCommunityId(homeCommunityId);
 				}
@@ -540,6 +598,11 @@ public class XdsB
 				documentUniqueId.setLongName(documentId);
 				documentRequest.setDocumentUniqueId(documentUniqueId);
 				documentSetRequestType.addDocumentRequest(documentRequest);
+				
+				logIti43AuditMsg(documentId,
+						repositoryUniqueId.getLongName(),
+						(homeCommunityId == null)? null : homeCommunityId.getLongName(),
+						patientId);
 			}
 			
 			documentSetRequest.setRetrieveDocumentSetRequest(documentSetRequestType);

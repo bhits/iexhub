@@ -46,8 +46,8 @@ public class RegisterPatientService
 				MultivaluedMap<String, String> headerParams = headers.getRequestHeaders();
 				String ssoAuth = headerParams.getFirst("ssoauth");
 				
-				// Extract patient ID, query start date, and query end date.  Expected format from the client is
-				//   "EnterpriseMasterRecordNumber={0}&LastName={1}&FirstName={2}&MiddleName={3}&DateOfBirth={4}&PatientGender={5}&MotherMaidenName={6}&StartDate={7}&EndDate={8}"
+				// Extract patient name, date of birth, gender, and ID info.  Expected format from the client is:
+				//   "EnterpriseMasterRecordNumber={0}&LastName={1}&FirstName={2}&MiddleName={3}&DateOfBirth={4}&PatientGender={5}"
 				String[] splitEMRN = ssoAuth.split("&LastName=");
 				String enterpriseMRN = (splitEMRN[0].split("=").length == 2) ? splitEMRN[0].split("=")[1] : null;
 				
@@ -63,7 +63,8 @@ public class RegisterPatientService
 						lastName,
 						middleName,
 						dateOfBirth,
-						gender);
+						gender,
+						enterpriseMRN);
 			}
 			catch (Exception e)
 			{

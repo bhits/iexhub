@@ -398,7 +398,7 @@ public class PIXManager_ServiceStub extends org.apache.axis2.client.Stub {
         return returnMap;
     }
 
-    private boolean optimizeContent(javax.xml.namespace.QName opName) {
+    public boolean optimizeContent(javax.xml.namespace.QName opName) {
         if (opNameArray == null) {
             return false;
         }
@@ -412,7 +412,7 @@ public class PIXManager_ServiceStub extends org.apache.axis2.client.Stub {
         return false;
     }
 
-    private org.apache.axiom.om.OMElement toOM(
+    public org.apache.axiom.om.OMElement toOM(
         PIXManager.src.org.hl7.v3.PRPAIN201309UV02 param, boolean optimizeContent,
         javax.xml.namespace.QName methodQName)
         throws org.apache.axis2.AxisFault {

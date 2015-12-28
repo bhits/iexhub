@@ -1,27 +1,51 @@
 package com.InfoExchangeHub.Connectors;
 
-import java.math.BigInteger;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.InetAddress;
 import java.rmi.RemoteException;
+import java.util.Properties;
 import java.util.UUID;
 
 import javax.xml.bind.JAXBElement;
 
 import org.apache.axiom.om.OMAbstractFactory;
+import org.apache.axiom.om.OMElement;
 import org.apache.axiom.soap.SOAPFactory;
 import org.apache.axis2.AxisFault;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
 import PIXManager.src.org.hl7.v3.*;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+import org.productivity.java.syslog4j.Syslog;
+import org.productivity.java.syslog4j.SyslogConfigIF;
+import org.productivity.java.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig;
 
 import com.InfoExchangeHub.Exceptions.*;
-
 import PIXManager.src.com.InfoExchangeHub.Services.Client.PIXManager_ServiceStub;
 
 public class PIXManager
 {
+    private static final String KeyStoreFile = "c:/temp/1264.jks";
+	private static final String KeyStorePwd = "IEXhub";
+	private static final String CipherSuites = "TLS_RSA_WITH_AES_128_CBC_SHA";
+	private static final String HttpsProtocols = "TLSv1";
+
+	private static boolean DebugSSL = false;
+	private static String Iti44AuditMsgTemplate = null;
+	private static String Iti45AuditMsgTemplate = null;
+	private static SyslogConfigIF sysLogConfig = null;
+	private static String PropertiesFile = "/temp/IExHub.properties";
+
+	private static String endpointURI = null;
+	
     /** Logger */
     public static Logger log = Logger.getLogger(PIXManager.class);
 
@@ -30,16 +54,100 @@ public class PIXManager
 	private static final String facilityName = "2.16.840.1.113883.3.72.6.1";
 	private static final String providerOrganizationName = "HIE Portal";
 	private static final String providerOrganizationContactTelecom = "555-555-5555";
-	private static final String organizationOID = "2.16.840.1.113883.3.72.5.9.1";
 	private static final String providerOrganizationOID = "1.2.840.114350.1.13.99998.8734";
 	private static final String queryIdOID = "1.2.840.114350.1.13.28.1.18.5.999";
 	private static final String dataSourceOID = "2.16.840.1.113883.3.72.5.9.3";
 	private static final SOAPFactory soapFactory = OMAbstractFactory.getSOAP12Factory();
 	private static PIXManager_ServiceStub pixManagerStub = null;
 	private static final ObjectFactory objectFactory = new ObjectFactory();
-	
+
+	private static String IExHubDomainOid = "2.16.840.1.113883.3.72.5.9.1";
+	private static String IExHubAssigningAuthority = "ISO";
+
 	public PIXManager(String endpointURI) throws AxisFault, Exception
 	{
+		Properties props = new Properties();
+		try
+		{
+			props.load(new FileInputStream(PropertiesFile));
+//			DebugSSL = Boolean.parseBoolean(props.getProperty("DebugSSL"));
+			
+			PIXManager.IExHubDomainOid = (props.getProperty("IExHubDomainOID") == null) ? PIXManager.IExHubDomainOid
+					: props.getProperty("IExHubDomainOID");
+			PIXManager.IExHubAssigningAuthority = (props.getProperty("IExHubAssigningAuthority") == null) ? PIXManager.IExHubAssigningAuthority
+					: props.getProperty("IExHubAssigningAuthority");
+			
+			// If endpoint URI's are null, then set to the values in the properties file...
+			if (endpointURI == null)
+			{
+				endpointURI = props.getProperty("PIXManagerEndpointURI");
+			}
+			
+			PIXManager.endpointURI = endpointURI;
+
+			// If Syslog server host is specified, then configure...
+			String syslogServerHost = props.getProperty("SyslogServerHost");
+			int syslogServerPort = (props.getProperty("SyslogServerPort") != null) ? Integer.parseInt(props.getProperty("SyslogServerPort"))
+					: -1;
+			if ((syslogServerHost != null) &&
+				(syslogServerPort > -1))
+			{
+				Iti44AuditMsgTemplate = props.getProperty("Iti44AuditMsgTemplate");
+				Iti45AuditMsgTemplate = props.getProperty("Iti45AuditMsgTemplate");
+				if ((Iti44AuditMsgTemplate == null) ||
+					(Iti45AuditMsgTemplate == null))
+				{
+					log.error("ITI-44 and/or ITI-45 audit message templates not specified in properties file, "
+							+ PropertiesFile);
+					throw new UnexpectedServerException("ITI-44 and/or ITI-45 audit message templates not specified in properties file, "
+							+ PropertiesFile);
+				}
+
+				// TCP over SSL (secure) syslog
+				System.setProperty("javax.net.ssl.keyStore",
+						(props.getProperty("KeyStoreFile") == null) ? KeyStoreFile
+								: props.getProperty("KeyStoreFile"));
+				System.setProperty("javax.net.ssl.keyStorePassword",
+						(props.getProperty("KeyStorePwd") == null) ? KeyStorePwd
+								: props.getProperty("KeyStorePwd"));
+				System.setProperty("javax.net.ssl.trustStore",
+						(props.getProperty("KeyStoreFile") == null) ? KeyStoreFile
+								: props.getProperty("KeyStoreFile"));
+				System.setProperty("javax.net.ssl.trustStorePassword",
+						(props.getProperty("KeyStorePwd") == null) ? KeyStorePwd
+								: props.getProperty("KeyStorePwd"));
+				System.setProperty("https.cipherSuites",
+						(props.getProperty("CipherSuites") == null) ? CipherSuites
+								: props.getProperty("CipherSuites"));
+				System.setProperty("https.protocols",
+						(props.getProperty("HttpsProtocols") == null) ? HttpsProtocols
+								: props.getProperty("HttpsProtocols"));
+				
+				if (DebugSSL)
+				{
+					System.setProperty("javax.net.debug",
+							"ssl");
+				}
+
+				sysLogConfig = new SSLTCPNetSyslogConfig();
+				sysLogConfig.setHost(syslogServerHost);
+				sysLogConfig.setPort(syslogServerPort);
+				Syslog.createInstance("sslTcp",
+						sysLogConfig);
+			}
+		}
+		catch (IOException e)
+		{
+			log.error("Error encountered loading properties file, "
+					+ PropertiesFile
+					+ ", "
+					+ e.getMessage());
+			throw new UnexpectedServerException("Error encountered loading properties file, "
+					+ PropertiesFile
+					+ ", "
+					+ e.getMessage());
+		}
+
 		try
 		{
 			// Instantiate PIXManager client stub and enable WS-Addressing...
@@ -54,10 +162,95 @@ public class PIXManager
 			throw e;
 		}
 	}
-	
+
+	private void logIti44AuditMsg(String patientId) throws IOException
+	{
+		String logMsg = FileUtils.readFileToString(new File(Iti44AuditMsgTemplate));
+		
+		// Substitutions...
+		patientId = patientId.replace("'",
+				"");
+		patientId = patientId.replace("&",
+				"&amp;");
+		
+		DateTime now = new DateTime(DateTimeZone.UTC);
+		DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
+		logMsg = logMsg.replace("$DateTime$",
+				fmt.print(now));
+		
+		logMsg = logMsg.replace("$AltUserId$",
+				"IExHub");
+		
+		logMsg = logMsg.replace("$IexhubIpAddress$",
+				InetAddress.getLocalHost().getHostAddress());
+		
+		logMsg = logMsg.replace("$IexhubUserId$",
+				"http://" + InetAddress.getLocalHost().getCanonicalHostName());
+		
+		logMsg = logMsg.replace("$DestinationIpAddress$",
+				PIXManager.endpointURI);
+		
+		logMsg = logMsg.replace("$DestinationUserId$",
+				"IExHub");
+		
+		logMsg = logMsg.replace("$PatientIdMtom$",
+				Base64.encodeBase64String(patientId.getBytes()));
+		
+		logMsg = logMsg.replace("$PatientId$",
+				patientId);
+		
+		// Log the syslog message
+		Syslog.getInstance("sslTcp").info(logMsg);
+	}
+
+	private void logIti45AuditMsg(String queryText,
+			String patientId) throws IOException
+	{
+		String logMsg = FileUtils.readFileToString(new File(Iti45AuditMsgTemplate));
+		
+		// Substitutions...
+		patientId = patientId.replace("'",
+				"");
+		patientId = patientId.replace("&",
+				"&amp;");
+		
+		DateTime now = new DateTime(DateTimeZone.UTC);
+		DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
+		logMsg = logMsg.replace("$DateTime$",
+				fmt.print(now));
+		
+		logMsg = logMsg.replace("$AltUserId$",
+				"IExHub");
+		
+		logMsg = logMsg.replace("$IexhubIpAddress$",
+				InetAddress.getLocalHost().getHostAddress());
+		
+		logMsg = logMsg.replace("$IexhubUserId$",
+				"http://" + InetAddress.getLocalHost().getCanonicalHostName());
+		
+		logMsg = logMsg.replace("$DestinationIpAddress$",
+				PIXManager.endpointURI);
+		
+		logMsg = logMsg.replace("$DestinationUserId$",
+				"IExHub");
+		
+		// Query text must be Base64 encoded...
+		logMsg = logMsg.replace("$PixQueryMtom$",
+				Base64.encodeBase64String(queryText.getBytes()));
+		
+		logMsg = logMsg.replace("$PatientIdMtom$",
+				Base64.encodeBase64String(patientId.getBytes()));
+		
+		logMsg = logMsg.replace("$PatientId$",
+				patientId);
+		
+		// Log the syslog message
+		Syslog.getInstance("sslTcp").info(logMsg);
+	}
+
 	public PRPAIN201310UV02 patientRegistryGetIdentifiers(String patientId,
 			String domainOID,
-			boolean populateDataSource) throws RemoteException
+			boolean populateDataSource) throws IOException
 	{
 		if ((patientId == null) ||
 			(patientId.length() == 0))
@@ -203,6 +396,16 @@ public class PIXManager
 
 		pRPA_IN201309UV02.setControlActProcess(controlAct);
 		
+		OMElement requestElement = pixManagerStub.toOM(pRPA_IN201309UV02, pixManagerStub.optimizeContent(
+                new javax.xml.namespace.QName("urn:hl7-org:v3",
+                    "PRPA_IN201301UV02")),
+                new javax.xml.namespace.QName("urn:hl7-org:v3",
+    				"PRPA_IN201309UV02"));
+		String queryText = requestElement.toString();
+		
+		logIti45AuditMsg(queryText,
+				patientId + "^^^&" + domainOID + "&" + "ISO");
+
 		return pixManagerStub.pIXManager_PRPA_IN201309UV02(pRPA_IN201309UV02);
 	}
 	
@@ -210,7 +413,8 @@ public class PIXManager
 			String familyName,
 			String middleName,
 			String dateOfBirth,
-			String gender) throws RemoteException
+			String gender,
+			String patientId) throws IOException
 	{
 		if ((familyName == null) ||
 			(familyName.length() == 0))
@@ -314,7 +518,7 @@ public class PIXManager
 		PRPAIN201301UV02MFMIMT700701UV01Subject1 subject = new PRPAIN201301UV02MFMIMT700701UV01Subject1();
 		
 		// Generate GUID portion of patient ID...
-		String guid = UUID.randomUUID().toString();
+//		String guid = UUID.randomUUID().toString();
 //		String patientID = guid + "^^^&" + organizationOID + "&ISO";
 		
 		// Create Registration Event...
@@ -331,11 +535,11 @@ public class PIXManager
 		// Create Patient...
 		PRPAMT201301UV02Patient patient = new PRPAMT201301UV02Patient();
 		patient.getClassCode().add("PAT");
-		II patientId = new II();
-		patientId.setRoot(organizationOID);
-		patientId.setAssigningAuthorityName("NIST2010");
-		patientId.setExtension("PIX");
-		patient.getId().add(patientId);
+		II constructedPatientId = new II();
+		constructedPatientId.setRoot(PIXManager.IExHubDomainOid);
+		constructedPatientId.setAssigningAuthorityName(PIXManager.IExHubAssigningAuthority);
+		constructedPatientId.setExtension(patientId);
+		patient.getId().add(constructedPatientId);
 		CS patientStatusCode = new CS();
 		patientStatusCode.setCode("active");
 		patient.setStatusCode(patientStatusCode);
@@ -422,7 +626,7 @@ public class PIXManager
 		COCTMT090003UV01AssignedEntity assignedEntity = new COCTMT090003UV01AssignedEntity();
 		assignedEntity.setClassCode("ASSIGNED");
 		II assignedEntityId = new II();
-		assignedEntityId.setRoot(organizationOID);
+		assignedEntityId.setRoot(IExHubDomainOid);
 		assignedEntity.getId().add(assignedEntityId);
 		COCTMT090003UV01Organization assignedOrganization = new COCTMT090003UV01Organization();
 		assignedOrganization.setDeterminerCode("INSTANCE");
@@ -449,6 +653,8 @@ public class PIXManager
 		controlAct.getSubject().add(subject);
 		
 		pRPA_IN201301UV02.setControlActProcess(controlAct);
+
+		logIti44AuditMsg(patientId + "^^^&" + PIXManager.IExHubDomainOid + "&" + PIXManager.IExHubAssigningAuthority);
 
 		return pixManagerStub.pIXManager_PRPA_IN201301UV02(pRPA_IN201301UV02);
 	}

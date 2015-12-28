@@ -270,7 +270,8 @@ public class GetPatientDataService
 					
 					log.info("Invoking XdsB repository connector retrieval...");
 					RetrieveDocumentSetResponse documentSetResponse = xdsB.retrieveDocumentSet(NistRepositoryId,
-							documents);
+							documents,
+							patientId);
 					log.info("XdsB repository connector retrieval succeeded");
 
 					// Invoke appropriate map(s) to process documents in documentSetResponse...

@@ -2,10 +2,12 @@ package com.InfoExchangeHub.Connectors;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -21,9 +23,16 @@ import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.soap.SOAPFactory;
 import org.apache.axis2.AxisFault;
 import org.apache.axis2.Constants;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+import org.productivity.java.syslog4j.Syslog;
+import org.productivity.java.syslog4j.SyslogConfigIF;
+import org.productivity.java.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -65,6 +74,10 @@ public class XdsBRepositoryManager
 	private static final String KeyStorePwd = "IEXhub";
 	private static final String CipherSuites = "TLS_RSA_WITH_AES_128_CBC_SHA";
 	private static final String HttpsProtocols = "TLSv1";
+
+	private static String Iti41AuditMsgTemplate = null;
+
+	private static SyslogConfigIF sysLogConfig = null;
 
 	private static final SOAPFactory soapFactory = OMAbstractFactory.getSOAP12Factory();
 	private static final ObjectFactory objectFactory = new ObjectFactory();
@@ -122,7 +135,18 @@ public class XdsBRepositoryManager
 
 	private static boolean DebugSSL = false;
 
+	private static String repositoryEndpointURI = null;
+
 //	private static final String DocumentClassCodesNodeRepresentation = "unobtainable";
+	
+	public static void setRepositoryEndpointURI(String repositoryEndpointURI)
+	{
+		if (repositoryStub != null)
+		{
+			repositoryStub._getServiceClient().getOptions().setTo(new org.apache.axis2.addressing.EndpointReference(repositoryEndpointURI));
+			XdsBRepositoryManager.repositoryEndpointURI = repositoryEndpointURI;
+		}
+	}
 
 	public XdsBRepositoryManager(String registryEndpointURI,
 			String repositoryEndpointURI) throws AxisFault, Exception
@@ -152,6 +176,57 @@ public class XdsBRepositoryManager
 			if (repositoryEndpointURI == null)
 			{
 				repositoryEndpointURI = props.getProperty("XdsBRepositoryEndpointURI");
+			}
+			
+			XdsBRepositoryManager.repositoryEndpointURI = repositoryEndpointURI;
+
+			// If Syslog server host is specified, then configure...
+			String syslogServerHost = props.getProperty("SyslogServerHost");
+			int syslogServerPort = (props.getProperty("SyslogServerPort") != null) ? Integer.parseInt(props.getProperty("SyslogServerPort"))
+					: -1;
+			if ((syslogServerHost != null) &&
+				(syslogServerPort > -1))
+			{
+				Iti41AuditMsgTemplate = props.getProperty("Iti41AuditMsgTemplate");
+				if (Iti41AuditMsgTemplate == null)
+				{
+					log.error("ITI-41 audit message template not specified in properties file, "
+							+ PropertiesFile);
+					throw new UnexpectedServerException("ITI-41 audit message template not specified in properties file, "
+							+ PropertiesFile);
+				}
+
+				// TCP over SSL (secure) syslog
+				System.setProperty("javax.net.ssl.keyStore",
+						(props.getProperty("KeyStoreFile") == null) ? KeyStoreFile
+								: props.getProperty("KeyStoreFile"));
+				System.setProperty("javax.net.ssl.keyStorePassword",
+						(props.getProperty("KeyStorePwd") == null) ? KeyStorePwd
+								: props.getProperty("KeyStorePwd"));
+				System.setProperty("javax.net.ssl.trustStore",
+						(props.getProperty("KeyStoreFile") == null) ? KeyStoreFile
+								: props.getProperty("KeyStoreFile"));
+				System.setProperty("javax.net.ssl.trustStorePassword",
+						(props.getProperty("KeyStorePwd") == null) ? KeyStorePwd
+								: props.getProperty("KeyStorePwd"));
+				System.setProperty("https.cipherSuites",
+						(props.getProperty("CipherSuites") == null) ? CipherSuites
+								: props.getProperty("CipherSuites"));
+				System.setProperty("https.protocols",
+						(props.getProperty("HttpsProtocols") == null) ? HttpsProtocols
+								: props.getProperty("HttpsProtocols"));
+				
+				if (DebugSSL)
+				{
+					System.setProperty("javax.net.debug",
+							"ssl");
+				}
+
+				sysLogConfig = new SSLTCPNetSyslogConfig();
+				sysLogConfig.setHost(syslogServerHost);
+				sysLogConfig.setPort(syslogServerPort);
+				Syslog.createInstance("sslTcp",
+						sysLogConfig);
 			}
 		}
 		catch (IOException e)
@@ -217,7 +292,48 @@ public class XdsBRepositoryManager
 			throw e;
 		}
 	}	
-	
+
+	private void logIti41AuditMsg(String submissionSetId,
+			String patientId) throws IOException
+	{
+		String logMsg = FileUtils.readFileToString(new File(Iti41AuditMsgTemplate));
+		
+		// Substitutions...
+		patientId = patientId.replace("'",
+				"");
+		patientId = patientId.replace("&",
+				"&amp;");
+		
+		DateTime now = new DateTime(DateTimeZone.UTC);
+		DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
+		logMsg = logMsg.replace("$DateTime$",
+				fmt.print(now));
+		
+		logMsg = logMsg.replace("$AltUserId$",
+				"IExHub");
+		
+		logMsg = logMsg.replace("$IexhubIpAddress$",
+				InetAddress.getLocalHost().getHostAddress());
+		
+		logMsg = logMsg.replace("$IexhubUserId$",
+				"http://" + InetAddress.getLocalHost().getCanonicalHostName());
+		
+		logMsg = logMsg.replace("$DestinationIpAddress$",
+				XdsBRepositoryManager.repositoryEndpointURI);
+		
+		logMsg = logMsg.replace("$DestinationUserId$",
+				"IExHub");
+		
+		logMsg = logMsg.replace("$PatientId$",
+				patientId);
+
+		logMsg = logMsg.replace("$SubmissionSetId$",
+				submissionSetId);
+
+		// Log the syslog message
+		Syslog.getInstance("sslTcp").info(logMsg);
+	}
+
 	public RegistryResponseType provideAndRegisterDocumentSet(byte[] cdaDocument,
 			String mimeType) throws Exception
 	{
@@ -1062,6 +1178,9 @@ public class XdsBRepositoryManager
 			documentForMessage.setId(documentId);
 			documentSetRequest.getDocument().add(documentForMessage);
 			
+			logIti41AuditMsg(submissionSetId,
+					patientId);
+
 			return repositoryStub.documentRepository_ProvideAndRegisterDocumentSetB(documentSetRequest);
 		}
 		catch (Exception e)

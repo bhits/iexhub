@@ -274,7 +274,8 @@ public class XdsBTest
 					documents.isEmpty());
 			
 			RetrieveDocumentSetResponse documentSetResponse = xdsB.retrieveDocumentSet(nistRepositoryId,
-					documents);
+					documents,
+					enterpriseMRN);
 			log.info("XDS.b document set query response in log message immediately following...");
 			OMElement requestElement = documentSetResponse.getOMElement(RetrieveDocumentSetResponse.MY_QNAME,
 					soapFactory);
@@ -361,7 +362,8 @@ public class XdsBTest
 					documents.isEmpty());
 			
 			RetrieveDocumentSetResponse documentSetResponse = xdsB.retrieveDocumentSet(nistRepositoryId,
-					documents);
+					documents,
+					enterpriseMRN);
 			log.info("XDS.b document set query response in log message immediately following...");
 			OMElement requestElement = documentSetResponse.getOMElement(RetrieveDocumentSetResponse.MY_QNAME,
 					soapFactory);
@@ -428,7 +430,8 @@ public class XdsBTest
 					documents.isEmpty());
 			
 			RetrieveDocumentSetResponse documentSetResponse = xdsB.retrieveDocumentSet(nistRepositoryId,
-					documents);
+					documents,
+					enterpriseMRN);
 			log.info("XDS.b document set query response in log message immediately following...");
 			OMElement requestElement = documentSetResponse.getOMElement(RetrieveDocumentSetResponse.MY_QNAME,
 					soapFactory);
