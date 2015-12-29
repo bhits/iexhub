@@ -50,7 +50,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import com.InfoExchangeHub.Connectors.PDQQueryManager;
 import com.InfoExchangeHub.Connectors.XdsB;
 import com.InfoExchangeHub.Exceptions.*;
 import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub.AdhocQueryResponse;
@@ -100,13 +99,9 @@ public class GetPatientDataService
 		}
 	}
 
-	private static boolean TestMode = false;
-	private static String PropertiesFile = "test/IExHub.properties";
-	private static String XdsBRegistryEndpointURI = "http://ihexds.nist.gov:80/tf6/services/xdsregistryb";
-	private static String XdsBRepositoryEndpointURI = "http://ihexds.nist.gov:80/tf6/services/xdsrepositoryb";
-	private static String PDQManagerEndpointURI = "http://129.6.24.79:9090";
-	
-	private static String NistRepositoryId = "1.19.6.24.109.42.1.5";
+	private static boolean testMode = false;
+	private static String propertiesFile = "test/IExHub.properties";
+	private static String repositoryUniqueId = "1.19.6.24.109.42.1.5";
 	
 	@GET
 	@Consumes({MediaType.APPLICATION_JSON})
@@ -118,20 +113,17 @@ public class GetPatientDataService
 		Properties props = new Properties();
 		try
 		{
-			props.load(new FileInputStream(PropertiesFile));
-			TestMode = Boolean.parseBoolean(props.getProperty("TestMode"));
-			XdsBRegistryEndpointURI = props.getProperty("XdsBRegistryEndpointURI");
-			XdsBRepositoryEndpointURI = props.getProperty("XdsBRepositoryEndpointURI");
-			PDQManagerEndpointURI = props.getProperty("PDQManagerEndpointURI");
+			props.load(new FileInputStream(propertiesFile));
+			testMode = Boolean.parseBoolean(props.getProperty("TestMode"));
 		}
 		catch (IOException e)
 		{
 			log.error("Error encountered loading properties file, "
-					+ PropertiesFile
+					+ propertiesFile
 					+ ", "
 					+ e.getMessage());
 			throw new UnexpectedServerException("Error encountered loading properties file, "
-					+ PropertiesFile
+					+ propertiesFile
 					+ ", "
 					+ e.getMessage());
 		}
@@ -139,10 +131,9 @@ public class GetPatientDataService
 		String retVal = "";
 		GetPatientDataResponse patientDataResponse = new GetPatientDataResponse();
 
-		if (!TestMode)
+		if (!testMode)
 		{
 			XdsB xdsB = null;
-			PDQQueryManager pdqQueryManager = null;
 			try
 			{
 				log.info("Instantiating XdsB connector...");
@@ -172,18 +163,28 @@ public class GetPatientDataService
 				String enterpriseMRN = (splitEMRN[0].split("=").length == 2) ? splitEMRN[0].split("=")[1] : null;
 				
 				String[] parts = splitEMRN[1].split("&");
-				String lastName = (parts[0].length() > 0) ? parts[0] : null;
-				String firstName = (parts[1].split("=").length == 2) ? parts[1].split("=")[1] : null;
-				String middleName = (parts[2].split("=").length == 2) ? parts[2].split("=")[1] : null;
-				String dateOfBirth = (parts[3].split("=").length == 2) ? parts[3].split("=")[1] : null;
-				String gender = (parts[4].split("=").length == 2) ? parts[4].split("=")[1] : null;
-				String motherMaidenName = (parts[5].split("=").length == 2) ? parts[5].split("=")[1] : null;
-				String addressStreet = (parts[6].split("=").length == 2) ? parts[6].split("=")[1] : null;
-				String addressCity = (parts[7].split("=").length == 2) ? parts[7].split("=")[1] : null;
-				String addressState = (parts[8].split("=").length == 2) ? parts[8].split("=")[1] : null;
-				String addressPostalCode = (parts[9].split("=").length == 2) ? parts[9].split("=")[1] : null;
+				parts[0].length();
+				parts[1].split("=");
+				parts[1].split("=");
+				parts[2].split("=");
+				parts[2].split("=");
+				parts[3].split("=");
+				parts[3].split("=");
+				parts[4].split("=");
+				parts[4].split("=");
+				parts[5].split("=");
+				parts[5].split("=");
+				parts[6].split("=");
+				parts[6].split("=");
+				parts[7].split("=");
+				parts[7].split("=");
+				parts[8].split("=");
+				parts[8].split("=");
+				parts[9].split("=");
+				parts[9].split("=");
 				String patientId = (parts[10].split("=").length == 2) ? parts[10].split("=")[1] : null;
-				String otherIDsScopingOrganization = (parts[11].split("=").length == 2) ? parts[11].split("=")[1] : null;
+				parts[11].split("=");
+				parts[11].split("=");
 				String startDate = (parts[12].split("=").length == 2) ? parts[12].split("=")[1] : null;
 				String endDate = (parts[13].split("=").length == 2) ? parts[13].split("=")[1] : null;
 
@@ -269,7 +270,7 @@ public class GetPatientDataService
 					}
 					
 					log.info("Invoking XdsB repository connector retrieval...");
-					RetrieveDocumentSetResponse documentSetResponse = xdsB.retrieveDocumentSet(NistRepositoryId,
+					RetrieveDocumentSetResponse documentSetResponse = xdsB.retrieveDocumentSet(repositoryUniqueId,
 							documents,
 							patientId);
 					log.info("XdsB repository connector retrieval succeeded");

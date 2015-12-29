@@ -1,12 +1,18 @@
 package com.InfoExchangeHub.Connectors;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.math.BigInteger;
+import java.net.InetAddress;
 import java.rmi.RemoteException;
+import java.util.Properties;
 import java.util.UUID;
 
-import org.apache.axiom.om.OMAbstractFactory;
-import org.apache.axiom.soap.SOAPFactory;
+import org.apache.axiom.om.OMElement;
 import org.apache.axis2.AxisFault;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
 import PDQSupplier.src.com.InfoExchangeHub.Services.Client.PDQSupplier_ServiceStub;
@@ -16,29 +22,115 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+import org.productivity.java.syslog4j.Syslog;
+import org.productivity.java.syslog4j.SyslogConfigIF;
+import org.productivity.java.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig;
+
+import com.InfoExchangeHub.Exceptions.UnexpectedServerException;
 
 public class PDQQueryManager
 {
-    /** Logger */
+    private static String keyStoreFile = "c:/temp/1264.jks";
+	private static String keyStorePwd = "IEXhub";
+	private static String cipherSuites = "TLS_RSA_WITH_AES_128_CBC_SHA";
+	private static String httpsProtocols = "TLSv1";
+	private static boolean debugSSL = false;
+
+	private static String iti47AuditMsgTemplate = null;
+	private static SyslogConfigIF sysLogConfig = null;
+	private static final String propertiesFile = "/temp/IExHub.properties";
+
+	/** Logger */
     public static Logger log = Logger.getLogger(PDQQueryManager.class);
 
     private final static ObjectFactory factory = new ObjectFactory();
-	private final static String receiverApplicationName = "2.16.840.1.113883.3.72.6.5.100.556";
-	private final static String receiverTelecomValue = "http://servicelocation/PDQuery";
-	private final static String facilityName = "2.16.840.1.113883.3.72.6.1";
-	private final static String providerOrganizationName = "HIE Portal";
-	private final static String providerOrganizationContactTelecom = "555-555-5555";
-	private final static String organizationOID = "2.16.840.1.113883.3.72.5.9.1";
-	private final static String providerOrganizationOID = "1.2.840.114350.1.13.99998.8734";
-	private final static String queryIdOID = "1.2.840.114350.1.13.28.1.18.5.999";
-	private final static String otherIDsScopingOrganizationOID = "2.16.840.1.113883.3.72.5.9.1";
-	private final static SOAPFactory soapFactory = OMAbstractFactory.getSOAP12Factory();
+
+    private static String receiverApplicationName = "2.16.840.1.113883.3.72.6.5.100.556";
+	private static String receiverTelecomValue = "http://servicelocation/PDQuery";
+	private static String queryIdOID = "1.2.840.114350.1.13.28.1.18.5.999";
+	private static String otherIDsScopingOrganizationOID = "2.16.840.1.113883.3.72.5.9.1";
+
 	private static PDQSupplier_ServiceStub pdqSupplierStub = null;
+	private static String endpointURI = null;
 	
 	public PDQQueryManager(String endpointURI) throws AxisFault, Exception
 	{
+		Properties props = new Properties();
 		try
 		{
+			props.load(new FileInputStream(propertiesFile));
+			
+			PDQQueryManager.keyStoreFile = (props.getProperty("PDQKeyStoreFile") == null) ? PDQQueryManager.keyStoreFile
+					: props.getProperty("PDQKeyStoreFile");
+			PDQQueryManager.keyStorePwd = (props.getProperty("PDQKeyStorePwd") == null) ? PDQQueryManager.keyStorePwd
+					: props.getProperty("PIXKeyStorePwd");
+			PDQQueryManager.cipherSuites = (props.getProperty("PIXCipherSuites") == null) ? PDQQueryManager.cipherSuites
+					: props.getProperty("PIXCipherSuites");
+			PDQQueryManager.httpsProtocols = (props.getProperty("PIXHttpsProtocols") == null) ? PDQQueryManager.httpsProtocols
+					: props.getProperty("PIXHttpsProtocols");
+			PDQQueryManager.debugSSL = (props.getProperty("DebugSSL") == null) ? PDQQueryManager.debugSSL
+					: Boolean.parseBoolean(props.getProperty("DebugSSL"));
+			PDQQueryManager.receiverApplicationName = (props.getProperty("PDQReceiverApplicationName") == null) ? PDQQueryManager.receiverApplicationName
+					: props.getProperty("PDQReceiverApplicationName");
+			PDQQueryManager.receiverTelecomValue = (props.getProperty("PDQReceiverTelecomValue") == null) ? PDQQueryManager.receiverTelecomValue
+					: props.getProperty("PDQReceiverTelecomValue");
+			PDQQueryManager.queryIdOID = (props.getProperty("PDQQueryIdOID") == null) ? PDQQueryManager.queryIdOID
+					: props.getProperty("PDQQueryIdOID");
+			PDQQueryManager.otherIDsScopingOrganizationOID = (props.getProperty("PDQOtherIDsScopingOrganizationOID") == null) ? PDQQueryManager.otherIDsScopingOrganizationOID
+					: props.getProperty("PDQOtherIDsScopingOrganizationOID");
+
+			// If endpoint URI's are null, then set to the values in the properties file...
+			if (endpointURI == null)
+			{
+				endpointURI = props.getProperty("PIXManagerEndpointURI");
+			}
+			
+			PDQQueryManager.endpointURI = endpointURI;
+
+			// If Syslog server host is specified, then configure...
+			String syslogServerHost = props.getProperty("SyslogServerHost");
+			int syslogServerPort = (props.getProperty("SyslogServerPort") != null) ? Integer.parseInt(props.getProperty("SyslogServerPort"))
+					: -1;
+			if ((syslogServerHost != null) &&
+				(syslogServerPort > -1))
+			{
+				iti47AuditMsgTemplate = props.getProperty("Iti47AuditMsgTemplate");
+				if (iti47AuditMsgTemplate == null)
+				{
+					log.error("ITI-47 audit message templates not specified in properties file, "
+							+ propertiesFile);
+					throw new UnexpectedServerException("ITI-47 audit message templates not specified in properties file, "
+							+ propertiesFile);
+				}
+
+				// TCP over SSL (secure) syslog
+				System.setProperty("javax.net.ssl.keyStore",
+						keyStoreFile);
+				System.setProperty("javax.net.ssl.keyStorePassword",
+						keyStorePwd);
+				System.setProperty("javax.net.ssl.trustStore",
+						keyStoreFile);
+				System.setProperty("javax.net.ssl.trustStorePassword",
+						keyStorePwd);
+				System.setProperty("https.cipherSuites",
+						cipherSuites);
+				System.setProperty("https.protocols",
+						httpsProtocols);
+				
+				if (debugSSL)
+				{
+					System.setProperty("javax.net.debug",
+							"ssl");
+				}
+
+				sysLogConfig = new SSLTCPNetSyslogConfig();
+				sysLogConfig.setHost(syslogServerHost);
+				sysLogConfig.setPort(syslogServerPort);
+				Syslog.createInstance("sslTcp",
+						sysLogConfig);
+			}
+
 			// Instantiate PDQSupplier client stub and enable WS-Addressing...
 			pdqSupplierStub = new PDQSupplier_ServiceStub(endpointURI);
 			pdqSupplierStub._getServiceClient().engageModule("addressing");
@@ -50,6 +142,50 @@ public class PDQQueryManager
 		{
 			throw e;
 		}
+	}
+
+	private void logIti47AuditMsg(String queryText,
+			String patientId) throws IOException
+	{
+		String logMsg = FileUtils.readFileToString(new File(iti47AuditMsgTemplate));
+		
+		// Substitutions...
+		patientId = patientId.replace("'",
+				"");
+		patientId = patientId.replace("&",
+				"&amp;");
+		
+		DateTime now = new DateTime(DateTimeZone.UTC);
+		DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
+		logMsg = logMsg.replace("$DateTime$",
+				fmt.print(now));
+		
+		logMsg = logMsg.replace("$AltUserId$",
+				"IExHub");
+		
+		logMsg = logMsg.replace("$IexhubIpAddress$",
+				InetAddress.getLocalHost().getHostAddress());
+		
+		logMsg = logMsg.replace("$IexhubUserId$",
+				"http://" + InetAddress.getLocalHost().getCanonicalHostName());
+		
+		logMsg = logMsg.replace("$DestinationIpAddress$",
+				PDQQueryManager.endpointURI );
+		
+		logMsg = logMsg.replace("$DestinationUserId$",
+				"IExHub");
+		
+		logMsg = logMsg.replace("$PatientIdMtom$",
+				Base64.encodeBase64String(patientId.getBytes()));
+
+		logMsg = logMsg.replace("$QueryByParameterMtom$",
+				Base64.encodeBase64String(queryText.getBytes()));
+
+		logMsg = logMsg.replace("$PatientId$",
+				patientId);
+		
+		// Log the syslog message
+		Syslog.getInstance("sslTcp").info(logMsg);
 	}
 
 	public PRPAIN201306UV02 queryPatientDemographics(String givenName,
@@ -64,7 +200,7 @@ public class PDQQueryManager
 			String addressPostalCode,
 			String patientId,
 			String patientIdDomain,
-			String otherIDsScopingOrganization) throws RemoteException
+			String otherIDsScopingOrganization) throws IOException
 	{
 		return queryPatientDemographics(givenName,
 			familyName,
@@ -270,7 +406,7 @@ public class PDQQueryManager
 			String patientId,
 			String patientIdDomain,
 			String otherIDsScopingOrganization,
-			int resultSetSize) throws RemoteException
+			int resultSetSize) throws IOException
 	{
 //		if ((familyName == null) ||
 //			(familyName.length() == 0))
@@ -429,6 +565,17 @@ public class PDQQueryManager
 		controlAct.setQueryByParameter(factory.createPRPAIN201305UV02QUQIMT021001UV01ControlActProcessQuerybyParameter(queryByParam));
 		
 		pRPA_IN201305UV02.setControlActProcess(controlAct);
+		
+		OMElement requestElement = pdqSupplierStub.toOM(pRPA_IN201305UV02, pdqSupplierStub.optimizeContent(
+                new javax.xml.namespace.QName("urn:hl7-org:v3",
+                    "PRPA_IN201305UV02")),
+                new javax.xml.namespace.QName("urn:hl7-org:v3",
+    				"PRPA_IN201305UV02"));
+		String queryText = requestElement.toString();
+
+		logIti47AuditMsg(queryText,
+				patientId + "^^^&" + patientIdDomain + "&" + "ISO");
+
 		return pdqSupplierStub.pDQSupplier_PRPA_IN201305UV02(pRPA_IN201305UV02);
 	}
 	
@@ -472,23 +619,6 @@ public class PDQQueryManager
 		pRPA_IN201305UV02.setCreationTime(creationTime);		
 	}
 
-	private void setReceiverQueryContinuation(PRPAIN201305UV02 pRPA_IN201305UV02)
-	{
-		MCCIMT000100UV01Receiver receiver = new MCCIMT000100UV01Receiver();
-		receiver.setTypeCode(CommunicationFunctionType.RCV);
-		MCCIMT000100UV01Device receiverDevice = new MCCIMT000100UV01Device();
-		receiverDevice.setClassCode(EntityClassDevice.DEV);
-		receiverDevice.setDeterminerCode("INSTANCE");
-		II receiverDeviceId = new II();
-		receiverDeviceId.setRoot(receiverApplicationName);
-		receiverDevice.getId().add(receiverDeviceId);
-		TEL receiverTelecom = new TEL();
-		receiverTelecom.setValue(receiverTelecomValue);
-		receiverDevice.getTelecom().add(receiverTelecom);
-		receiver.setDevice(receiverDevice);
-		pRPA_IN201305UV02.getReceiver().add(receiver);
-	}
-
 	private void setReceiverQueryContinuation(QUQIIN000003UV01Type qUQIIN000003UV01)
 	{
 		MCCIMT000300UV01Receiver receiver = new MCCIMT000300UV01Receiver();
@@ -502,30 +632,6 @@ public class PDQQueryManager
 		TEL receiverTelecom = new TEL();
 		receiverTelecom.setValue(receiverTelecomValue);
 		receiverDevice.getTelecom().add(receiverTelecom);
-		receiver.setDevice(receiverDevice);
-		qUQIIN000003UV01.getReceiver().add(receiver);
-	}
-
-	private void setReceiver(QUQIIN000003UV01Type qUQIIN000003UV01)
-	{
-		MCCIMT000300UV01Receiver receiver = new MCCIMT000300UV01Receiver();
-		receiver.setTypeCode(CommunicationFunctionType.RCV);
-		MCCIMT000300UV01Device receiverDevice = new MCCIMT000300UV01Device();
-		receiverDevice.setClassCode(EntityClassDevice.DEV);
-		receiverDevice.setDeterminerCode("INSTANCE");
-		II receiverDeviceId = new II();
-		receiverDeviceId.setRoot(receiverApplicationName);
-		receiverDevice.getId().add(receiverDeviceId);
-		MCCIMT000300UV01Agent asAgent = new MCCIMT000300UV01Agent();
-		asAgent.getClassCode().add("AGNT");
-		MCCIMT000300UV01Organization representedOrganization = new MCCIMT000300UV01Organization();
-		representedOrganization.setDeterminerCode("INSTANCE");
-		representedOrganization.setClassCode("ORG");
-		II representedOrganizationId = new II();
-		representedOrganizationId.setRoot("2.16.840.1.113883.3.72.6.1");
-		representedOrganization.getId().add(representedOrganizationId);
-		asAgent.setRepresentedOrganization(factory.createMCCIMT000300UV01AgentRepresentedOrganization(representedOrganization));
-		receiverDevice.setAsAgent(factory.createMCCIMT000300UV01DeviceAsAgent(asAgent));
 		receiver.setDevice(receiverDevice);
 		qUQIIN000003UV01.getReceiver().add(receiver);
 	}
@@ -568,30 +674,6 @@ public class PDQQueryManager
 		qUQIIN000003UV01.setSender(sender);		
 	}
 
-	private void setSender(QUQIIN000003UV01Type qUQIIN000003UV01)
-	{
-		MCCIMT000300UV01Sender sender = new MCCIMT000300UV01Sender();
-		sender.setTypeCode(CommunicationFunctionType.SND);
-		MCCIMT000300UV01Device senderDevice = new MCCIMT000300UV01Device();
-		senderDevice.setClassCode(EntityClassDevice.DEV);
-		senderDevice.setDeterminerCode("INSTANCE");
-		II senderDeviceId = new II();
-		senderDeviceId.setRoot("1.2.840.114350.1.13.99998.8734");
-		senderDevice.getId().add(senderDeviceId);
-		MCCIMT000300UV01Agent senderAsAgent = new MCCIMT000300UV01Agent();
-		senderAsAgent.getClassCode().add("AGNT");
-		MCCIMT000300UV01Organization senderRepresentedOrganization = new MCCIMT000300UV01Organization();
-		senderRepresentedOrganization.setDeterminerCode("INSTANCE");
-		senderRepresentedOrganization.setClassCode("ORG");
-		II senderRepresentedOrganizationId = new II();
-		senderRepresentedOrganizationId.setRoot("1.2.840.114350.1.13");
-		senderRepresentedOrganization.getId().add(senderRepresentedOrganizationId);
-		senderAsAgent.setRepresentedOrganization(factory.createMCCIMT000300UV01AgentRepresentedOrganization(senderRepresentedOrganization));
-		senderDevice.setAsAgent(factory.createMCCIMT000300UV01DeviceAsAgent(senderAsAgent));
-		sender.setDevice(senderDevice);
-		qUQIIN000003UV01.setSender(sender);		
-	}
-	
 	private void setSender(PRPAIN201305UV02 pRPA_IN201305UV02)
 	{
 		MCCIMT000100UV01Sender sender = new MCCIMT000100UV01Sender();

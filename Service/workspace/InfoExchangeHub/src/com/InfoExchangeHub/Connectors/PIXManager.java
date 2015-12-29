@@ -4,15 +4,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.rmi.RemoteException;
 import java.util.Properties;
 import java.util.UUID;
 
 import javax.xml.bind.JAXBElement;
 
-import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMElement;
-import org.apache.axiom.soap.SOAPFactory;
 import org.apache.axis2.AxisFault;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
@@ -29,52 +26,70 @@ import org.productivity.java.syslog4j.SyslogConfigIF;
 import org.productivity.java.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig;
 
 import com.InfoExchangeHub.Exceptions.*;
+
 import PIXManager.src.com.InfoExchangeHub.Services.Client.PIXManager_ServiceStub;
 
 public class PIXManager
 {
-    private static final String KeyStoreFile = "c:/temp/1264.jks";
-	private static final String KeyStorePwd = "IEXhub";
-	private static final String CipherSuites = "TLS_RSA_WITH_AES_128_CBC_SHA";
-	private static final String HttpsProtocols = "TLSv1";
+    private static String keyStoreFile = "c:/temp/1264.jks";
+	private static String keyStorePwd = "IEXhub";
+	private static String cipherSuites = "TLS_RSA_WITH_AES_128_CBC_SHA";
+	private static String httpsProtocols = "TLSv1";
+	private static boolean debugSSL = false;
 
-	private static boolean DebugSSL = false;
-	private static String Iti44AuditMsgTemplate = null;
-	private static String Iti45AuditMsgTemplate = null;
+	private static String iti44AuditMsgTemplate = null;
+	private static String iti45AuditMsgTemplate = null;
 	private static SyslogConfigIF sysLogConfig = null;
-	private static String PropertiesFile = "/temp/IExHub.properties";
-
-	private static String endpointURI = null;
+	private static final String propertiesFile = "/temp/IExHub.properties";
 	
     /** Logger */
     public static Logger log = Logger.getLogger(PIXManager.class);
 
-    private static final String receiverApplicationName = "2.16.840.1.113883.3.72.6.5.100.556";
-	private static final String receiverTelecomValue = "https://example.org/PIXQuery";
-	private static final String facilityName = "2.16.840.1.113883.3.72.6.1";
-	private static final String providerOrganizationName = "HIE Portal";
-	private static final String providerOrganizationContactTelecom = "555-555-5555";
-	private static final String providerOrganizationOID = "1.2.840.114350.1.13.99998.8734";
-	private static final String queryIdOID = "1.2.840.114350.1.13.28.1.18.5.999";
-	private static final String dataSourceOID = "2.16.840.1.113883.3.72.5.9.3";
-	private static final SOAPFactory soapFactory = OMAbstractFactory.getSOAP12Factory();
+	private static String endpointURI = null;
+    private static String receiverApplicationName = "2.16.840.1.113883.3.72.6.5.100.556";
+	private static String providerOrganizationName = "HIE Portal";
+	private static String providerOrganizationContactTelecom = "555-555-5555";
+	private static String providerOrganizationOID = "1.2.840.114350.1.13.99998.8734";
+	private static String queryIdOID = "1.2.840.114350.1.13.28.1.18.5.999";
+	private static String dataSourceOID = "2.16.840.1.113883.3.72.5.9.3";
+	private static String iExHubDomainOid = "2.16.840.1.113883.3.72.5.9.1";
+	private static String iExHubAssigningAuthority = "ISO";
+
 	private static PIXManager_ServiceStub pixManagerStub = null;
 	private static final ObjectFactory objectFactory = new ObjectFactory();
-
-	private static String IExHubDomainOid = "2.16.840.1.113883.3.72.5.9.1";
-	private static String IExHubAssigningAuthority = "ISO";
 
 	public PIXManager(String endpointURI) throws AxisFault, Exception
 	{
 		Properties props = new Properties();
 		try
 		{
-			props.load(new FileInputStream(PropertiesFile));
-//			DebugSSL = Boolean.parseBoolean(props.getProperty("DebugSSL"));
+			props.load(new FileInputStream(propertiesFile));
 			
-			PIXManager.IExHubDomainOid = (props.getProperty("IExHubDomainOID") == null) ? PIXManager.IExHubDomainOid
+			PIXManager.keyStoreFile = (props.getProperty("PIXKeyStoreFile") == null) ? PIXManager.keyStoreFile
+					: props.getProperty("PIXKeyStoreFile");
+			PIXManager.keyStorePwd = (props.getProperty("PIXKeyStorePwd") == null) ? PIXManager.keyStorePwd
+					: props.getProperty("PIXKeyStorePwd");
+			PIXManager.cipherSuites = (props.getProperty("PIXCipherSuites") == null) ? PIXManager.cipherSuites
+					: props.getProperty("PIXCipherSuites");
+			PIXManager.httpsProtocols = (props.getProperty("PIXHttpsProtocols") == null) ? PIXManager.httpsProtocols
+					: props.getProperty("PIXHttpsProtocols");
+			PIXManager.debugSSL = (props.getProperty("DebugSSL") == null) ? PIXManager.debugSSL
+					: Boolean.parseBoolean(props.getProperty("DebugSSL"));
+			PIXManager.receiverApplicationName = (props.getProperty("PIXReceiverApplicationName") == null) ? PIXManager.receiverApplicationName
+					: props.getProperty("PIXReceiverApplicationName");
+			PIXManager.providerOrganizationName = (props.getProperty("PIXProviderOrganizationName") == null) ? PIXManager.providerOrganizationName
+					: props.getProperty("PIXProviderOrganizationName");
+			PIXManager.providerOrganizationContactTelecom = (props.getProperty("PIXProviderOrganizationContactTelecom") == null) ? PIXManager.providerOrganizationContactTelecom
+					: props.getProperty("PIXProviderOrganizationContactTelecom");
+			PIXManager.providerOrganizationOID = (props.getProperty("PIXProviderOrganizationOID") == null) ? PIXManager.providerOrganizationOID
+					: props.getProperty("PIXProviderOrganizationOID");
+			PIXManager.queryIdOID = (props.getProperty("PIXQueryIdOID") == null) ? PIXManager.queryIdOID
+					: props.getProperty("PIXQueryIdOID");
+			PIXManager.dataSourceOID = (props.getProperty("PIXDataSourceOID") == null) ? PIXManager.dataSourceOID
+					: props.getProperty("PIXDataSourceOID");
+			PIXManager.iExHubDomainOid = (props.getProperty("IExHubDomainOID") == null) ? PIXManager.iExHubDomainOid
 					: props.getProperty("IExHubDomainOID");
-			PIXManager.IExHubAssigningAuthority = (props.getProperty("IExHubAssigningAuthority") == null) ? PIXManager.IExHubAssigningAuthority
+			PIXManager.iExHubAssigningAuthority = (props.getProperty("IExHubAssigningAuthority") == null) ? PIXManager.iExHubAssigningAuthority
 					: props.getProperty("IExHubAssigningAuthority");
 			
 			// If endpoint URI's are null, then set to the values in the properties file...
@@ -92,38 +107,32 @@ public class PIXManager
 			if ((syslogServerHost != null) &&
 				(syslogServerPort > -1))
 			{
-				Iti44AuditMsgTemplate = props.getProperty("Iti44AuditMsgTemplate");
-				Iti45AuditMsgTemplate = props.getProperty("Iti45AuditMsgTemplate");
-				if ((Iti44AuditMsgTemplate == null) ||
-					(Iti45AuditMsgTemplate == null))
+				iti44AuditMsgTemplate = props.getProperty("Iti44AuditMsgTemplate");
+				iti45AuditMsgTemplate = props.getProperty("Iti45AuditMsgTemplate");
+				if ((iti44AuditMsgTemplate == null) ||
+					(iti45AuditMsgTemplate == null))
 				{
 					log.error("ITI-44 and/or ITI-45 audit message templates not specified in properties file, "
-							+ PropertiesFile);
+							+ propertiesFile);
 					throw new UnexpectedServerException("ITI-44 and/or ITI-45 audit message templates not specified in properties file, "
-							+ PropertiesFile);
+							+ propertiesFile);
 				}
 
 				// TCP over SSL (secure) syslog
 				System.setProperty("javax.net.ssl.keyStore",
-						(props.getProperty("KeyStoreFile") == null) ? KeyStoreFile
-								: props.getProperty("KeyStoreFile"));
+						keyStoreFile);
 				System.setProperty("javax.net.ssl.keyStorePassword",
-						(props.getProperty("KeyStorePwd") == null) ? KeyStorePwd
-								: props.getProperty("KeyStorePwd"));
+						keyStorePwd);
 				System.setProperty("javax.net.ssl.trustStore",
-						(props.getProperty("KeyStoreFile") == null) ? KeyStoreFile
-								: props.getProperty("KeyStoreFile"));
+						keyStoreFile);
 				System.setProperty("javax.net.ssl.trustStorePassword",
-						(props.getProperty("KeyStorePwd") == null) ? KeyStorePwd
-								: props.getProperty("KeyStorePwd"));
+						keyStorePwd);
 				System.setProperty("https.cipherSuites",
-						(props.getProperty("CipherSuites") == null) ? CipherSuites
-								: props.getProperty("CipherSuites"));
+						cipherSuites);
 				System.setProperty("https.protocols",
-						(props.getProperty("HttpsProtocols") == null) ? HttpsProtocols
-								: props.getProperty("HttpsProtocols"));
+						httpsProtocols);
 				
-				if (DebugSSL)
+				if (debugSSL)
 				{
 					System.setProperty("javax.net.debug",
 							"ssl");
@@ -139,11 +148,11 @@ public class PIXManager
 		catch (IOException e)
 		{
 			log.error("Error encountered loading properties file, "
-					+ PropertiesFile
+					+ propertiesFile
 					+ ", "
 					+ e.getMessage());
 			throw new UnexpectedServerException("Error encountered loading properties file, "
-					+ PropertiesFile
+					+ propertiesFile
 					+ ", "
 					+ e.getMessage());
 		}
@@ -165,7 +174,7 @@ public class PIXManager
 
 	private void logIti44AuditMsg(String patientId) throws IOException
 	{
-		String logMsg = FileUtils.readFileToString(new File(Iti44AuditMsgTemplate));
+		String logMsg = FileUtils.readFileToString(new File(iti44AuditMsgTemplate));
 		
 		// Substitutions...
 		patientId = patientId.replace("'",
@@ -206,7 +215,7 @@ public class PIXManager
 	private void logIti45AuditMsg(String queryText,
 			String patientId) throws IOException
 	{
-		String logMsg = FileUtils.readFileToString(new File(Iti45AuditMsgTemplate));
+		String logMsg = FileUtils.readFileToString(new File(iti45AuditMsgTemplate));
 		
 		// Substitutions...
 		patientId = patientId.replace("'",
@@ -536,8 +545,8 @@ public class PIXManager
 		PRPAMT201301UV02Patient patient = new PRPAMT201301UV02Patient();
 		patient.getClassCode().add("PAT");
 		II constructedPatientId = new II();
-		constructedPatientId.setRoot(PIXManager.IExHubDomainOid);
-		constructedPatientId.setAssigningAuthorityName(PIXManager.IExHubAssigningAuthority);
+		constructedPatientId.setRoot(PIXManager.iExHubDomainOid);
+		constructedPatientId.setAssigningAuthorityName(PIXManager.iExHubAssigningAuthority);
 		constructedPatientId.setExtension(patientId);
 		patient.getId().add(constructedPatientId);
 		CS patientStatusCode = new CS();
@@ -626,7 +635,7 @@ public class PIXManager
 		COCTMT090003UV01AssignedEntity assignedEntity = new COCTMT090003UV01AssignedEntity();
 		assignedEntity.setClassCode("ASSIGNED");
 		II assignedEntityId = new II();
-		assignedEntityId.setRoot(IExHubDomainOid);
+		assignedEntityId.setRoot(iExHubDomainOid);
 		assignedEntity.getId().add(assignedEntityId);
 		COCTMT090003UV01Organization assignedOrganization = new COCTMT090003UV01Organization();
 		assignedOrganization.setDeterminerCode("INSTANCE");
@@ -654,7 +663,7 @@ public class PIXManager
 		
 		pRPA_IN201301UV02.setControlActProcess(controlAct);
 
-		logIti44AuditMsg(patientId + "^^^&" + PIXManager.IExHubDomainOid + "&" + PIXManager.IExHubAssigningAuthority);
+		logIti44AuditMsg(patientId + "^^^&" + PIXManager.iExHubDomainOid + "&" + PIXManager.iExHubAssigningAuthority);
 
 		return pixManagerStub.pIXManager_PRPA_IN201301UV02(pRPA_IN201301UV02);
 	}

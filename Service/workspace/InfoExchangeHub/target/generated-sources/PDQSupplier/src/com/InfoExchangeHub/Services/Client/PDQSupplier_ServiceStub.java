@@ -526,7 +526,7 @@ public class PDQSupplier_ServiceStub extends org.apache.axis2.client.Stub {
         return returnMap;
     }
 
-    private boolean optimizeContent(javax.xml.namespace.QName opName) {
+    public boolean optimizeContent(javax.xml.namespace.QName opName) {
         if (opNameArray == null) {
             return false;
         }
@@ -658,7 +658,7 @@ public class PDQSupplier_ServiceStub extends org.apache.axis2.client.Stub {
         return envelope;
     }
 
-    private org.apache.axiom.om.OMElement toOM(
+    public org.apache.axiom.om.OMElement toOM(
         PDQSupplier.src.org.hl7.v3.PRPAIN201305UV02 param,
         boolean optimizeContent, javax.xml.namespace.QName methodQName)
         throws org.apache.axis2.AxisFault {

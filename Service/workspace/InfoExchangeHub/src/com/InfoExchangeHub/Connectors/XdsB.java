@@ -57,30 +57,31 @@ import com.InfoExchangeHub.Services.Client.DocumentRepository_ServiceStub.Retrie
  */
 public class XdsB
 {
-    private static final String KeyStoreFile = "c:/temp/1264.jks";
-	private static final String KeyStorePwd = "IEXhub";
-	private static final String CipherSuites = "TLS_RSA_WITH_AES_128_CBC_SHA";
-	private static final String HttpsProtocols = "TLSv1";
+    private static String keyStoreFile = "c:/temp/1264.jks";
+	private static String keyStorePwd = "IEXhub";
+	private static String cipherSuites = "TLS_RSA_WITH_AES_128_CBC_SHA";
+	private static String httpsProtocols = "TLSv1";
 
-	private static String Iti18AuditMsgTemplate = null;
-	private static String Iti43AuditMsgTemplate = null;
+	private static String iti18AuditMsgTemplate = null;
+	private static String iti43AuditMsgTemplate = null;
 
 	private static SyslogConfigIF sysLogConfig = null;
 	
 	/** Logger */
     public static Logger log = Logger.getLogger(XdsB.class);
 
-	private static String PropertiesFile = "/temp/IExHub.properties";
+	private static final String propertiesFile = "/temp/IExHub.properties";
 
     private static DocumentRegistry_ServiceStub registryStub = null;
 	private static DocumentRepository_ServiceStub repositoryStub = null;
 
 	private static final SOAPFactory soapFactory = OMAbstractFactory.getSOAP12Factory();
 
-	private static boolean DebugSSL = false;
+	private static boolean debugSSL = false;
 
 	private static String registryEndpointURI = null;
 	private static String repositoryEndpointURI = null;
+	private static boolean testMode = false;
 	
 	public static void setRegistryEndpointURI(String registryEndpointURI)
 	{
@@ -115,8 +116,20 @@ public class XdsB
 		Properties props = new Properties();
 		try
 		{
-			props.load(new FileInputStream(PropertiesFile));
-			DebugSSL = Boolean.parseBoolean(props.getProperty("DebugSSL"));
+			props.load(new FileInputStream(propertiesFile));
+			
+			XdsB.debugSSL = (props.getProperty("DebugSSL") == null) ? XdsB.debugSSL
+					: Boolean.parseBoolean(props.getProperty("DebugSSL"));
+			XdsB.testMode  = (props.getProperty("TestMode") == null) ? XdsB.testMode
+					: Boolean.parseBoolean(props.getProperty("TestMode"));
+			XdsB.keyStoreFile = (props.getProperty("XdsBKeyStoreFile") == null) ? XdsB.keyStoreFile
+					: props.getProperty("XdsBKeyStoreFile");
+			XdsB.keyStorePwd = (props.getProperty("XdsBKeyStorePwd") == null) ? XdsB.keyStorePwd
+					: props.getProperty("XdsBKeyStorePwd");
+			XdsB.cipherSuites = (props.getProperty("XdsBCipherSuites") == null) ? XdsB.cipherSuites
+					: props.getProperty("XdsBCipherSuites");
+			XdsB.httpsProtocols = (props.getProperty("XdsBHttpsProtocols") == null) ? XdsB.httpsProtocols
+					: props.getProperty("XdsBHttpsProtocols");
 			
 			// If endpoint URI's are null, then set to the values in the properties file...
 			if (registryEndpointURI == null)
@@ -139,38 +152,32 @@ public class XdsB
 			if ((syslogServerHost != null) &&
 				(syslogServerPort > -1))
 			{
-				Iti18AuditMsgTemplate = props.getProperty("Iti18AuditMsgTemplate");
-				Iti43AuditMsgTemplate = props.getProperty("Iti43AuditMsgTemplate");
-				if ((Iti18AuditMsgTemplate == null) ||
-					(Iti43AuditMsgTemplate == null))
+				iti18AuditMsgTemplate = props.getProperty("Iti18AuditMsgTemplate");
+				iti43AuditMsgTemplate = props.getProperty("Iti43AuditMsgTemplate");
+				if ((iti18AuditMsgTemplate == null) ||
+					(iti43AuditMsgTemplate == null))
 				{
 					log.error("ITI-18 audit message template or ITI-43 audit message template not specified in properties file, "
-							+ PropertiesFile);
+							+ propertiesFile);
 					throw new UnexpectedServerException("ITI-18 audit message template or ITI-43 audit message template not specified in properties file, "
-							+ PropertiesFile);
+							+ propertiesFile);
 				}
 
 				// TCP over SSL (secure) syslog
 				System.setProperty("javax.net.ssl.keyStore",
-						(props.getProperty("KeyStoreFile") == null) ? KeyStoreFile
-								: props.getProperty("KeyStoreFile"));
+						keyStoreFile);
 				System.setProperty("javax.net.ssl.keyStorePassword",
-						(props.getProperty("KeyStorePwd") == null) ? KeyStorePwd
-								: props.getProperty("KeyStorePwd"));
+						keyStorePwd);
 				System.setProperty("javax.net.ssl.trustStore",
-						(props.getProperty("KeyStoreFile") == null) ? KeyStoreFile
-								: props.getProperty("KeyStoreFile"));
+						keyStoreFile);
 				System.setProperty("javax.net.ssl.trustStorePassword",
-						(props.getProperty("KeyStorePwd") == null) ? KeyStorePwd
-								: props.getProperty("KeyStorePwd"));
+						keyStorePwd);
 				System.setProperty("https.cipherSuites",
-						(props.getProperty("CipherSuites") == null) ? CipherSuites
-								: props.getProperty("CipherSuites"));
+						cipherSuites);
 				System.setProperty("https.protocols",
-						(props.getProperty("HttpsProtocols") == null) ? HttpsProtocols
-								: props.getProperty("HttpsProtocols"));
+						httpsProtocols);
 				
-				if (DebugSSL)
+				if (debugSSL)
 				{
 					System.setProperty("javax.net.debug",
 							"ssl");
@@ -186,11 +193,11 @@ public class XdsB
 		catch (IOException e)
 		{
 			log.error("Error encountered loading properties file, "
-					+ PropertiesFile
+					+ propertiesFile
 					+ ", "
 					+ e.getMessage());
 			throw new UnexpectedServerException("Error encountered loading properties file, "
-					+ PropertiesFile
+					+ propertiesFile
 					+ ", "
 					+ e.getMessage());
 		}
@@ -248,25 +255,19 @@ public class XdsB
 //					registryStub._getServiceClient().getAxisService().getPolicySubject().attachPolicy(loadPolicy("c:/temp/policy.xml"));
 
 					System.setProperty("javax.net.ssl.keyStore",
-							(props.getProperty("KeyStoreFile") == null) ? KeyStoreFile
-									: props.getProperty("KeyStoreFile"));
+							keyStoreFile);
 					System.setProperty("javax.net.ssl.keyStorePassword",
-							(props.getProperty("KeyStorePwd") == null) ? KeyStorePwd
-									: props.getProperty("KeyStorePwd"));
+							keyStorePwd);
 					System.setProperty("javax.net.ssl.trustStore",
-							(props.getProperty("KeyStoreFile") == null) ? KeyStoreFile
-									: props.getProperty("KeyStoreFile"));
+							keyStoreFile);
 					System.setProperty("javax.net.ssl.trustStorePassword",
-							(props.getProperty("KeyStorePwd") == null) ? KeyStorePwd
-									: props.getProperty("KeyStorePwd"));
+							keyStorePwd);
 					System.setProperty("https.cipherSuites",
-							(props.getProperty("CipherSuites") == null) ? CipherSuites
-									: props.getProperty("CipherSuites"));
+							cipherSuites);
 					System.setProperty("https.protocols",
-							(props.getProperty("HttpsProtocols") == null) ? HttpsProtocols
-									: props.getProperty("HttpsProtocols"));
+							httpsProtocols);
 					
-					if (DebugSSL)
+					if (debugSSL)
 					{
 						System.setProperty("javax.net.debug",
 								"ssl");
@@ -286,25 +287,19 @@ public class XdsB
 				if (enableTLS)
 				{
 					System.setProperty("javax.net.ssl.keyStore",
-							(props.getProperty("KeyStoreFile") == null) ? KeyStoreFile
-									: props.getProperty("KeyStoreFile"));
+							keyStoreFile);
 					System.setProperty("javax.net.ssl.keyStorePassword",
-							(props.getProperty("KeyStorePwd") == null) ? KeyStorePwd
-									: props.getProperty("KeyStorePwd"));
+							keyStorePwd);
 					System.setProperty("javax.net.ssl.trustStore",
-							(props.getProperty("KeyStoreFile") == null) ? KeyStoreFile
-									: props.getProperty("KeyStoreFile"));
+							keyStoreFile);
 					System.setProperty("javax.net.ssl.trustStorePassword",
-							(props.getProperty("KeyStorePwd") == null) ? KeyStorePwd
-									: props.getProperty("KeyStorePwd"));
+							keyStorePwd);
 					System.setProperty("https.cipherSuites",
-							(props.getProperty("CipherSuites") == null) ? CipherSuites
-									: props.getProperty("CipherSuites"));
+							cipherSuites);
 					System.setProperty("https.protocols",
-							(props.getProperty("HttpsProtocols") == null) ? HttpsProtocols
-									: props.getProperty("HttpsProtocols"));
+							httpsProtocols);
 					
-					if (DebugSSL)
+					if (debugSSL)
 					{
 						System.setProperty("javax.net.debug",
 								"ssl");
@@ -372,7 +367,7 @@ public class XdsB
 	private void logIti18AuditMsg(String queryText,
 			String patientId) throws IOException
 	{
-		String logMsg = FileUtils.readFileToString(new File(Iti18AuditMsgTemplate));
+		String logMsg = FileUtils.readFileToString(new File(iti18AuditMsgTemplate));
 		
 		// Substitutions...
 		patientId = patientId.replace("'",
@@ -416,7 +411,7 @@ public class XdsB
 			String homeCommunityId,
 			String patientId) throws IOException
 	{
-		String logMsg = FileUtils.readFileToString(new File(Iti43AuditMsgTemplate));
+		String logMsg = FileUtils.readFileToString(new File(iti43AuditMsgTemplate));
 		
 		// Substitutions...
 		patientId = patientId.replace("'",

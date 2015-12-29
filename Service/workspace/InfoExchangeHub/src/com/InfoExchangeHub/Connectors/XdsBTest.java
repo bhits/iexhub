@@ -10,21 +10,15 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DateFormat;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Properties;
 
 import javax.activation.DataHandler;
 
 import org.junit.Test;
-import org.productivity.java.syslog4j.Syslog;
-import org.productivity.java.syslog4j.SyslogConfigIF;
-import org.productivity.java.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig;
 import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.soap.SOAPFactory;
-import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
 import com.InfoExchangeHub.Exceptions.UnexpectedServerException;
@@ -49,18 +43,11 @@ public class XdsBTest
 	private static final String xdsBRegistryTLSEndpointURI = "https://188.165.194.55:10011";
 	private static final String xdsBRepositoryTLSEndpointURI = "https://ihexds.nist.gov:12091/tf6/services/xdsrepositoryb";
 
-    private static final String KeyStoreFile = "c:/temp/1264.jks";
-	private static final String KeyStorePwd = "IEXhub";
-	private static final String CipherSuites = "TLS_RSA_WITH_AES_128_CBC_SHA";
-	private static final String HttpsProtocols = "TLSv1";
-
-	private static final String nistRepositoryId = "1.19.6.24.109.42.1.5";
+    private static final String xdsBRepositoryUniqueId = "1.19.6.24.109.42.1.5";
 	private static XdsB xdsB = null;
 	private static final SOAPFactory soapFactory = OMAbstractFactory.getSOAP12Factory();
 
-	private static String PropertiesFile = "/temp/IExHub.properties";
-
-	private static boolean DebugSSL = false;
+	private static String propertiesFile = "/temp/IExHub.properties";
 
 	private HashMap<String, String> queryRegistry(String enterpriseMRN,
 			String startDate,
@@ -151,25 +138,23 @@ public class XdsBTest
 		Properties props = new Properties();
 		String registryEndpointURI = null;
 		String repositoryEndpointURI = null;
-		String syslogServerHost = null;
-		int syslogServerPort = -1;
 		try
 		{
-			props.load(new FileInputStream(PropertiesFile));
-			DebugSSL = Boolean.parseBoolean(props.getProperty("DebugSSL"));
+			props.load(new FileInputStream(propertiesFile));
+			Boolean.parseBoolean(props.getProperty("DebugSSL"));
 			registryEndpointURI = props.getProperty("XdsBRegistryEndpointURI");
 			repositoryEndpointURI = props.getProperty("XdsBRepositoryEndpointURI");
-			syslogServerHost = props.getProperty("SyslogServerHost");
-			syslogServerPort = Integer.parseInt(props.getProperty("SyslogServerPort"));
+			props.getProperty("SyslogServerHost");
+			Integer.parseInt(props.getProperty("SyslogServerPort"));
 		}
 		catch (IOException e)
 		{
 			log.error("Error encountered loading properties file, "
-					+ PropertiesFile
+					+ propertiesFile
 					+ ", "
 					+ e.getMessage());
 			throw new UnexpectedServerException("Error encountered loading properties file, "
-					+ PropertiesFile
+					+ propertiesFile
 					+ ", "
 					+ e.getMessage());
 		}
@@ -273,7 +258,7 @@ public class XdsBTest
 			assertFalse("Error - no documents found",
 					documents.isEmpty());
 			
-			RetrieveDocumentSetResponse documentSetResponse = xdsB.retrieveDocumentSet(nistRepositoryId,
+			RetrieveDocumentSetResponse documentSetResponse = xdsB.retrieveDocumentSet(xdsBRepositoryUniqueId,
 					documents,
 					enterpriseMRN);
 			log.info("XDS.b document set query response in log message immediately following...");
@@ -331,18 +316,18 @@ public class XdsBTest
 		String repositoryEndpointURI = null;
 		try
 		{
-			props.load(new FileInputStream(PropertiesFile));
+			props.load(new FileInputStream(propertiesFile));
 			registryEndpointURI = props.getProperty("XdsBRegistryEndpointURI");
 			repositoryEndpointURI = props.getProperty("XdsBRepositoryEndpointURI");
 		}
 		catch (IOException e)
 		{
 			log.error("Error encountered loading properties file, "
-					+ PropertiesFile
+					+ propertiesFile
 					+ ", "
 					+ e.getMessage());
 			throw new UnexpectedServerException("Error encountered loading properties file, "
-					+ PropertiesFile
+					+ propertiesFile
 					+ ", "
 					+ e.getMessage());
 		}
@@ -361,7 +346,7 @@ public class XdsBTest
 			assertFalse("Error - no documents found",
 					documents.isEmpty());
 			
-			RetrieveDocumentSetResponse documentSetResponse = xdsB.retrieveDocumentSet(nistRepositoryId,
+			RetrieveDocumentSetResponse documentSetResponse = xdsB.retrieveDocumentSet(xdsBRepositoryUniqueId,
 					documents,
 					enterpriseMRN);
 			log.info("XDS.b document set query response in log message immediately following...");
@@ -429,7 +414,7 @@ public class XdsBTest
 			assertFalse("Error - no documents found",
 					documents.isEmpty());
 			
-			RetrieveDocumentSetResponse documentSetResponse = xdsB.retrieveDocumentSet(nistRepositoryId,
+			RetrieveDocumentSetResponse documentSetResponse = xdsB.retrieveDocumentSet(xdsBRepositoryUniqueId,
 					documents,
 					enterpriseMRN);
 			log.info("XDS.b document set query response in log message immediately following...");

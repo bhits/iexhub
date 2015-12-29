@@ -9,7 +9,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -23,7 +22,6 @@ import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.soap.SOAPFactory;
 import org.apache.axis2.AxisFault;
 import org.apache.axis2.Constants;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
@@ -40,7 +38,6 @@ import org.xml.sax.InputSource;
 
 import com.InfoExchangeHub.Exceptions.DocumentTypeUnsupportedException;
 import com.InfoExchangeHub.Exceptions.UnexpectedServerException;
-import com.InfoExchangeHub.Services.Client.DocumentRepository_ServiceStub.RegistryPackage;
 
 import XdsBDocumentRepository.src.com.InfoExchangeHub.Services.Client.DocumentRepository_ServiceStub;
 import XdsBDocumentRepository.src.ihe.iti.xds_b._2007.ProvideAndRegisterDocumentSetRequestType;
@@ -67,15 +64,15 @@ public class XdsBRepositoryManager
 	/** Logger */
     public static final Logger log = Logger.getLogger(XdsBRepositoryManager.class);
 
-	private static String PropertiesFile = "/temp/IExHub.properties";
-	private static boolean TestMode = false;
+	private static final String propertiesFile = "/temp/IExHub.properties";
+	private static boolean testMode = false;
 
-    private static final String KeyStoreFile = "c:/temp/1264.jks";
-	private static final String KeyStorePwd = "IEXhub";
-	private static final String CipherSuites = "TLS_RSA_WITH_AES_128_CBC_SHA";
-	private static final String HttpsProtocols = "TLSv1";
+    private static String keyStoreFile = "c:/temp/1264.jks";
+	private static String keyStorePwd = "IEXhub";
+	private static String cipherSuites = "TLS_RSA_WITH_AES_128_CBC_SHA";
+	private static String httpsProtocols = "TLSv1";
 
-	private static String Iti41AuditMsgTemplate = null;
+	private static String iti41AuditMsgTemplate = null;
 
 	private static SyslogConfigIF sysLogConfig = null;
 
@@ -84,60 +81,43 @@ public class XdsBRepositoryManager
 
 	private static DocumentRepository_ServiceStub repositoryStub = null;
 
-	private static final String DocumentAuthorClassificationScheme = "urn:uuid:93606bcf-9494-43ec-9b4e-a7748d1a838d";
-	private static final String DocumentClassCodesClassificationScheme = "urn:uuid:41a5887f-8865-4c09-adf7-e362475b143a";
-	private static final String DocumentConfidentialityCodesClassificationScheme = "urn:uuid:f4f85eac-e6cb-4883-b524-f2705394840f";
-	private static final String DocumentContentTypeClassificationScheme = "urn:uuid:f0306f51-975f-434e-a61c-c59651d33983";
-    
-	private static final String DocumentFormatCodesClassificationScheme = "urn:uuid:a09d5840-386c-46f2-b5ad-9c3699a4309d";
-	private static final String DocumentFormatCodesNodeRepresentation = "urn:ihe:iti:xds-sd:text:2008";
-	private static final String DocumentFormatCodesCodingScheme = "1.3.6.1.4.1.19376.1.2.3";
-	private static final String DocumentFormatCodesName = "Health encounter site";
-
-	private static final String DocumentHealthcareFacilityTypeCodesClassificationScheme = "urn:uuid:f33fb8ac-18af-42cc-ae0e-ed0b0bdb91e1";
-	private static final String DocumentHealthcareFacilityTypeCodesNodeRepresentation = "unobtainable";
-	private static final String DocumentHealthcareFacilityTypeCodesCodingScheme = "2.16.840.1.113883.3.88.12.80.72";
-	private static final String DocumentHealthcareFacilityTypeCodesName = "General Medicine";
-
-	private static final String ExtrinsicObjectExternalIdentifierPatientIdIdentificationScheme = "urn:uuid:58a6f841-87b3-4a3e-92fd-a8ffeff98427";
-	private static final String ExtrinsicObjectExternalIdentifierPatientIdName = "XDSDocumentEntry.patientId";
-
-	private static final String ExtrinsicObjectExternalIdentifierUniqueIdIdentificationScheme = "urn:uuid:2e82c1f6-a085-4c72-9da3-8640a32e42ab";
-	private static final String ExtrinsicObjectExternalIdentifierUniqueIdName = "XDSDocumentEntry.uniqueId";
-
-	private static final String IExHubOrganizationOid = "1.3.6.1.4.1.21367.13.60.232";
-	private static final String SubmissionSetUniqueOidPrefix = "1.2.3.4.5";
-
-	private static final String RegistryPackageAuthorClassificationScheme = "urn:uuid:a7058bb9-b4e4-4307-ba5b-e3f0ab85e12d";
-
-	private static final String RegistryPackageContentTypeCodesClassificationScheme = "urn:uuid:aa543740-bdda-424e-8c96-df4873be8500";
-
-	private static final String RegistryPackageSubmissionSetUniqueIdIdentificationScheme = "urn:uuid:96fdda7c-d067-4183-912e-bf5ee74998a8";
-
-	private static final String ExternalIdentifierSubmissionSetUniqueIdName = "XDSSubmissionSet.uniqueId";
-
-	private static final String RegistryPackageSubmissionSetSourceIdIdentificationScheme = "urn:uuid:554ac39e-e3fe-47fe-b233-965d2a147832";
-
-	private static final String ExternalIdentifierSubmissionSetSourceIdName = "XDSSubmissionSet.sourceId";
-
-	private static final String RegistryPackageSubmissionSetPatientIdIdentificationScheme = "urn:uuid:6b5aea1a-874d-4603-a4bc-96a0a7b38446";
-
-	private static final String ExternalIdentifierSubmissionSetPatientIdName = "XDSSubmissionSet.patientId";
-
-	private static final String RegistryObjectListSubmissionSetClassificationNode = "urn:uuid:a54d6aa5-d40d-43f9-88c5-b4633d873bdd";
-
-//	private static final String DocumentPracticeSettingCodesNodeRepresentation = "394802001";
-	private static final String DocumentPracticeSettingCodesClassificationScheme = "urn:uuid:cccf5598-8b07-4b77-a05e-ae952c785ead";
-
-	private static final String DocumentPracticeSettingCodesNodeRepresentation = "unobtainable";
-
-	private static final String DocumentPracticeSettingCodesCodingScheme = "Connect-a-thon practiceSettingCodes";
-
-	private static boolean DebugSSL = false;
+	private static boolean debugSSL = false;
 
 	private static String repositoryEndpointURI = null;
+	private static String iExHubDomainOid = "1.3.6.1.4.1.21367.13.60.232";
 
-//	private static final String DocumentClassCodesNodeRepresentation = "unobtainable";
+	private static final String documentAuthorClassificationScheme = "urn:uuid:93606bcf-9494-43ec-9b4e-a7748d1a838d";
+	private static final String documentClassCodesClassificationScheme = "urn:uuid:41a5887f-8865-4c09-adf7-e362475b143a";
+	private static final String documentConfidentialityCodesClassificationScheme = "urn:uuid:f4f85eac-e6cb-4883-b524-f2705394840f";
+	private static final String documentContentTypeClassificationScheme = "urn:uuid:f0306f51-975f-434e-a61c-c59651d33983";
+	private static final String documentFormatCodesClassificationScheme = "urn:uuid:a09d5840-386c-46f2-b5ad-9c3699a4309d";
+	private static final String documentFormatCodesNodeRepresentation = "urn:ihe:iti:xds-sd:text:2008";
+	private static final String documentFormatCodesCodingScheme = "1.3.6.1.4.1.19376.1.2.3";
+	private static final String documentFormatCodesName = "Health encounter site";
+	private static final String documentHealthcareFacilityTypeCodesClassificationScheme = "urn:uuid:f33fb8ac-18af-42cc-ae0e-ed0b0bdb91e1";
+	private static final String documentHealthcareFacilityTypeCodesNodeRepresentation = "unobtainable";
+	private static final String documentPracticeSettingCodesClassificationScheme = "urn:uuid:cccf5598-8b07-4b77-a05e-ae952c785ead";
+	private static final String documentPracticeSettingCodesNodeRepresentation = "unobtainable";
+	private static final String documentPracticeSettingCodesCodingScheme = "Connect-a-thon practiceSettingCodes";
+
+	private static final String extrinsicObjectExternalIdentifierPatientIdIdentificationScheme = "urn:uuid:58a6f841-87b3-4a3e-92fd-a8ffeff98427";
+	private static final String extrinsicObjectExternalIdentifierPatientIdName = "XDSDocumentEntry.patientId";
+	private static final String extrinsicObjectExternalIdentifierUniqueIdIdentificationScheme = "urn:uuid:2e82c1f6-a085-4c72-9da3-8640a32e42ab";
+	private static final String extrinsicObjectExternalIdentifierUniqueIdName = "XDSDocumentEntry.uniqueId";
+
+	private static final String submissionSetUniqueOidPrefix = "1.2.3.4.5";
+
+	private static final String registryPackageAuthorClassificationScheme = "urn:uuid:a7058bb9-b4e4-4307-ba5b-e3f0ab85e12d";
+	private static final String registryPackageContentTypeCodesClassificationScheme = "urn:uuid:aa543740-bdda-424e-8c96-df4873be8500";
+	private static final String registryPackageSubmissionSetUniqueIdIdentificationScheme = "urn:uuid:96fdda7c-d067-4183-912e-bf5ee74998a8";
+	private static final String registryPackageSubmissionSetSourceIdIdentificationScheme = "urn:uuid:554ac39e-e3fe-47fe-b233-965d2a147832";
+	private static final String registryPackageSubmissionSetPatientIdIdentificationScheme = "urn:uuid:6b5aea1a-874d-4603-a4bc-96a0a7b38446";
+	private static final String registryObjectListSubmissionSetClassificationNode = "urn:uuid:a54d6aa5-d40d-43f9-88c5-b4633d873bdd";
+
+	private static final String externalIdentifierSubmissionSetUniqueIdName = "XDSSubmissionSet.uniqueId";
+	private static final String externalIdentifierSubmissionSetSourceIdName = "XDSSubmissionSet.sourceId";
+	private static final String externalIdentifierSubmissionSetPatientIdName = "XDSSubmissionSet.patientId";
+
 	
 	public static void setRepositoryEndpointURI(String repositoryEndpointURI)
 	{
@@ -163,10 +143,23 @@ public class XdsBRepositoryManager
 		Properties props = new Properties();
 		try
 		{
-			props.load(new FileInputStream(PropertiesFile));
-			TestMode = Boolean.parseBoolean(props.getProperty("TestMode"));
-			DebugSSL = Boolean.parseBoolean(props.getProperty("DebugSSL"));
+			props.load(new FileInputStream(propertiesFile));
 			
+			XdsBRepositoryManager.debugSSL = (props.getProperty("DebugSSL") == null) ? XdsBRepositoryManager.debugSSL
+					: Boolean.parseBoolean(props.getProperty("DebugSSL"));
+			XdsBRepositoryManager.testMode = (props.getProperty("TestMode") == null) ? XdsBRepositoryManager.testMode
+					: Boolean.parseBoolean(props.getProperty("TestMode"));
+			XdsBRepositoryManager.iExHubDomainOid = (props.getProperty("IExHubDomainOID") == null) ? XdsBRepositoryManager.iExHubDomainOid
+					: props.getProperty("IExHubDomainOID");
+			XdsBRepositoryManager.keyStoreFile = (props.getProperty("XdsBKeyStoreFile") == null) ? XdsBRepositoryManager.keyStoreFile
+					: props.getProperty("XdsBKeyStoreFile");
+			XdsBRepositoryManager.keyStorePwd = (props.getProperty("XdsBKeyStorePwd") == null) ? XdsBRepositoryManager.keyStorePwd
+					: props.getProperty("XdsBKeyStorePwd");
+			XdsBRepositoryManager.cipherSuites = (props.getProperty("XdsBCipherSuites") == null) ? XdsBRepositoryManager.cipherSuites
+					: props.getProperty("XdsBCipherSuites");
+			XdsBRepositoryManager.httpsProtocols = (props.getProperty("XdsBHttpsProtocols") == null) ? XdsBRepositoryManager.httpsProtocols
+					: props.getProperty("XdsBHttpsProtocols");
+
 			// If endpoint URI's are null, then set to the values in the properties file...
 			if (registryEndpointURI == null)
 			{
@@ -187,36 +180,30 @@ public class XdsBRepositoryManager
 			if ((syslogServerHost != null) &&
 				(syslogServerPort > -1))
 			{
-				Iti41AuditMsgTemplate = props.getProperty("Iti41AuditMsgTemplate");
-				if (Iti41AuditMsgTemplate == null)
+				iti41AuditMsgTemplate = props.getProperty("Iti41AuditMsgTemplate");
+				if (iti41AuditMsgTemplate == null)
 				{
 					log.error("ITI-41 audit message template not specified in properties file, "
-							+ PropertiesFile);
+							+ propertiesFile);
 					throw new UnexpectedServerException("ITI-41 audit message template not specified in properties file, "
-							+ PropertiesFile);
+							+ propertiesFile);
 				}
 
 				// TCP over SSL (secure) syslog
 				System.setProperty("javax.net.ssl.keyStore",
-						(props.getProperty("KeyStoreFile") == null) ? KeyStoreFile
-								: props.getProperty("KeyStoreFile"));
+						keyStoreFile);
 				System.setProperty("javax.net.ssl.keyStorePassword",
-						(props.getProperty("KeyStorePwd") == null) ? KeyStorePwd
-								: props.getProperty("KeyStorePwd"));
+						keyStorePwd);
 				System.setProperty("javax.net.ssl.trustStore",
-						(props.getProperty("KeyStoreFile") == null) ? KeyStoreFile
-								: props.getProperty("KeyStoreFile"));
+						keyStoreFile);
 				System.setProperty("javax.net.ssl.trustStorePassword",
-						(props.getProperty("KeyStorePwd") == null) ? KeyStorePwd
-								: props.getProperty("KeyStorePwd"));
+						keyStorePwd);
 				System.setProperty("https.cipherSuites",
-						(props.getProperty("CipherSuites") == null) ? CipherSuites
-								: props.getProperty("CipherSuites"));
+						cipherSuites);
 				System.setProperty("https.protocols",
-						(props.getProperty("HttpsProtocols") == null) ? HttpsProtocols
-								: props.getProperty("HttpsProtocols"));
+						httpsProtocols);
 				
-				if (DebugSSL)
+				if (debugSSL)
 				{
 					System.setProperty("javax.net.debug",
 							"ssl");
@@ -232,11 +219,11 @@ public class XdsBRepositoryManager
 		catch (IOException e)
 		{
 			log.error("Error encountered loading properties file, "
-					+ PropertiesFile
+					+ propertiesFile
 					+ ", "
 					+ e.getMessage());
 			throw new UnexpectedServerException("Error encountered loading properties file, "
-					+ PropertiesFile
+					+ propertiesFile
 					+ ", "
 					+ e.getMessage());
 		}
@@ -254,25 +241,19 @@ public class XdsBRepositoryManager
 				if (enableTLS)
 				{
 					System.setProperty("javax.net.ssl.keyStore",
-							(props.getProperty("KeyStoreFile") == null) ? KeyStoreFile
-									: props.getProperty("KeyStoreFile"));
+							keyStoreFile);
 					System.setProperty("javax.net.ssl.keyStorePassword",
-							(props.getProperty("KeyStorePwd") == null) ? KeyStorePwd
-									: props.getProperty("KeyStorePwd"));
+							keyStorePwd);
 					System.setProperty("javax.net.ssl.trustStore",
-							(props.getProperty("KeyStoreFile") == null) ? KeyStoreFile
-									: props.getProperty("KeyStoreFile"));
+							keyStoreFile);
 					System.setProperty("javax.net.ssl.trustStorePassword",
-							(props.getProperty("KeyStorePwd") == null) ? KeyStorePwd
-									: props.getProperty("KeyStorePwd"));
+							keyStorePwd);
 					System.setProperty("https.cipherSuites",
-							(props.getProperty("CipherSuites") == null) ? CipherSuites
-									: props.getProperty("CipherSuites"));
+							cipherSuites);
 					System.setProperty("https.protocols",
-							(props.getProperty("HttpsProtocols") == null) ? HttpsProtocols
-									: props.getProperty("HttpsProtocols"));
+							httpsProtocols);
 					
-					if (DebugSSL)
+					if (debugSSL)
 					{
 						System.setProperty("javax.net.debug",
 								"ssl");
@@ -296,7 +277,7 @@ public class XdsBRepositoryManager
 	private void logIti41AuditMsg(String submissionSetId,
 			String patientId) throws IOException
 	{
-		String logMsg = FileUtils.readFileToString(new File(Iti41AuditMsgTemplate));
+		String logMsg = FileUtils.readFileToString(new File(iti41AuditMsgTemplate));
 		
 		// Substitutions...
 		patientId = patientId.replace("'",
@@ -649,7 +630,7 @@ public class XdsBRepositoryManager
 				{
 					ClassificationType documentAuthorClassification = new ClassificationType();
 					documentAuthorClassification.setId(UUID.randomUUID().toString());
-					documentAuthorClassification.setClassificationScheme(DocumentAuthorClassificationScheme);
+					documentAuthorClassification.setClassificationScheme(documentAuthorClassificationScheme);
 					documentAuthorClassification.setClassifiedObject(documentId);
 					documentAuthorClassification.setNodeRepresentation("");
 					slot = new SlotType1();
@@ -731,7 +712,7 @@ public class XdsBRepositoryManager
 			// ClassCodes classification...
 			ClassificationType classification = new ClassificationType();
 			classification.setId(UUID.randomUUID().toString());
-			classification.setClassificationScheme(DocumentClassCodesClassificationScheme);
+			classification.setClassificationScheme(documentClassCodesClassificationScheme);
 			classification.setClassifiedObject(documentId);
 			xPath = XPathFactory.newInstance().newXPath();
 			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/code",
@@ -772,7 +753,7 @@ public class XdsBRepositoryManager
 			// ConfidentialityCodes classification...
 			classification = new ClassificationType();
 			classification.setId(UUID.randomUUID().toString());
-			classification.setClassificationScheme(DocumentConfidentialityCodesClassificationScheme);
+			classification.setClassificationScheme(documentConfidentialityCodesClassificationScheme);
 			classification.setClassifiedObject(documentId);
 			xPath = XPathFactory.newInstance().newXPath();
 			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/confidentialityCode",
@@ -811,18 +792,18 @@ public class XdsBRepositoryManager
 			// FormatCodes classification...
 			classification = new ClassificationType();
 			classification.setId(UUID.randomUUID().toString());
-			classification.setClassificationScheme(DocumentFormatCodesClassificationScheme);
+			classification.setClassificationScheme(documentFormatCodesClassificationScheme);
 			classification.setClassifiedObject(documentId);
-			classification.setNodeRepresentation(DocumentFormatCodesNodeRepresentation);
+			classification.setNodeRepresentation(documentFormatCodesNodeRepresentation);
 			slot = new SlotType1();
 			slot.setName("codingScheme");
 			valueList = new ValueListType();
-		    valueList.getValue().add(DocumentFormatCodesCodingScheme);
+		    valueList.getValue().add(documentFormatCodesCodingScheme);
 			slot.setValueList(valueList);
 			classification.getSlot().add(slot);
 			InternationalStringType text = new InternationalStringType();
 			LocalizedStringType localizedText = new LocalizedStringType();
-			localizedText.setValue(DocumentFormatCodesName);
+			localizedText.setValue(documentFormatCodesName);
 			text.getLocalizedString().add(localizedText);
 			classification.setName(text);
 			extrinsicObject.getClassification().add(classification);
@@ -830,9 +811,9 @@ public class XdsBRepositoryManager
 			// HealthcareFacilityTypeCodes classification...
 			classification = new ClassificationType();
 			classification.setId(UUID.randomUUID().toString());
-			classification.setClassificationScheme(DocumentHealthcareFacilityTypeCodesClassificationScheme);
+			classification.setClassificationScheme(documentHealthcareFacilityTypeCodesClassificationScheme);
 			classification.setClassifiedObject(documentId);
-			classification.setNodeRepresentation(DocumentHealthcareFacilityTypeCodesNodeRepresentation);
+			classification.setNodeRepresentation(documentHealthcareFacilityTypeCodesNodeRepresentation);
 			slot = new SlotType1();
 			slot.setName("codingScheme");
 			valueList = new ValueListType();
@@ -849,7 +830,7 @@ public class XdsBRepositoryManager
 			// PracticeSettingCodes classification...
 			classification = new ClassificationType();
 			classification.setId(UUID.randomUUID().toString());
-			classification.setClassificationScheme(DocumentPracticeSettingCodesClassificationScheme);
+			classification.setClassificationScheme(documentPracticeSettingCodesClassificationScheme);
 			classification.setClassifiedObject(documentId);
 //			classification.setNodeRepresentation(DocumentPracticeSettingCodesNodeRepresentation);
 			xPath = XPathFactory.newInstance().newXPath();
@@ -860,7 +841,7 @@ public class XdsBRepositoryManager
 			{
 				if (((Element)nodes.item(0)).getAttribute("code") != null)
 				{
-					classification.setNodeRepresentation(/*((Element)nodes.item(0)).getAttribute("code")*/ DocumentPracticeSettingCodesNodeRepresentation);
+					classification.setNodeRepresentation(/*((Element)nodes.item(0)).getAttribute("code")*/ documentPracticeSettingCodesNodeRepresentation);
 				}
 				
 				slot = new SlotType1();
@@ -869,7 +850,7 @@ public class XdsBRepositoryManager
 				if (((Element)nodes.item(0)).getAttribute("codeSystem") != null)
 				{
 					valueList = new ValueListType();
-				    valueList.getValue().add(/*((Element)nodes.item(0)).getAttribute("codeSystem")*/ DocumentPracticeSettingCodesCodingScheme);
+				    valueList.getValue().add(/*((Element)nodes.item(0)).getAttribute("codeSystem")*/ documentPracticeSettingCodesCodingScheme);
 					slot.setValueList(valueList);
 					classification.getSlot().add(slot);
 				}
@@ -889,7 +870,7 @@ public class XdsBRepositoryManager
 			// Type code classification...
 			classification = new ClassificationType();
 			classification.setId(UUID.randomUUID().toString());
-			classification.setClassificationScheme(DocumentContentTypeClassificationScheme);
+			classification.setClassificationScheme(documentContentTypeClassificationScheme);
 			classification.setClassifiedObject(documentId);
 			xPath = XPathFactory.newInstance().newXPath();
 			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/code",
@@ -953,14 +934,14 @@ public class XdsBRepositoryManager
 				ExternalIdentifierType externalIdentifierPatientId = new ExternalIdentifierType();
 				externalIdentifierPatientId.setId(UUID.randomUUID().toString());
 				externalIdentifierPatientId.setRegistryObject(documentId);
-				externalIdentifierPatientId.setIdentificationScheme(ExtrinsicObjectExternalIdentifierPatientIdIdentificationScheme);
+				externalIdentifierPatientId.setIdentificationScheme(extrinsicObjectExternalIdentifierPatientIdIdentificationScheme);
 				externalIdentifierPatientId.setValue(((Element)nodes.item(0)).getAttribute("extension")
 						+ "^^^&"
 						+ ((Element)nodes.item(0)).getAttribute("root")
 						+ "&ISO");
 				text = new InternationalStringType();
 				localizedText = new LocalizedStringType();
-				localizedText.setValue(ExtrinsicObjectExternalIdentifierPatientIdName);
+				localizedText.setValue(extrinsicObjectExternalIdentifierPatientIdName);
 				text.getLocalizedString().add(localizedText);
 				externalIdentifierPatientId.setName(text);
 				extrinsicObject.getExternalIdentifier().add(externalIdentifierPatientId);
@@ -991,9 +972,9 @@ public class XdsBRepositoryManager
 				ExternalIdentifierType externalIdentifierPatientId = new ExternalIdentifierType();
 				externalIdentifierPatientId.setId(UUID.randomUUID().toString());
 				externalIdentifierPatientId.setRegistryObject(documentId);
-				externalIdentifierPatientId.setIdentificationScheme(ExtrinsicObjectExternalIdentifierUniqueIdIdentificationScheme);
+				externalIdentifierPatientId.setIdentificationScheme(extrinsicObjectExternalIdentifierUniqueIdIdentificationScheme);
 				
-				if (TestMode)
+				if (testMode)
 				{
 					DateTime testDocId = DateTime.now(DateTimeZone.UTC);
 					externalIdentifierPatientId.setValue(((Element)nodes.item(0)).getAttribute("root")
@@ -1007,7 +988,7 @@ public class XdsBRepositoryManager
 				
 				text = new InternationalStringType();
 				localizedText = new LocalizedStringType();
-				localizedText.setValue(ExtrinsicObjectExternalIdentifierUniqueIdName);
+				localizedText.setValue(extrinsicObjectExternalIdentifierUniqueIdName);
 				text.getLocalizedString().add(localizedText);
 				externalIdentifierPatientId.setName(text);
 				extrinsicObject.getExternalIdentifier().add(externalIdentifierPatientId);
@@ -1045,7 +1026,7 @@ public class XdsBRepositoryManager
 			{
 				ClassificationType newClassification = new ClassificationType();
 				newClassification.setId(UUID.randomUUID().toString());
-				newClassification.setClassificationScheme(RegistryPackageAuthorClassificationScheme);
+				newClassification.setClassificationScheme(registryPackageAuthorClassificationScheme);
 				newClassification.setClassifiedObject(submissionSetId);
 				newClassification.setNodeRepresentation("");
 				
@@ -1063,7 +1044,7 @@ public class XdsBRepositoryManager
 			// ContentTypeCodes classification...
 			classification = new ClassificationType();
 			classification.setId(UUID.randomUUID().toString());
-			classification.setClassificationScheme(RegistryPackageContentTypeCodesClassificationScheme);
+			classification.setClassificationScheme(registryPackageContentTypeCodesClassificationScheme);
 			classification.setClassifiedObject(submissionSetId);
 			xPath = XPathFactory.newInstance().newXPath();
 			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/code",
@@ -1103,15 +1084,15 @@ public class XdsBRepositoryManager
 			ExternalIdentifierType submissionSetUniqueId = new ExternalIdentifierType();
 			submissionSetUniqueId.setId(UUID.randomUUID().toString());
 			submissionSetUniqueId.setRegistryObject(submissionSetId);
-			submissionSetUniqueId.setIdentificationScheme(RegistryPackageSubmissionSetUniqueIdIdentificationScheme);
+			submissionSetUniqueId.setIdentificationScheme(registryPackageSubmissionSetUniqueIdIdentificationScheme);
 			DateTime oidTimeValue = DateTime.now(DateTimeZone.UTC);
-			submissionSetUniqueId.setValue(SubmissionSetUniqueOidPrefix
+			submissionSetUniqueId.setValue(submissionSetUniqueOidPrefix
 					+ "."
 					+ oidTimeValue.getMillis());
 			
 			text = new InternationalStringType();
 			localizedText = new LocalizedStringType();
-			localizedText.setValue(ExternalIdentifierSubmissionSetUniqueIdName);
+			localizedText.setValue(externalIdentifierSubmissionSetUniqueIdName);
 			text.getLocalizedString().add(localizedText);
 			submissionSetUniqueId.setName(text);
 			
@@ -1121,12 +1102,12 @@ public class XdsBRepositoryManager
 			ExternalIdentifierType submissionSetSourceId = new ExternalIdentifierType();
 			submissionSetSourceId.setId(UUID.randomUUID().toString());
 			submissionSetSourceId.setRegistryObject(submissionSetId);
-			submissionSetSourceId.setIdentificationScheme(RegistryPackageSubmissionSetSourceIdIdentificationScheme);
-			submissionSetSourceId.setValue(IExHubOrganizationOid);
+			submissionSetSourceId.setIdentificationScheme(registryPackageSubmissionSetSourceIdIdentificationScheme);
+			submissionSetSourceId.setValue(iExHubDomainOid);
 			
 			text = new InternationalStringType();
 			localizedText = new LocalizedStringType();
-			localizedText.setValue(ExternalIdentifierSubmissionSetSourceIdName);
+			localizedText.setValue(externalIdentifierSubmissionSetSourceIdName);
 			text.getLocalizedString().add(localizedText);
 			submissionSetSourceId.setName(text);
 
@@ -1136,12 +1117,12 @@ public class XdsBRepositoryManager
 			ExternalIdentifierType submissionSetPatientId = new ExternalIdentifierType();
 			submissionSetPatientId.setId(UUID.randomUUID().toString());
 			submissionSetPatientId.setRegistryObject(submissionSetId);
-			submissionSetPatientId.setIdentificationScheme(RegistryPackageSubmissionSetPatientIdIdentificationScheme);
+			submissionSetPatientId.setIdentificationScheme(registryPackageSubmissionSetPatientIdIdentificationScheme);
 			submissionSetPatientId.setValue(patientId);
 
 			text = new InternationalStringType();
 			localizedText = new LocalizedStringType();
-			localizedText.setValue(ExternalIdentifierSubmissionSetPatientIdName);
+			localizedText.setValue(externalIdentifierSubmissionSetPatientIdName);
 			text.getLocalizedString().add(localizedText);
 			submissionSetPatientId.setName(text);
 
@@ -1152,7 +1133,7 @@ public class XdsBRepositoryManager
 			ClassificationType submissionSetClassification = new ClassificationType();
 			submissionSetClassification.setId(UUID.randomUUID().toString());
 			submissionSetClassification.setClassifiedObject(submissionSetId);
-			submissionSetClassification.setClassificationNode(RegistryObjectListSubmissionSetClassificationNode);
+			submissionSetClassification.setClassificationNode(registryObjectListSubmissionSetClassificationNode);
 			registryObjectList.getIdentifiable().add(objectFactory.createClassification(submissionSetClassification));
 			
 			// Create SubmissionSet Association for RegistryObjectList...
