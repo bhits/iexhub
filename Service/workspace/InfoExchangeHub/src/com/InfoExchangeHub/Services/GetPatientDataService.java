@@ -48,6 +48,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import com.InfoExchangeHub.Connectors.PIXManager;
 import com.InfoExchangeHub.Connectors.XdsB;
 import com.InfoExchangeHub.Exceptions.*;
 import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub.AdhocQueryResponse;
@@ -108,7 +109,9 @@ public class GetPatientDataService
 	private static String propertiesFile = "/temp/IExHub.properties";
 	private static String repositoryUniqueId = "1.19.6.24.109.42.1.5";
 	private static String cdaToJsonTransformXslt = null;
-	
+	private static String iExHubDomainOid = "2.16.840.1.113883.3.72.5.9.1";
+	private static String iExHubAssigningAuthority = "ISO";
+
 	@GET
 	@Consumes({MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_JSON})
@@ -126,6 +129,10 @@ public class GetPatientDataService
 						: Boolean.parseBoolean(props.getProperty("TestMode"));
 				GetPatientDataService.cdaToJsonTransformXslt = (props.getProperty("CDAToJSONTransformXSLT") == null) ? GetPatientDataService.cdaToJsonTransformXslt
 						: props.getProperty("CDAToJSONTransformXSLT");
+				GetPatientDataService.iExHubDomainOid = (props.getProperty("IExHubDomainOID") == null) ? GetPatientDataService.iExHubDomainOid
+						: props.getProperty("IExHubDomainOID");
+				GetPatientDataService.iExHubAssigningAuthority = (props.getProperty("IExHubAssigningAuthority") == null) ? GetPatientDataService.iExHubAssigningAuthority
+						: props.getProperty("IExHubAssigningAuthority");
 			}
 			catch (IOException e)
 			{
@@ -191,6 +198,23 @@ public class GetPatientDataService
 
 				log.info("HTTP headers successfully parsed, now calling XdsB registry...");
 								
+				// Determine if a complete patient ID (including OID and ISO specification) was provided.  If not, then append IExHubDomainOid
+				//   and IExAssigningAuthority...
+				if (!patientId.contains("^^^&"))
+				{
+					patientId = "'" + patientId + "^^^&" + GetPatientDataService.iExHubDomainOid + "&" + GetPatientDataService.iExHubAssigningAuthority + "'";
+				}
+				
+				if (!patientId.startsWith("'"))
+				{
+					patientId = "'" + patientId;
+				}
+				
+				if (!patientId.endsWith("'"))
+				{
+					patientId += "'";
+				}
+				
 				AdhocQueryResponse registryResponse = xdsB.registryStoredQuery(patientId,
 						(startDate != null) ? DateFormat.getDateInstance().format(startDate) : null,
 						(endDate != null) ? DateFormat.getDateInstance().format(endDate) : null);

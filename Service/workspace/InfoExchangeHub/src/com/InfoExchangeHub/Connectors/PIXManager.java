@@ -421,7 +421,7 @@ public class PIXManager
 		String queryText = requestElement.toString();
 		
 		logIti45AuditMsg(queryText,
-				patientId + "^^^&" + domainOID + "&" + "ISO");
+				patientId + "^^^&" + domainOID + "&ISO");
 
 		return pixManagerStub.pIXManager_PRPA_IN201309UV02(pRPA_IN201309UV02);
 	}

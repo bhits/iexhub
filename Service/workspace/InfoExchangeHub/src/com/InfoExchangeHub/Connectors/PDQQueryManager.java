@@ -585,7 +585,7 @@ public class PDQQueryManager
 		String queryText = requestElement.toString();
 
 		logIti47AuditMsg(queryText,
-				patientId + "^^^&" + patientIdDomain + "&" + "ISO");
+				patientId + "^^^&" + patientIdDomain + "&ISO");
 
 		return pdqSupplierStub.pDQSupplier_PRPA_IN201305UV02(pRPA_IN201305UV02);
 	}
