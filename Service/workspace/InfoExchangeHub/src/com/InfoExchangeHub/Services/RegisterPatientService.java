@@ -15,6 +15,11 @@ import PIXManager.src.org.hl7.v3.MCCIIN000002UV01;
 import com.InfoExchangeHub.Connectors.PIXManager;
 import com.InfoExchangeHub.Exceptions.*;
 
+/**
+ * @author A. Sute
+ *
+ */
+
 @Path("/RegisterPatient")
 public class RegisterPatientService
 {

@@ -29,6 +29,11 @@ import org.productivity.java.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig;
 
 import com.InfoExchangeHub.Exceptions.UnexpectedServerException;
 
+/**
+ * @author A. Sute
+ *
+ */
+
 public class PDQQueryManager
 {
     private static String keyStoreFile = "c:/temp/1264.jks";
@@ -50,6 +55,8 @@ public class PDQQueryManager
 	private static String receiverTelecomValue = "http://servicelocation/PDQuery";
 	private static String queryIdOID = "1.2.840.114350.1.13.28.1.18.5.999";
 	private static String otherIDsScopingOrganizationOID = "2.16.840.1.113883.3.72.5.9.1";
+	private static String receiverApplicationRepresentedOrganization = "2.16.840.1.113883.3.72.6.1";
+	private static String iExHubDomainOID = "2.16.840.1.113883.3.72.5.9.1";
 
 	private static PDQSupplier_ServiceStub pdqSupplierStub = null;
 	private static String endpointURI = null;
@@ -79,6 +86,10 @@ public class PDQQueryManager
 					: props.getProperty("PDQQueryIdOID");
 			PDQQueryManager.otherIDsScopingOrganizationOID = (props.getProperty("PDQOtherIDsScopingOrganizationOID") == null) ? PDQQueryManager.otherIDsScopingOrganizationOID
 					: props.getProperty("PDQOtherIDsScopingOrganizationOID");
+			PDQQueryManager.receiverApplicationRepresentedOrganization = (props.getProperty("PDQReceiverApplicationRepresentedOrganization") == null) ? PDQQueryManager.receiverApplicationRepresentedOrganization
+					: props.getProperty("PDQReceiverApplicationRepresentedOrganization");
+			PDQQueryManager.iExHubDomainOID = (props.getProperty("IExHubDomainOID") == null) ? PDQQueryManager.iExHubDomainOID
+					: props.getProperty("IExHubDomainOID");
 
 			// If endpoint URI's are null, then set to the values in the properties file...
 			if (endpointURI == null)
@@ -652,7 +663,7 @@ public class PDQQueryManager
 		representedOrganization.setDeterminerCode("INSTANCE");
 		representedOrganization.setClassCode("ORG");
 		II representedOrganizationId = new II();
-		representedOrganizationId.setRoot("2.16.840.1.113883.3.72.6.1");
+		representedOrganizationId.setRoot(receiverApplicationRepresentedOrganization);
 		representedOrganization.getId().add(representedOrganizationId);
 		asAgent.setRepresentedOrganization(factory.createMCCIMT000100UV01AgentRepresentedOrganization(representedOrganization));
 		receiverDevice.setAsAgent(factory.createMCCIMT000100UV01DeviceAsAgent(asAgent));
@@ -668,7 +679,7 @@ public class PDQQueryManager
 		senderDevice.setClassCode(EntityClassDevice.DEV);
 		senderDevice.setDeterminerCode("INSTANCE");
 		II senderDeviceId = new II();
-		senderDeviceId.setRoot("1.2.840.114350.1.13.99998.8734");
+		senderDeviceId.setRoot(iExHubDomainOID);
 		senderDevice.getId().add(senderDeviceId);
 		sender.setDevice(senderDevice);
 		qUQIIN000003UV01.setSender(sender);		
@@ -682,7 +693,7 @@ public class PDQQueryManager
 		senderDevice.setClassCode(EntityClassDevice.DEV);
 		senderDevice.setDeterminerCode("INSTANCE");
 		II senderDeviceId = new II();
-		senderDeviceId.setRoot("1.2.840.114350.1.13.99998.8734");
+		senderDeviceId.setRoot(iExHubDomainOID);
 		senderDevice.getId().add(senderDeviceId);
 		MCCIMT000100UV01Agent senderAsAgent = new MCCIMT000100UV01Agent();
 		senderAsAgent.getClassCode().add("AGNT");
@@ -690,7 +701,7 @@ public class PDQQueryManager
 		senderRepresentedOrganization.setDeterminerCode("INSTANCE");
 		senderRepresentedOrganization.setClassCode("ORG");
 		II senderRepresentedOrganizationId = new II();
-		senderRepresentedOrganizationId.setRoot("1.2.840.114350.1.13");
+		senderRepresentedOrganizationId.setRoot(iExHubDomainOID);
 		senderRepresentedOrganization.getId().add(senderRepresentedOrganizationId);
 		senderAsAgent.setRepresentedOrganization(factory.createMCCIMT000100UV01AgentRepresentedOrganization(senderRepresentedOrganization));
 		senderDevice.setAsAgent(factory.createMCCIMT000100UV01DeviceAsAgent(senderAsAgent));

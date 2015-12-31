@@ -2,6 +2,14 @@ package com.InfoExchangeHub.Services;
 
 import java.util.ArrayList;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
+/**
+ * @author A. Sute
+ *
+ */
+
+@XmlRootElement
 public class GetPatientDataResponse
 {
 	public ArrayList<String> getDocuments() {

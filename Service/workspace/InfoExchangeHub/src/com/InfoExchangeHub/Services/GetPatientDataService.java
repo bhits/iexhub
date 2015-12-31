@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,6 +63,11 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 
+/**
+ * @author A. Sute
+ *
+ */
+
 @Path("/GetPatientData")
 public class GetPatientDataService
 {
@@ -99,9 +102,12 @@ public class GetPatientDataService
 		}
 	}
 
+	private static Properties props = null;
+	private static XdsB xdsB = null;
 	private static boolean testMode = false;
-	private static String propertiesFile = "test/IExHub.properties";
+	private static String propertiesFile = "/temp/IExHub.properties";
 	private static String repositoryUniqueId = "1.19.6.24.109.42.1.5";
+	private static String cdaToJsonTransformXslt = null;
 	
 	@GET
 	@Consumes({MediaType.APPLICATION_JSON})
@@ -110,22 +116,28 @@ public class GetPatientDataService
 	{
 		log.info("Entered getPatientData service");
 		
-		Properties props = new Properties();
-		try
+		if (props == null)
 		{
-			props.load(new FileInputStream(propertiesFile));
-			testMode = Boolean.parseBoolean(props.getProperty("TestMode"));
-		}
-		catch (IOException e)
-		{
-			log.error("Error encountered loading properties file, "
-					+ propertiesFile
-					+ ", "
-					+ e.getMessage());
-			throw new UnexpectedServerException("Error encountered loading properties file, "
-					+ propertiesFile
-					+ ", "
-					+ e.getMessage());
+			try
+			{
+				props = new Properties();
+				props.load(new FileInputStream(propertiesFile));
+				GetPatientDataService.testMode = (props.getProperty("TestMode") == null) ? GetPatientDataService.testMode
+						: Boolean.parseBoolean(props.getProperty("TestMode"));
+				GetPatientDataService.cdaToJsonTransformXslt = (props.getProperty("CDAToJSONTransformXSLT") == null) ? GetPatientDataService.cdaToJsonTransformXslt
+						: props.getProperty("CDAToJSONTransformXSLT");
+			}
+			catch (IOException e)
+			{
+				log.error("Error encountered loading properties file, "
+						+ propertiesFile
+						+ ", "
+						+ e.getMessage());
+				throw new UnexpectedServerException("Error encountered loading properties file, "
+						+ propertiesFile
+						+ ", "
+						+ e.getMessage());
+			}
 		}
 		
 		String retVal = "";
@@ -133,15 +145,15 @@ public class GetPatientDataService
 
 		if (!testMode)
 		{
-			XdsB xdsB = null;
 			try
 			{
-				log.info("Instantiating XdsB connector...");
-				xdsB = new XdsB(null,
-						null);
-				log.info("XdsB connector successfully started");
-				
-//				pdqQueryManager = new PDQQueryManager(PDQManagerEndpointURI);
+				if (xdsB == null)
+				{
+					log.info("Instantiating XdsB connector...");
+					xdsB = new XdsB(null,
+							null);
+					log.info("XdsB connector successfully started");
+				}
 			}
 			catch (Exception e)
 			{
@@ -158,55 +170,28 @@ public class GetPatientDataService
 				log.info("HTTP headers successfully retrieved");
 				
 				// Extract patient ID, query start date, and query end date.  Expected format from the client is
-				//   "EnterpriseMasterRecordNumber={0}&LastName={1}&FirstName={2}&MiddleName={3}&DateOfBirth={4}&PatientGender={5}&MotherMaidenName={6}&StartDate={7}&EndDate={8}"
-				String[] splitEMRN = ssoAuth.split("&LastName=");
-				String enterpriseMRN = (splitEMRN[0].split("=").length == 2) ? splitEMRN[0].split("=")[1] : null;
+				//   "PatientId={0}&LastName={1}&FirstName={2}&MiddleName={3}&DateOfBirth={4}&PatientGender={5}&MotherMaidenName={6}&AddressStreet={7}&AddressCity={8}&AddressState={9}&AddressPostalCode={10}&OtherIDsScopingOrganization={11}&StartDate={12}&EndDate={13}"
+				String[] splitPatientId = ssoAuth.split("&LastName=");
+				String patientId = (splitPatientId[0].split("=").length == 2) ? splitPatientId[0].split("=")[1] : null;
 				
-				String[] parts = splitEMRN[1].split("&");
-				parts[0].length();
-				parts[1].split("=");
-				parts[1].split("=");
-				parts[2].split("=");
-				parts[2].split("=");
-				parts[3].split("=");
-				parts[3].split("=");
-				parts[4].split("=");
-				parts[4].split("=");
-				parts[5].split("=");
-				parts[5].split("=");
-				parts[6].split("=");
-				parts[6].split("=");
-				parts[7].split("=");
-				parts[7].split("=");
-				parts[8].split("=");
-				parts[8].split("=");
-				parts[9].split("=");
-				parts[9].split("=");
-				String patientId = (parts[10].split("=").length == 2) ? parts[10].split("=")[1] : null;
-				parts[11].split("=");
-				parts[11].split("=");
-				String startDate = (parts[12].split("=").length == 2) ? parts[12].split("=")[1] : null;
-				String endDate = (parts[13].split("=").length == 2) ? parts[13].split("=")[1] : null;
+				String[] parts = splitPatientId[1].split("&");
+				String lastName = (parts[0].length() > 0) ? parts[0] : null;
+				String firstName = (parts[1].split("=").length == 2) ? parts[1].split("=")[1] : null;
+				String middleName = (parts[2].split("=").length == 2) ? parts[2].split("=")[1] : null;
+				String dateOfBirth = (parts[3].split("=").length == 2) ? parts[3].split("=")[1] : null;
+				String gender = (parts[4].split("=").length == 2) ? parts[4].split("=")[1] : null;
+				String motherMaidenName = (parts[5].split("=").length == 2) ? parts[5].split("=")[1] : null;
+				String addressStreet = (parts[6].split("=").length == 2) ? parts[6].split("=")[1] : null;
+				String addressCity = (parts[7].split("=").length == 2) ? parts[7].split("=")[1] : null;
+				String addressState = (parts[8].split("=").length == 2) ? parts[8].split("=")[1] : null;
+				String addressPostalCode = (parts[9].split("=").length == 2) ? parts[9].split("=")[1] : null;
+				String otherIDsScopingOrganization = (parts[10].split("=").length == 2) ? parts[10].split("=")[1] : null;
+				String startDate = (parts[11].split("=").length == 2) ? parts[11].split("=")[1] : null;
+				String endDate = (parts[12].split("=").length == 2) ? parts[12].split("=")[1] : null;
 
 				log.info("HTTP headers successfully parsed, now calling XdsB registry...");
-				
-				// Issue PDQ query...
-//				PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.QueryPatientDemographics(firstName,
-//						lastName,
-//						middleName,
-//						dateOfBirth,
-//						gender,
-//						motherMaidenName,
-//						addressStreet,
-//						addressCity,
-//						addressState,
-//						addressPostalCode,
-//						patientId,
-//						otherIDsScopingOrganization,
-//						startDate,
-//						endDate);
-				
-				AdhocQueryResponse registryResponse = xdsB.registryStoredQuery(enterpriseMRN,
+								
+				AdhocQueryResponse registryResponse = xdsB.registryStoredQuery(patientId,
 						(startDate != null) ? DateFormat.getDateInstance().format(startDate) : null,
 						(endDate != null) ? DateFormat.getDateInstance().format(endDate) : null);
 				
@@ -332,32 +317,35 @@ public class GetPatientDataService
 	
 												if (handler.isValid())
 												{
-													log.info("Invoking map, document ID="
-															+ document.getDocumentUniqueId().getLongName());
+//													log.info("Invoking map, document ID="
+//															+ document.getDocumentUniqueId().getLongName());
 													
-													String mapOutput = invokeMap(filename);
+//													String mapOutput = invokeMap(filename);
 
-													log.info("Map invocation successful, document ID="
-															+ document.getDocumentUniqueId().getLongName());
+//													log.info("Map invocation successful, document ID="
+//															+ document.getDocumentUniqueId().getLongName());
 
 													// Persist transformed CCDA to filesystem for auditing...
-													Files.write(Paths.get("test/" + document.getDocumentUniqueId().getLongName() + "_TransformedToPatientPortalXML.xml"),
-															mapOutput.getBytes());
+//													Files.write(Paths.get("test/" + document.getDocumentUniqueId().getLongName() + "_TransformedToPatientPortalXML.xml"),
+//															mapOutput.getBytes());
 
-													log.info("Persisted transformed CCDA document to filesystem, filename="
-															+ "test/"
-															+ document.getDocumentUniqueId().getLongName()
-															+ "_TransformedToPatientPortalXML.xml");
+//													log.info("Persisted transformed CCDA document to filesystem, filename="
+//															+ "test/"
+//															+ document.getDocumentUniqueId().getLongName()
+//															+ "_TransformedToPatientPortalXML.xml");
+
+													log.info("Invoking XSL transform, document ID="
+															+ document.getDocumentUniqueId().getLongName());
 
 											        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 											        factory.setNamespaceAware(true);
 											        DocumentBuilder builder = factory.newDocumentBuilder();
-											        Document mappedDoc = builder.parse(new File("test/" + document.getDocumentUniqueId().getLongName() + "_TransformedToPatientPortalXML.xml"));
+											        Document mappedDoc = builder.parse(new File(/*"test/" + document.getDocumentUniqueId().getLongName() + "_TransformedToPatientPortalXML.xml"*/ filename));
 											        DOMSource source = new DOMSource(mappedDoc);
 											 
 											        TransformerFactory transformerFactory = TransformerFactory.newInstance();
 											        
-											        Transformer transformer = transformerFactory.newTransformer(new StreamSource("test/xml2json.xsl"));
+											        Transformer transformer = transformerFactory.newTransformer(new StreamSource(GetPatientDataService.cdaToJsonTransformXslt));
 													String jsonFilename = "test/" + document.getDocumentUniqueId().getLongName() + ".json";
 													File jsonFile = new File(jsonFilename);
 													FileOutputStream jsonFileOutStream = new FileOutputStream(jsonFile);

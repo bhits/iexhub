@@ -32,6 +32,11 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 
+/**
+ * @author A. Sute
+ *
+ */
+
 @Path("/TranslateInbound")
 public class TranslateInboundService
 {

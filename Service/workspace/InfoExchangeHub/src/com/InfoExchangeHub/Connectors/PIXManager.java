@@ -29,6 +29,11 @@ import com.InfoExchangeHub.Exceptions.*;
 
 import PIXManager.src.com.InfoExchangeHub.Services.Client.PIXManager_ServiceStub;
 
+/**
+ * @author A. Sute
+ *
+ */
+
 public class PIXManager
 {
     private static String keyStoreFile = "c:/temp/1264.jks";
@@ -47,6 +52,7 @@ public class PIXManager
 
 	private static String endpointURI = null;
     private static String receiverApplicationName = "2.16.840.1.113883.3.72.6.5.100.556";
+    private static String receiverApplicationRepresentedOrganization = "2.16.840.1.113883.3.72.6.1";
 	private static String providerOrganizationName = "HIE Portal";
 	private static String providerOrganizationContactTelecom = "555-555-5555";
 	private static String providerOrganizationOID = "1.2.840.114350.1.13.99998.8734";
@@ -77,6 +83,8 @@ public class PIXManager
 					: Boolean.parseBoolean(props.getProperty("DebugSSL"));
 			PIXManager.receiverApplicationName = (props.getProperty("PIXReceiverApplicationName") == null) ? PIXManager.receiverApplicationName
 					: props.getProperty("PIXReceiverApplicationName");
+			PIXManager.receiverApplicationRepresentedOrganization = (props.getProperty("PIXReceiverApplicationRepresentedOrganization") == null) ? PIXManager.receiverApplicationRepresentedOrganization
+					: props.getProperty("PIXReceiverApplicationRepresentedOrganization");
 			PIXManager.providerOrganizationName = (props.getProperty("PIXProviderOrganizationName") == null) ? PIXManager.providerOrganizationName
 					: props.getProperty("PIXProviderOrganizationName");
 			PIXManager.providerOrganizationContactTelecom = (props.getProperty("PIXProviderOrganizationContactTelecom") == null) ? PIXManager.providerOrganizationContactTelecom
@@ -335,7 +343,7 @@ public class PIXManager
 		senderDevice.setClassCode(EntityClassDevice.DEV);
 		senderDevice.setDeterminerCode("INSTANCE");
 		II senderDeviceId = new II();
-		senderDeviceId.setRoot("1.2.840.114350.1.13.99998.8734");
+		senderDeviceId.setRoot(PIXManager.iExHubDomainOid);
 		senderDevice.getId().add(senderDeviceId);
 		sender.setDevice(senderDevice);
 		pRPA_IN201309UV02.setSender(sender);
@@ -346,8 +354,8 @@ public class PIXManager
 		COCTMT090100UV01AssignedPerson assignedPerson = new COCTMT090100UV01AssignedPerson();
 		assignedPerson.setClassCode("ASSIGNED");
 		II assignedPersonId = new II();
-		assignedPersonId.setRoot("1.2.840.114350.1.13.99997.2.7766");
-		assignedPersonId.setExtension("USR5568");
+		assignedPersonId.setRoot(PIXManager.iExHubDomainOid);
+		assignedPersonId.setExtension("IExHub");
 		assignedPerson.getId().add(assignedPersonId);
 		authorOrPerformer.setAssignedPerson(objectFactory.createQUQIMT021001UV01AuthorOrPerformerAssignedPerson(assignedPerson));
 		
@@ -495,7 +503,7 @@ public class PIXManager
 		representedOrganization.setDeterminerCode("INSTANCE");
 		representedOrganization.setClassCode("ORG");
 		II representedOrganizationId = new II();
-		representedOrganizationId.setRoot("2.16.840.1.113883.3.72.6.1");
+		representedOrganizationId.setRoot(PIXManager.receiverApplicationRepresentedOrganization);
 		representedOrganization.getId().add(representedOrganizationId);
 		asAgent.setRepresentedOrganization(objectFactory.createMCCIMT000100UV01AgentRepresentedOrganization(representedOrganization));
 		receiverDevice.setAsAgent(objectFactory.createMCCIMT000100UV01DeviceAsAgent(asAgent));
@@ -509,7 +517,7 @@ public class PIXManager
 		senderDevice.setClassCode(EntityClassDevice.DEV);
 		senderDevice.setDeterminerCode("INSTANCE");
 		II senderDeviceId = new II();
-		senderDeviceId.setRoot("1.2.840.114350.1.13.99998.8734");
+		senderDeviceId.setRoot(PIXManager.iExHubDomainOid);
 		senderDevice.getId().add(senderDeviceId);
 		MCCIMT000100UV01Agent senderAsAgent = new MCCIMT000100UV01Agent();
 		senderAsAgent.getClassCode().add("AGNT");
@@ -517,7 +525,7 @@ public class PIXManager
 		senderRepresentedOrganization.setDeterminerCode("INSTANCE");
 		senderRepresentedOrganization.setClassCode("ORG");
 		II senderRepresentedOrganizationId = new II();
-		senderRepresentedOrganizationId.setRoot("1.2.840.114350.1.13");
+		senderRepresentedOrganizationId.setRoot(PIXManager.iExHubDomainOid);
 		senderRepresentedOrganization.getId().add(senderRepresentedOrganizationId);
 		senderAsAgent.setRepresentedOrganization(objectFactory.createMCCIMT000100UV01AgentRepresentedOrganization(senderRepresentedOrganization));
 		senderDevice.setAsAgent(objectFactory.createMCCIMT000100UV01DeviceAsAgent(senderAsAgent));

@@ -18,6 +18,11 @@ import com.InfoExchangeHub.Exceptions.MapFileCreationException;
 import com.InfoExchangeHub.Exceptions.URLToMapFileCopyException;
 import com.InfoExchangeHub.Exceptions.UnexpectedServerException;
 
+/**
+ * @author A. Sute
+ *
+ */
+
 @Path("/CreateApplicationMap")
 public class CreateApplicationMapService
 {

@@ -59,6 +59,7 @@ import XdsBDocumentRepository.src.oasis.names.tc.ebxml_regrep.xsd.rim._3.Localiz
  * @author A. Sute
  *
  */
+
 public class XdsBRepositoryManager
 {
 	/** Logger */
@@ -86,37 +87,40 @@ public class XdsBRepositoryManager
 	private static String repositoryEndpointURI = null;
 	private static String iExHubDomainOid = "1.3.6.1.4.1.21367.13.60.232";
 
-	private static final String documentAuthorClassificationScheme = "urn:uuid:93606bcf-9494-43ec-9b4e-a7748d1a838d";
-	private static final String documentClassCodesClassificationScheme = "urn:uuid:41a5887f-8865-4c09-adf7-e362475b143a";
-	private static final String documentConfidentialityCodesClassificationScheme = "urn:uuid:f4f85eac-e6cb-4883-b524-f2705394840f";
-	private static final String documentContentTypeClassificationScheme = "urn:uuid:f0306f51-975f-434e-a61c-c59651d33983";
-	private static final String documentFormatCodesClassificationScheme = "urn:uuid:a09d5840-386c-46f2-b5ad-9c3699a4309d";
-	private static final String documentFormatCodesNodeRepresentation = "urn:ihe:iti:xds-sd:text:2008";
-	private static final String documentFormatCodesCodingScheme = "1.3.6.1.4.1.19376.1.2.3";
-	private static final String documentFormatCodesName = "Health encounter site";
-	private static final String documentHealthcareFacilityTypeCodesClassificationScheme = "urn:uuid:f33fb8ac-18af-42cc-ae0e-ed0b0bdb91e1";
-	private static final String documentHealthcareFacilityTypeCodesNodeRepresentation = "unobtainable";
-	private static final String documentPracticeSettingCodesClassificationScheme = "urn:uuid:cccf5598-8b07-4b77-a05e-ae952c785ead";
-	private static final String documentPracticeSettingCodesNodeRepresentation = "unobtainable";
-	private static final String documentPracticeSettingCodesCodingScheme = "Connect-a-thon practiceSettingCodes";
+	private static String documentAuthorClassificationScheme = "urn:uuid:93606bcf-9494-43ec-9b4e-a7748d1a838d";
+	private static String documentClassCodesClassificationScheme = "urn:uuid:41a5887f-8865-4c09-adf7-e362475b143a";
+	private static String documentConfidentialityCodesClassificationScheme = "urn:uuid:f4f85eac-e6cb-4883-b524-f2705394840f";
+	private static String documentContentTypeClassificationScheme = "urn:uuid:f0306f51-975f-434e-a61c-c59651d33983";
+	private static String documentFormatCodesClassificationScheme = "urn:uuid:a09d5840-386c-46f2-b5ad-9c3699a4309d";
+	private static String documentFormatCodesNodeRepresentation = "urn:ihe:iti:xds-sd:text:2008";
+	private static String documentFormatCodesCodingScheme = "1.3.6.1.4.1.19376.1.2.3";
+	private static String documentFormatCodesName = "Health encounter site";
+	private static String documentHealthcareFacilityTypeCodesClassificationScheme = "urn:uuid:f33fb8ac-18af-42cc-ae0e-ed0b0bdb91e1";
+	private static String documentHealthcareFacilityTypeCodesNodeRepresentation = "unobtainable";
+	private static String documentPracticeSettingCodesClassificationScheme = "urn:uuid:cccf5598-8b07-4b77-a05e-ae952c785ead";
+	private static String documentPracticeSettingCodesNodeRepresentation = "unobtainable";
+	private static String documentPracticeSettingCodesCodingScheme = "Connect-a-thon practiceSettingCodes";
+	private static String documentHealthcareFacilityTypeCodesCodingScheme = "Connect-a-thon healthcareFacilityTypeCodes";
+	private static String documentHealthcareFacilityTypeCodesName = "unobtainable";
+	private static String documentPracticeSettingCodesDisplayName = "unobtainable";
 
-	private static final String extrinsicObjectExternalIdentifierPatientIdIdentificationScheme = "urn:uuid:58a6f841-87b3-4a3e-92fd-a8ffeff98427";
-	private static final String extrinsicObjectExternalIdentifierPatientIdName = "XDSDocumentEntry.patientId";
-	private static final String extrinsicObjectExternalIdentifierUniqueIdIdentificationScheme = "urn:uuid:2e82c1f6-a085-4c72-9da3-8640a32e42ab";
-	private static final String extrinsicObjectExternalIdentifierUniqueIdName = "XDSDocumentEntry.uniqueId";
+	private static String extrinsicObjectExternalIdentifierPatientIdIdentificationScheme = "urn:uuid:58a6f841-87b3-4a3e-92fd-a8ffeff98427";
+	private static String extrinsicObjectExternalIdentifierPatientIdName = "XDSDocumentEntry.patientId";
+	private static String extrinsicObjectExternalIdentifierUniqueIdIdentificationScheme = "urn:uuid:2e82c1f6-a085-4c72-9da3-8640a32e42ab";
+	private static String extrinsicObjectExternalIdentifierUniqueIdName = "XDSDocumentEntry.uniqueId";
 
-	private static final String submissionSetUniqueOidPrefix = "1.2.3.4.5";
+	private static String submissionSetOid = "1.2.3.4.5";
 
-	private static final String registryPackageAuthorClassificationScheme = "urn:uuid:a7058bb9-b4e4-4307-ba5b-e3f0ab85e12d";
-	private static final String registryPackageContentTypeCodesClassificationScheme = "urn:uuid:aa543740-bdda-424e-8c96-df4873be8500";
-	private static final String registryPackageSubmissionSetUniqueIdIdentificationScheme = "urn:uuid:96fdda7c-d067-4183-912e-bf5ee74998a8";
-	private static final String registryPackageSubmissionSetSourceIdIdentificationScheme = "urn:uuid:554ac39e-e3fe-47fe-b233-965d2a147832";
-	private static final String registryPackageSubmissionSetPatientIdIdentificationScheme = "urn:uuid:6b5aea1a-874d-4603-a4bc-96a0a7b38446";
-	private static final String registryObjectListSubmissionSetClassificationNode = "urn:uuid:a54d6aa5-d40d-43f9-88c5-b4633d873bdd";
+	private static String registryPackageAuthorClassificationScheme = "urn:uuid:a7058bb9-b4e4-4307-ba5b-e3f0ab85e12d";
+	private static String registryPackageContentTypeCodesClassificationScheme = "urn:uuid:aa543740-bdda-424e-8c96-df4873be8500";
+	private static String registryPackageSubmissionSetUniqueIdIdentificationScheme = "urn:uuid:96fdda7c-d067-4183-912e-bf5ee74998a8";
+	private static String registryPackageSubmissionSetSourceIdIdentificationScheme = "urn:uuid:554ac39e-e3fe-47fe-b233-965d2a147832";
+	private static String registryPackageSubmissionSetPatientIdIdentificationScheme = "urn:uuid:6b5aea1a-874d-4603-a4bc-96a0a7b38446";
+	private static String registryObjectListSubmissionSetClassificationNode = "urn:uuid:a54d6aa5-d40d-43f9-88c5-b4633d873bdd";
 
-	private static final String externalIdentifierSubmissionSetUniqueIdName = "XDSSubmissionSet.uniqueId";
-	private static final String externalIdentifierSubmissionSetSourceIdName = "XDSSubmissionSet.sourceId";
-	private static final String externalIdentifierSubmissionSetPatientIdName = "XDSSubmissionSet.patientId";
+	private static String externalIdentifierSubmissionSetUniqueIdName = "XDSSubmissionSet.uniqueId";
+	private static String externalIdentifierSubmissionSetSourceIdName = "XDSSubmissionSet.sourceId";
+	private static String externalIdentifierSubmissionSetPatientIdName = "XDSSubmissionSet.patientId";
 
 	
 	public static void setRepositoryEndpointURI(String repositoryEndpointURI)
@@ -159,6 +163,71 @@ public class XdsBRepositoryManager
 					: props.getProperty("XdsBCipherSuites");
 			XdsBRepositoryManager.httpsProtocols = (props.getProperty("XdsBHttpsProtocols") == null) ? XdsBRepositoryManager.httpsProtocols
 					: props.getProperty("XdsBHttpsProtocols");
+
+			XdsBRepositoryManager.documentAuthorClassificationScheme = (props.getProperty("XdsBDocumentAuthorClassificationScheme") == null) ? XdsBRepositoryManager.documentAuthorClassificationScheme
+					: props.getProperty("XdsBDocumentAuthorClassificationScheme");
+			XdsBRepositoryManager.documentClassCodesClassificationScheme = (props.getProperty("XdsBDocumentClassCodesClassificationScheme") == null) ? XdsBRepositoryManager.documentClassCodesClassificationScheme
+					: props.getProperty("XdsBDocumentClassCodesClassificationScheme");
+			XdsBRepositoryManager.documentConfidentialityCodesClassificationScheme = (props.getProperty("XdsBDocumentConfidentialityCodesClassificationScheme") == null) ? XdsBRepositoryManager.documentConfidentialityCodesClassificationScheme
+					: props.getProperty("XdsBDocumentConfidentialityCodesClassificationScheme");
+			XdsBRepositoryManager.documentContentTypeClassificationScheme = (props.getProperty("XdsBDocumentContentTypeClassificationScheme") == null) ? XdsBRepositoryManager.documentContentTypeClassificationScheme
+					: props.getProperty("XdsBDocumentContentTypeClassificationScheme");
+			XdsBRepositoryManager.documentFormatCodesClassificationScheme = (props.getProperty("XdsBDocumentFormatCodesClassificationScheme") == null) ? XdsBRepositoryManager.documentFormatCodesClassificationScheme
+					: props.getProperty("XdsBDocumentFormatCodesClassificationScheme");
+			XdsBRepositoryManager.documentFormatCodesNodeRepresentation = (props.getProperty("XdsBDocumentFormatCodesNodeRepresentation") == null) ? XdsBRepositoryManager.documentFormatCodesNodeRepresentation
+					: props.getProperty("XdsBDocumentFormatCodesNodeRepresentation");
+			XdsBRepositoryManager.documentFormatCodesCodingScheme = (props.getProperty("XdsBDocumentFormatCodesCodingScheme") == null) ? XdsBRepositoryManager.documentFormatCodesCodingScheme
+					: props.getProperty("XdsBDocumentFormatCodesCodingScheme");
+			XdsBRepositoryManager.documentFormatCodesName = (props.getProperty("XdsBDocumentFormatCodesName") == null) ? XdsBRepositoryManager.documentFormatCodesName
+					: props.getProperty("XdsBDocumentFormatCodesName");
+			XdsBRepositoryManager.documentHealthcareFacilityTypeCodesClassificationScheme = (props.getProperty("XdsBDocumentHealthcareFacilityTypeCodesClassificationScheme") == null) ? XdsBRepositoryManager.documentHealthcareFacilityTypeCodesClassificationScheme
+					: props.getProperty("XdsBDocumentHealthcareFacilityTypeCodesClassificationScheme");
+			XdsBRepositoryManager.documentHealthcareFacilityTypeCodesNodeRepresentation = (props.getProperty("XdsBDocumentHealthcareFacilityTypeCodesNodeRepresentation") == null) ? XdsBRepositoryManager.documentHealthcareFacilityTypeCodesNodeRepresentation
+					: props.getProperty("XdsBDocumentHealthcareFacilityTypeCodesNodeRepresentation");
+			XdsBRepositoryManager.documentPracticeSettingCodesClassificationScheme = (props.getProperty("XdsBDocumentPracticeSettingCodesClassificationScheme") == null) ? XdsBRepositoryManager.documentPracticeSettingCodesClassificationScheme
+					: props.getProperty("XdsBDocumentPracticeSettingCodesClassificationScheme");
+			XdsBRepositoryManager.documentPracticeSettingCodesNodeRepresentation = (props.getProperty("XdsBDocumentPracticeSettingCodesNodeRepresentation") == null) ? XdsBRepositoryManager.documentPracticeSettingCodesNodeRepresentation
+					: props.getProperty("XdsBDocumentPracticeSettingCodesNodeRepresentation");
+			XdsBRepositoryManager.documentPracticeSettingCodesCodingScheme = (props.getProperty("XdsBDocumentPracticeSettingCodesCodingScheme") == null) ? XdsBRepositoryManager.documentPracticeSettingCodesCodingScheme
+					: props.getProperty("XdsBDocumentPracticeSettingCodesCodingScheme");
+			XdsBRepositoryManager.documentHealthcareFacilityTypeCodesCodingScheme = (props.getProperty("XdsBDocumentHealthcareFacilityTypeCodesCodingScheme") == null) ? XdsBRepositoryManager.documentHealthcareFacilityTypeCodesCodingScheme
+					: props.getProperty("XdsBDocumentHealthcareFacilityTypeCodesCodingScheme");
+			XdsBRepositoryManager.documentHealthcareFacilityTypeCodesName = (props.getProperty("XdsBDocumentHealthcareFacilityTypeCodesName") == null) ? XdsBRepositoryManager.documentHealthcareFacilityTypeCodesName
+					: props.getProperty("XdsBDocumentHealthcareFacilityTypeCodesName");
+			XdsBRepositoryManager.documentPracticeSettingCodesDisplayName = (props.getProperty("XdsBDocumentPracticeSettingCodesDisplayName") == null) ? XdsBRepositoryManager.documentPracticeSettingCodesDisplayName
+					: props.getProperty("XdsBDocumentPracticeSettingCodesDisplayName");
+
+			XdsBRepositoryManager.extrinsicObjectExternalIdentifierPatientIdIdentificationScheme = (props.getProperty("XdsBExtrinsicObjectExternalIdentifierPatientIdIdentificationScheme") == null) ? XdsBRepositoryManager.extrinsicObjectExternalIdentifierPatientIdIdentificationScheme
+					: props.getProperty("XdsBExtrinsicObjectExternalIdentifierPatientIdIdentificationScheme");
+			XdsBRepositoryManager.extrinsicObjectExternalIdentifierPatientIdName = (props.getProperty("XdsBExtrinsicObjectExternalIdentifierPatientIdName") == null) ? XdsBRepositoryManager.extrinsicObjectExternalIdentifierPatientIdName
+					: props.getProperty("XdsBExtrinsicObjectExternalIdentifierPatientIdName");
+			XdsBRepositoryManager.extrinsicObjectExternalIdentifierUniqueIdIdentificationScheme = (props.getProperty("XdsBExtrinsicObjectExternalIdentifierUniqueIdIdentificationScheme") == null) ? XdsBRepositoryManager.extrinsicObjectExternalIdentifierUniqueIdIdentificationScheme
+					: props.getProperty("XdsBExtrinsicObjectExternalIdentifierUniqueIdIdentificationScheme");
+			XdsBRepositoryManager.extrinsicObjectExternalIdentifierUniqueIdName = (props.getProperty("XdsBExtrinsicObjectExternalIdentifierUniqueIdName") == null) ? XdsBRepositoryManager.extrinsicObjectExternalIdentifierUniqueIdName
+					: props.getProperty("XdsBExtrinsicObjectExternalIdentifierUniqueIdName");
+
+			XdsBRepositoryManager.registryPackageAuthorClassificationScheme = (props.getProperty("XdsBRegistryPackageAuthorClassificationScheme") == null) ? XdsBRepositoryManager.registryPackageAuthorClassificationScheme
+					: props.getProperty("XdsBRegistryPackageAuthorClassificationScheme");
+			XdsBRepositoryManager.registryPackageContentTypeCodesClassificationScheme = (props.getProperty("XdsBRegistryPackageContentTypeCodesClassificationScheme") == null) ? XdsBRepositoryManager.registryPackageContentTypeCodesClassificationScheme
+					: props.getProperty("XdsBRegistryPackageContentTypeCodesClassificationScheme");
+			XdsBRepositoryManager.registryPackageSubmissionSetUniqueIdIdentificationScheme = (props.getProperty("XdsBRegistryPackageSubmissionSetUniqueIdIdentificationScheme") == null) ? XdsBRepositoryManager.registryPackageSubmissionSetUniqueIdIdentificationScheme
+					: props.getProperty("XdsBRegistryPackageSubmissionSetUniqueIdIdentificationScheme");
+			XdsBRepositoryManager.registryPackageSubmissionSetSourceIdIdentificationScheme = (props.getProperty("XdsBRegistryPackageSubmissionSetSourceIdIdentificationScheme") == null) ? XdsBRepositoryManager.registryPackageSubmissionSetSourceIdIdentificationScheme
+					: props.getProperty("XdsBRegistryPackageSubmissionSetSourceIdIdentificationScheme");
+			XdsBRepositoryManager.registryPackageSubmissionSetPatientIdIdentificationScheme = (props.getProperty("XdsBRegistryPackageSubmissionSetPatientIdIdentificationScheme") == null) ? XdsBRepositoryManager.registryPackageSubmissionSetPatientIdIdentificationScheme
+					: props.getProperty("XdsBRegistryPackageSubmissionSetPatientIdIdentificationScheme");
+			XdsBRepositoryManager.registryObjectListSubmissionSetClassificationNode = (props.getProperty("XdsBRegistryObjectListSubmissionSetClassificationNode") == null) ? XdsBRepositoryManager.registryObjectListSubmissionSetClassificationNode
+					: props.getProperty("XdsBRegistryObjectListSubmissionSetClassificationNode");
+
+			XdsBRepositoryManager.externalIdentifierSubmissionSetUniqueIdName = (props.getProperty("XdsBExternalIdentifierSubmissionSetUniqueIdName") == null) ? XdsBRepositoryManager.externalIdentifierSubmissionSetUniqueIdName
+					: props.getProperty("XdsBExternalIdentifierSubmissionSetUniqueIdName");
+			XdsBRepositoryManager.externalIdentifierSubmissionSetSourceIdName = (props.getProperty("XdsBExternalIdentifierSubmissionSetSourceIdName") == null) ? XdsBRepositoryManager.externalIdentifierSubmissionSetSourceIdName
+					: props.getProperty("XdsBExternalIdentifierSubmissionSetSourceIdName");
+			XdsBRepositoryManager.externalIdentifierSubmissionSetPatientIdName = (props.getProperty("XdsBExternalIdentifierSubmissionSetPatientIdName") == null) ? XdsBRepositoryManager.externalIdentifierSubmissionSetPatientIdName
+					: props.getProperty("XdsBExternalIdentifierSubmissionSetPatientIdName");
+
+			XdsBRepositoryManager.submissionSetOid = (props.getProperty("XdsBSubmissionSetOid") == null) ? XdsBRepositoryManager.submissionSetOid
+					: props.getProperty("XdsBSubmissionSetOid");
 
 			// If endpoint URI's are null, then set to the values in the properties file...
 			if (registryEndpointURI == null)
@@ -639,9 +708,6 @@ public class XdsBRepositoryManager
 					// authorPerson rim:Slot
 					StringBuilder authorName = new StringBuilder();
 					xPath = XPathFactory.newInstance().newXPath();
-//					NodeList subNodes = (NodeList)xPath.evaluate("/ClinicalDocument/author/assignedAuthor/assignedPerson/name/prefix",
-//					        doc.getDocumentElement(),
-//					        XPathConstants.NODESET);
 					NodeList subNodes = (NodeList)xPath.evaluate("assignedAuthor/assignedPerson",
 							nodes.item(i).getChildNodes(),
 							XPathConstants.NODESET);
@@ -720,11 +786,6 @@ public class XdsBRepositoryManager
 			        XPathConstants.NODESET);
 			if (nodes.getLength() > 0)
 			{
-//				if (((Element)nodes.item(0)).getAttribute("code") != null)
-//				{
-//					classification.setNodeRepresentation(((Element)nodes.item(0)).getAttribute("code"));
-//				}
-
 				classification.setNodeRepresentation("*");
 				
 				slot = new SlotType1();
@@ -817,12 +878,12 @@ public class XdsBRepositoryManager
 			slot = new SlotType1();
 			slot.setName("codingScheme");
 			valueList = new ValueListType();
-		    valueList.getValue().add(/*DocumentHealthcareFacilityTypeCodesCodingScheme*/ "Connect-a-thon healthcareFacilityTypeCodes");
+		    valueList.getValue().add(documentHealthcareFacilityTypeCodesCodingScheme);
 			slot.setValueList(valueList);
 			classification.getSlot().add(slot);
 			text = new InternationalStringType();
 			localizedText = new LocalizedStringType();
-			localizedText.setValue(/*DocumentHealthcareFacilityTypeCodesName*/ "unobtainable");
+			localizedText.setValue(documentHealthcareFacilityTypeCodesName);
 			text.getLocalizedString().add(localizedText);
 			classification.setName(text);
 			extrinsicObject.getClassification().add(classification);
@@ -832,7 +893,6 @@ public class XdsBRepositoryManager
 			classification.setId(UUID.randomUUID().toString());
 			classification.setClassificationScheme(documentPracticeSettingCodesClassificationScheme);
 			classification.setClassifiedObject(documentId);
-//			classification.setNodeRepresentation(DocumentPracticeSettingCodesNodeRepresentation);
 			xPath = XPathFactory.newInstance().newXPath();
 			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/code",
 			        doc.getDocumentElement(),
@@ -841,7 +901,7 @@ public class XdsBRepositoryManager
 			{
 				if (((Element)nodes.item(0)).getAttribute("code") != null)
 				{
-					classification.setNodeRepresentation(/*((Element)nodes.item(0)).getAttribute("code")*/ documentPracticeSettingCodesNodeRepresentation);
+					classification.setNodeRepresentation(documentPracticeSettingCodesNodeRepresentation);
 				}
 				
 				slot = new SlotType1();
@@ -850,7 +910,7 @@ public class XdsBRepositoryManager
 				if (((Element)nodes.item(0)).getAttribute("codeSystem") != null)
 				{
 					valueList = new ValueListType();
-				    valueList.getValue().add(/*((Element)nodes.item(0)).getAttribute("codeSystem")*/ documentPracticeSettingCodesCodingScheme);
+				    valueList.getValue().add(documentPracticeSettingCodesCodingScheme);
 					slot.setValueList(valueList);
 					classification.getSlot().add(slot);
 				}
@@ -859,7 +919,7 @@ public class XdsBRepositoryManager
 				{
 					text = new InternationalStringType();
 					localizedText = new LocalizedStringType();
-					localizedText.setValue(/*((Element)nodes.item(0)).getAttribute("displayName")*/ "unobtainable");
+					localizedText.setValue(documentPracticeSettingCodesDisplayName);
 					text.getLocalizedString().add(localizedText);
 					classification.setName(text);
 				}
@@ -1086,7 +1146,7 @@ public class XdsBRepositoryManager
 			submissionSetUniqueId.setRegistryObject(submissionSetId);
 			submissionSetUniqueId.setIdentificationScheme(registryPackageSubmissionSetUniqueIdIdentificationScheme);
 			DateTime oidTimeValue = DateTime.now(DateTimeZone.UTC);
-			submissionSetUniqueId.setValue(submissionSetUniqueOidPrefix
+			submissionSetUniqueId.setValue(submissionSetOid
 					+ "."
 					+ oidTimeValue.getMillis());
 			

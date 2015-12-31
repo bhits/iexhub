@@ -2,6 +2,11 @@ package com.InfoExchangeHub.Services;
 
 import java.util.Date;
 
+/**
+ * @author A. Sute
+ *
+ */
+
 public class RequestMsg
 {
 	public String getEnterpriseMasterRecordNumber() {
