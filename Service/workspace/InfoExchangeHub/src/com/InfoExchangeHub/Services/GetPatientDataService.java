@@ -55,6 +55,8 @@ import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub.AdhocQue
 import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub.ExternalIdentifierType;
 import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub.ExtrinsicObjectType;
 import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub.IdentifiableType;
+import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub.RegistryErrorList_type0;
+import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub.RegistryError_type0;
 import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub.RegistryObjectListType;
 import com.InfoExchangeHub.Services.Client.DocumentRepository_ServiceStub.DocumentResponse_type0;
 import com.InfoExchangeHub.Services.Client.DocumentRepository_ServiceStub.RetrieveDocumentSetResponse;
@@ -220,6 +222,34 @@ public class GetPatientDataService
 						(endDate != null) ? DateFormat.getDateInstance().format(endDate) : null);
 				
 				log.info("Call to XdsB registry successful");
+				
+				// Determine if registry server returned any errors...
+				if ((registryResponse.getRegistryErrorList() != null) &&
+					(registryResponse.getRegistryErrorList().getRegistryError().length > 0))
+				{
+					for (RegistryError_type0 error : registryResponse.getRegistryErrorList().getRegistryError())
+					{
+						StringBuilder errorText = new StringBuilder();
+						if (error.getErrorCode() != null)
+						{
+							errorText.append("Error code=" + error.getErrorCode() + "\n");
+						}
+						if (error.getCodeContext() != null)
+						{
+							errorText.append("Error code context=" + error.getCodeContext() + "\n");
+						}
+						
+						// Error code location (i.e., stack trace) only to be logged to IExHub error file
+						patientDataResponse.getErrorMsgs().add(errorText.toString());
+						
+						if (error.getLocation() != null)
+						{
+							errorText.append("Error location=" + error.getLocation());
+						}
+						
+						log.error(errorText.toString());
+					}
+				}
 				
 				// Try to retrieve documents...
 				RegistryObjectListType registryObjectList = registryResponse.getRegistryObjectList();
