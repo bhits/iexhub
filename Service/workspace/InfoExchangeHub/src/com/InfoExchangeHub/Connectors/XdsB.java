@@ -368,6 +368,11 @@ public class XdsB
 	private void logIti18AuditMsg(String queryText,
 			String patientId) throws IOException
 	{
+		if (sysLogConfig == null)
+		{
+			return;
+		}
+
 		String logMsg = FileUtils.readFileToString(new File(iti18AuditMsgTemplate));
 		
 		// Substitutions...
@@ -412,6 +417,11 @@ public class XdsB
 			String homeCommunityId,
 			String patientId) throws IOException
 	{
+		if (sysLogConfig == null)
+		{
+			return;
+		}
+
 		String logMsg = FileUtils.readFileToString(new File(iti43AuditMsgTemplate));
 		
 		// Substitutions...

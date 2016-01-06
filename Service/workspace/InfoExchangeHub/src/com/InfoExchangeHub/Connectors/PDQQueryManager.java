@@ -158,6 +158,11 @@ public class PDQQueryManager
 	private void logIti47AuditMsg(String queryText,
 			String patientId) throws IOException
 	{
+		if (sysLogConfig == null)
+		{
+			return;
+		}
+
 		String logMsg = FileUtils.readFileToString(new File(iti47AuditMsgTemplate));
 		
 		// Substitutions...

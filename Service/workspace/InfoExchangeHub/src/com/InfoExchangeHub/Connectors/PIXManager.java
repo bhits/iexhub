@@ -182,6 +182,11 @@ public class PIXManager
 
 	private void logIti44AuditMsg(String patientId) throws IOException
 	{
+		if (sysLogConfig == null)
+		{
+			return;
+		}
+
 		String logMsg = FileUtils.readFileToString(new File(iti44AuditMsgTemplate));
 		
 		// Substitutions...
@@ -223,6 +228,11 @@ public class PIXManager
 	private void logIti45AuditMsg(String queryText,
 			String patientId) throws IOException
 	{
+		if (sysLogConfig == null)
+		{
+			return;
+		}
+
 		String logMsg = FileUtils.readFileToString(new File(iti45AuditMsgTemplate));
 		
 		// Substitutions...
