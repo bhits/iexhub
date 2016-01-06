@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!-- IExHub Audit Event Template: ITI-18 Registry Stored Query -->
+<AuditMessage>
+  <EventIdentification EventActionCode="E" EventDateTime="$DateTime$" EventOutcomeIndicator="0">
+    <EventID codeSystemName="DCM" csd-code="110112" originalText="Query"/>
+    <EventTypeCode codeSystemName="IHE Transactions" csd-code="ITI-18"
+      originalText="Registry Stored Query"/>
+  </EventIdentification>
+  <ActiveParticipant AlternativeUserID="$AltUserId$" NetworkAccessPointID="$IexhubIpAddress$"
+    NetworkAccessPointTypeCode="1" UserID="$IexhubUserId$" UserIsRequestor="true">
+    <RoleIDCode codeSystemName="DCM" csd-code="110153" originalText="Source"/>
+  </ActiveParticipant>
+  <ActiveParticipant NetworkAccessPointID="$DestinationIpAddress$" NetworkAccessPointTypeCode="1"
+    UserID="$DestinationUserId$" UserIsRequestor="false">
+    <RoleIDCode codeSystemName="DCM" csd-code="110152" originalText="Destination"/>
+  </ActiveParticipant>
+  <AuditSourceIdentification AuditEnterpriseSiteID="IEXHUB" AuditSourceID="IEXHUB" code="9"/>
+  <ParticipantObjectIdentification
+    ParticipantObjectID="urn:uuid:14d4debf-8f97-4251-9a74-a90016b0af0d"
+    ParticipantObjectTypeCode="2" ParticipantObjectTypeCodeRole="24">
+    <ParticipantObjectIDTypeCode codeSystemName="IHE Transactions" csd-code="ITI-18"
+      originalText="Registry Stored Query"/>
+    <ParticipantObjectQuery>$RegistryQueryMtom$</ParticipantObjectQuery>
+  </ParticipantObjectIdentification>
+  <ParticipantObjectIdentification ParticipantObjectID="$PatientId$" ParticipantObjectTypeCode="1"
+    ParticipantObjectTypeCodeRole="1">
+    <ParticipantObjectIDTypeCode codeSystemName="RFC-3881" csd-code="2"
+      originalText="Patient Number"/>
+  </ParticipantObjectIdentification>
+</AuditMessage>

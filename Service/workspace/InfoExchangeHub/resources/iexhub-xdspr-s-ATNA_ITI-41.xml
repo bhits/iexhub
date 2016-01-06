@@ -1,0 +1,30 @@
+<!-- DICOM compatible -->
+<!-- IExHub Audit Event: ITI-41 Provide and Register Document Set-b -->
+<AuditMessage xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <EventIdentification EventActionCode="R"
+      EventDateTime="$DateTime$" EventOutcomeIndicator="0">
+      <EventID csd-code="110106" codeSystemName="DCM" originalText="Export"/>
+      <EventTypeCode csd-code="ITI-41" codeSystemName="IHE Transactions" originalText="Provide and Register Document Set-b"/>
+   </EventIdentification>
+   <ActiveParticipant AlternativeUserID="$AltUserId$" NetworkAccessPointID="$IexhubIpAddress$"
+      NetworkAccessPointTypeCode="2" UserID="$IexhubUserId$" UserIsRequestor="true">
+      <RoleIDCode csd-code="110153" codeSystemName="DCM" originalText="Source"/>
+   </ActiveParticipant>
+   <ActiveParticipant NetworkAccessPointID="$DestinationIpAddress$" NetworkAccessPointTypeCode="1"
+      UserID="$DestinationUserId$" UserIsRequestor="false" AlternativeUserID="">
+      <RoleIDCode csd-code="110152" codeSystemName="DCM" originalText="Destination"/>
+   </ActiveParticipant>
+   <AuditSourceIdentification AuditEnterpriseSiteID="IEXHUB" AuditSourceID="IEXHUB" code=""/>
+   <ParticipantObjectIdentification
+      ParticipantObjectID="$PatientId$"
+      ParticipantObjectTypeCode="1" ParticipantObjectTypeCodeRole="1">
+      <ParticipantObjectIDTypeCode csd-code="2" codeSystemName="RFC-3881" originalText="Patient Number"/>
+   </ParticipantObjectIdentification>
+   <ParticipantObjectIdentification
+      ParticipantObjectID="$SubmissionSetId$"
+      ParticipantObjectTypeCode="2" ParticipantObjectTypeCodeRole="20">
+      <ParticipantObjectIDTypeCode
+         csd-code="urn:uuid:a54d6aa5-d40d-43f9-88c5-b4633d873bdd"
+         codeSystemName="IHE XDS Metadata" originalText="submission set classificationNode"/>
+   </ParticipantObjectIdentification>
+</AuditMessage>
