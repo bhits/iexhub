@@ -151,6 +151,7 @@ public class GetPatientDataService
 		
 		String retVal = "";
 		GetPatientDataResponse patientDataResponse = new GetPatientDataResponse();
+		StringBuilder jsonOutput = new StringBuilder();
 
 		if (!testMode)
 		{
@@ -318,10 +319,18 @@ public class GetPatientDataService
 					DocumentResponse_type0[] docResponseArray = documentSetResponse.getRetrieveDocumentSetResponse().getRetrieveDocumentSetResponseTypeSequence_type0().getDocumentResponse();
 					if (docResponseArray != null)
 					{
+						jsonOutput.append("{\"Documents\":[");
+						boolean first = true;
 						try
 						{
 							for (DocumentResponse_type0 document : docResponseArray)
 							{
+								if (!first)
+								{
+									jsonOutput.append(",");
+								}
+								first = false;
+								
 								log.info("Processing document ID="
 										+ document.getDocumentUniqueId().getLongName());
 								
@@ -410,8 +419,10 @@ public class GetPatientDataService
 
 													log.info("Successfully transformed CCDA to JSON, filename="
 															+ jsonFilename);
-
-										            patientDataResponse.getDocuments().add(new String(readAllBytes(get(jsonFilename))));
+													
+//										            patientDataResponse.getDocuments().add(new String(readAllBytes(get(jsonFilename))));
+													jsonOutput.append(new String(readAllBytes(get(jsonFilename))));
+													
 											    	templateFound = true;
 												}
 												else
@@ -444,6 +455,11 @@ public class GetPatientDataService
 							throw e;
 						}
 					}
+
+					if (jsonOutput.length() > 0)
+					{
+						jsonOutput.append("]}");
+					}
 				}
 			}
 			catch (Exception e)
@@ -467,7 +483,8 @@ public class GetPatientDataService
 			}
 		}
 		
-		return Response.status(Response.Status.OK).entity(patientDataResponse).type(MediaType.APPLICATION_JSON).build();
+//		return Response.status(Response.Status.OK).entity(patientDataResponse).type(MediaType.APPLICATION_JSON).build();
+		return Response.status(Response.Status.OK).entity(jsonOutput.toString()).type(MediaType.APPLICATION_JSON).build();
 	}
 	
 	private String invokeMap(String sourceFilename)
