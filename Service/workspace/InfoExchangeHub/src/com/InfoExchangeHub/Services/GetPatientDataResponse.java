@@ -12,10 +12,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class GetPatientDataResponse
 {
-	public ArrayList<String> getDocuments() {
+	public ArrayList<Object> getDocuments() {
 		return documents;
 	}
-	public void setDocuments(ArrayList<String> documents) {
+	public void setDocuments(ArrayList<Object> documents) {
 		this.documents = documents;
 	}
 	public ArrayList<String> getErrorMsgs() {
@@ -25,6 +25,6 @@ public class GetPatientDataResponse
 		this.errorMsgs = errorMsgs;
 	}
 
-    private ArrayList<String> documents = new ArrayList<String>();
+    private ArrayList<Object> documents = new ArrayList<Object>();
     private ArrayList<String> errorMsgs = new ArrayList<String>();
 }

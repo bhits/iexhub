@@ -1,0 +1,32 @@
+<!-- DICOM compatible -->
+<!-- IExHub Audit Event: ITI-47 Patient Demographics Query -->
+<AuditMessage>
+	<EventIdentification EventActionCode="E" EventDateTime="$DateTime$" EventOutcomeIndicator="0">
+		<EventID csd-code="110112" codeSystemName="DCM" originalText="Query"/>
+		<EventTypeCode csd-code="ITI-47" codeSystemName="IHE Transactions"
+			originalText="Patient Demographics Query"/>
+	</EventIdentification>
+	<ActiveParticipant AlternativeUserID="$AltUserId$" NetworkAccessPointID="$IexhubIpAddress$"
+		NetworkAccessPointTypeCode="1" UserID="$IexhubUserId$" UserIsRequestor="true">
+		<RoleIDCode codeSystemName="DCM" csd-code="110153" originalText="Source"/>
+	</ActiveParticipant>
+	<ActiveParticipant NetworkAccessPointID="$DestinationIpAddress$" NetworkAccessPointTypeCode="1"
+		UserID="$DestinationUserId$" UserIsRequestor="false">
+		<RoleIDCode codeSystemName="DCM" csd-code="110152" originalText="Destination"/>
+	</ActiveParticipant>
+	<AuditSourceIdentification AuditEnterpriseSiteID="IEXHUB" AuditSourceID="IEXHUB" code="9"/>
+	<ParticipantObjectIdentification
+		ParticipantObjectID="$PatientId$"
+		ParticipantObjectTypeCode="1" ParticipantObjectTypeCodeRole="1">
+		<ParticipantObjectIDTypeCode csd-code="2" codeSystemName="RFC-3881"
+			originalText="Patient Number"/>
+		<ParticipantObjectDetail type="II" value="$PatientIdMtom$"/>
+	</ParticipantObjectIdentification>
+	<ParticipantObjectIdentification
+		ParticipantObjectID="$PatientId$"
+		ParticipantObjectTypeCode="2" ParticipantObjectTypeCodeRole="24">
+		<ParticipantObjectIDTypeCode csd-code="ITI-47" codeSystemName="IHE Transactions"
+			originalText="Patient Demographics Query"/>
+		<ParticipantObjectQuery>$QueryByParameterMtom$</ParticipantObjectQuery>
+	</ParticipantObjectIdentification>
+</AuditMessage>
