@@ -346,6 +346,11 @@ public class XdsBRepositoryManager
 	private void logIti41AuditMsg(String submissionSetId,
 			String patientId) throws IOException
 	{
+		if (sysLogConfig == null)
+		{
+			return;
+		}
+
 		String logMsg = FileUtils.readFileToString(new File(iti41AuditMsgTemplate));
 		
 		// Substitutions...

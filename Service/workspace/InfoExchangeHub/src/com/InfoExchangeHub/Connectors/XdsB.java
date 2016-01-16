@@ -5,27 +5,17 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Properties;
 
-import javax.xml.stream.XMLStreamException;
-
 import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMElement;
-import org.apache.axiom.om.impl.builder.StAXOMBuilder;
 import org.apache.axiom.soap.SOAPFactory;
 import org.apache.axis2.AxisFault;
 import org.apache.axis2.Constants;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.apache.neethi.Policy;
-import org.apache.neethi.PolicyEngine;
-import org.apache.rampart.RampartMessageData;
-import org.apache.rampart.policy.model.CryptoConfig;
-import org.apache.rampart.policy.model.RampartConfig;
-import org.apache.rampart.policy.model.SSLConfig;
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormatter;
@@ -368,6 +358,11 @@ public class XdsB
 	private void logIti18AuditMsg(String queryText,
 			String patientId) throws IOException
 	{
+		if (sysLogConfig == null)
+		{
+			return;
+		}
+
 		String logMsg = FileUtils.readFileToString(new File(iti18AuditMsgTemplate));
 		
 		// Substitutions...
@@ -412,6 +407,11 @@ public class XdsB
 			String homeCommunityId,
 			String patientId) throws IOException
 	{
+		if (sysLogConfig == null)
+		{
+			return;
+		}
+
 		String logMsg = FileUtils.readFileToString(new File(iti43AuditMsgTemplate));
 		
 		// Substitutions...

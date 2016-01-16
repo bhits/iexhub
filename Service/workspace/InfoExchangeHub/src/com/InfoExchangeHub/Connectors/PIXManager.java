@@ -11,7 +11,7 @@ import javax.xml.bind.JAXBElement;
 
 import org.apache.axiom.om.OMElement;
 import org.apache.axis2.AxisFault;
-import org.apache.commons.codec.binary.Base64;
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
@@ -182,6 +182,11 @@ public class PIXManager
 
 	private void logIti44AuditMsg(String patientId) throws IOException
 	{
+		if (sysLogConfig == null)
+		{
+			return;
+		}
+
 		String logMsg = FileUtils.readFileToString(new File(iti44AuditMsgTemplate));
 		
 		// Substitutions...
@@ -223,6 +228,11 @@ public class PIXManager
 	private void logIti45AuditMsg(String queryText,
 			String patientId) throws IOException
 	{
+		if (sysLogConfig == null)
+		{
+			return;
+		}
+
 		String logMsg = FileUtils.readFileToString(new File(iti45AuditMsgTemplate));
 		
 		// Substitutions...

@@ -11,7 +11,7 @@ import java.util.UUID;
 
 import org.apache.axiom.om.OMElement;
 import org.apache.axis2.AxisFault;
-import org.apache.commons.codec.binary.Base64;
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
@@ -158,6 +158,11 @@ public class PDQQueryManager
 	private void logIti47AuditMsg(String queryText,
 			String patientId) throws IOException
 	{
+		if (sysLogConfig == null)
+		{
+			return;
+		}
+
 		String logMsg = FileUtils.readFileToString(new File(iti47AuditMsgTemplate));
 		
 		// Substitutions...
