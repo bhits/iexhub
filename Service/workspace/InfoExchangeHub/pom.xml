@@ -16,11 +16,18 @@
 	      </snapshots>
 	  </repository>
 	
-	  <!--  CDA Tools Release - Contains 3rd party jars not available on other Maven repositories -->
+	  <!--  CDA Tools Release (Third Party) - Contains 3rd party jars not available on other Maven repositories -->
 	  <repository>
-	      <id>cdatoolsrelease</id>
-	      <name>cdatools.com-releases</name>
+	      <id>cdatoolsrelease-ext</id>
+	      <name>cdatools.com-releases-ext</name>
 	      <url>http://www.cdatools.com:8081/artifactory/ext-release-local</url>
+	  </repository>
+	  
+	  <!--  CDA Tools Release - Contains release dependencies -->
+	  <repository>
+	      <id>cdatoolsrelease-libs</id>
+	      <name>cdatools.com-releases-libs</name>
+	      <url>http://www.cdatools.com:8081/artifactory/libs-release-local</url>
 	  </repository>
 	
 	  <!--  CDA Snapshot, Contains the latest stable build of cda plugins (consol,hitsp,etc)-->
@@ -38,6 +45,13 @@
 	        </snapshots>
 	    </repository>
   </repositories>
+ 
+  
+	<properties>
+		<jersey.version>1.12</jersey.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
   
   <build>
     <sourceDirectory>src</sourceDirectory>
@@ -65,6 +79,28 @@
 		    </dependency>
         </dependencies>
       </plugin>
+	  <plugin>
+		<groupId>org.codehaus.mojo</groupId>
+		<artifactId>build-helper-maven-plugin</artifactId>
+		<version>1.10</version>
+		<executions>
+			<execution>
+				<phase>generate-sources</phase>
+				<goals><goal>add-source</goal></goals>
+				<configuration>
+					<sources>
+						<source>${basedir}/target/generated-sources</source>
+					</sources>
+				</configuration>
+			</execution>
+		</executions>
+	</plugin>
+	<plugin>
+	  <groupId>org.apache.axis2</groupId>
+	  <artifactId>axis2-mar-maven-plugin</artifactId>
+	  <version>1.6.2</version>
+	  <extensions>true</extensions>
+	</plugin>
     </plugins>
   </build>
   <dependencies>
@@ -214,7 +250,7 @@
             <artifactId>jackson-mapper-asl</artifactId>
             <version>1.9.13</version>
         </dependency>
-        <dependency>
+		<dependency>
 		    <groupId>org.syslog4j</groupId>
 		    <artifactId>syslog4j</artifactId>
 		    <version>0.9.30</version>
@@ -224,5 +260,99 @@
 		    <artifactId>commons-pool</artifactId>
 		    <version>1.6</version>
 		</dependency>
+		
+	<dependency>
+		<groupId>org.opensaml</groupId>
+		<artifactId>opensaml</artifactId>
+		<version>2.6.4</version>
+	</dependency>
+	
+	  <!-- Rampart Dependency -->
+	  <dependency>
+	   <groupId>org.apache.rampart</groupId>
+	   <artifactId>rampart</artifactId>
+	   <version>1.6.2</version>
+	   <exclusions>
+			<exclusion>
+				<groupId>org.apache.xalan</groupId>
+				<artifactId>xalan</artifactId>
+			</exclusion>
+			<exclusion>
+				<groupId>org.apache.xerces</groupId>
+				<artifactId>xercesImpl</artifactId>
+			</exclusion>
+			<exclusion>  
+				<groupId>opensaml</groupId>  
+				<artifactId>opensaml</artifactId>  
+			</exclusion>
+		</exclusions>
+	  </dependency>
+	  <dependency>
+	   <groupId>org.apache.rampart</groupId>
+	   <artifactId>rampart-core</artifactId>
+	   <version>1.6.2</version>
+	   <exclusions>
+			<exclusion>
+				<groupId>org.apache.xalan</groupId>
+				<artifactId>xalan</artifactId>
+			</exclusion>
+			<exclusion>
+				<groupId>org.apache.xerces</groupId>
+				<artifactId>xercesImpl</artifactId>
+			</exclusion>
+			<exclusion>  
+				<groupId>opensaml</groupId>  
+				<artifactId>opensaml</artifactId>  
+			</exclusion>
+		</exclusions>
+	  </dependency>
+	  <dependency>
+	   <groupId>org.apache.rampart</groupId>
+	   <artifactId>rampart-policy</artifactId>
+	   <version>1.6.2</version>
+	   <exclusions>
+			<exclusion>
+				<groupId>org.apache.xalan</groupId>
+				<artifactId>xalan</artifactId>
+			</exclusion>
+			<exclusion>
+				<groupId>org.apache.xerces</groupId>
+				<artifactId>xercesImpl</artifactId>
+			</exclusion>
+			<exclusion>  
+				<groupId>opensaml</groupId>  
+				<artifactId>opensaml</artifactId>  
+			</exclusion>
+		</exclusions>
+	  </dependency>
+	  <dependency>
+	   <groupId>org.apache.rampart</groupId>
+	   <artifactId>rampart-trust</artifactId>
+	   <version>1.6.2</version>
+	   <exclusions>
+			<exclusion>
+				<groupId>org.apache.xalan</groupId>
+				<artifactId>xalan</artifactId>
+			</exclusion>
+			<exclusion>
+				<groupId>org.apache.xerces</groupId>
+				<artifactId>xercesImpl</artifactId>
+			</exclusion>
+			<exclusion>  
+				<groupId>opensaml</groupId>  
+				<artifactId>opensaml</artifactId>  
+			</exclusion>
+		</exclusions>
+	  </dependency>
+	  <dependency>
+	   <groupId>org.apache.velocity</groupId>
+	   <artifactId>velocity</artifactId>
+	   <version>1.5</version>
+	  </dependency>
+	  <dependency>
+	   <groupId>org.owasp.esapi</groupId>
+	   <artifactId>esapi</artifactId>
+	   <version>2.1.0</version>
+	  </dependency>
   </dependencies>
 </project>
