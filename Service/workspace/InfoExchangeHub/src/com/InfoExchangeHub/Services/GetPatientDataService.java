@@ -48,14 +48,12 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import com.InfoExchangeHub.Connectors.PIXManager;
 import com.InfoExchangeHub.Connectors.XdsB;
 import com.InfoExchangeHub.Exceptions.*;
 import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub.AdhocQueryResponse;
 import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub.ExternalIdentifierType;
 import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub.ExtrinsicObjectType;
 import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub.IdentifiableType;
-import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub.RegistryErrorList_type0;
 import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub.RegistryError_type0;
 import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub.RegistryObjectListType;
 import com.InfoExchangeHub.Services.Client.DocumentRepository_ServiceStub.DocumentResponse_type0;
