@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.UUID;
@@ -19,6 +21,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.axiom.om.OMAbstractFactory;
+import org.apache.axiom.om.OMElement;
 import org.apache.axiom.soap.SOAPFactory;
 import org.apache.axis2.AxisFault;
 import org.apache.axis2.Constants;
@@ -67,6 +70,8 @@ public class XdsBRepositoryManager
 
 	private static final String propertiesFile = "/temp/IExHub.properties";
 	private static boolean testMode = false;
+	private static boolean logXdsBRequestMessages = false;
+	private static String logOutputPath = "c:/temp/";
 
     private static String keyStoreFile = "c:/temp/1264.jks";
 	private static String keyStorePwd = "IEXhub";
@@ -75,7 +80,7 @@ public class XdsBRepositoryManager
 
 	private static String iti41AuditMsgTemplate = null;
 
-	private static SyslogConfigIF sysLogConfig = null;
+	private static SSLTCPNetSyslogConfig sysLogConfig = null;
 
 	private static final SOAPFactory soapFactory = OMAbstractFactory.getSOAP12Factory();
 	private static final ObjectFactory objectFactory = new ObjectFactory();
@@ -149,6 +154,10 @@ public class XdsBRepositoryManager
 		{
 			props.load(new FileInputStream(propertiesFile));
 			
+			XdsBRepositoryManager.logOutputPath = (props.getProperty("LogOutputPath") == null) ? XdsBRepositoryManager.logOutputPath
+					: props.getProperty("LogOutputPath");
+			XdsBRepositoryManager.logXdsBRequestMessages = (props.getProperty("LogXdsBRequestMessages") == null) ? XdsBRepositoryManager.logXdsBRequestMessages
+					: Boolean.parseBoolean(props.getProperty("LogXdsBRequestMessages"));
 			XdsBRepositoryManager.debugSSL = (props.getProperty("DebugSSL") == null) ? XdsBRepositoryManager.debugSSL
 					: Boolean.parseBoolean(props.getProperty("DebugSSL"));
 			XdsBRepositoryManager.testMode = (props.getProperty("TestMode") == null) ? XdsBRepositoryManager.testMode
@@ -259,14 +268,14 @@ public class XdsBRepositoryManager
 				}
 
 				// TCP over SSL (secure) syslog
-				System.setProperty("javax.net.ssl.keyStore",
-						keyStoreFile);
-				System.setProperty("javax.net.ssl.keyStorePassword",
-						keyStorePwd);
-				System.setProperty("javax.net.ssl.trustStore",
-						keyStoreFile);
-				System.setProperty("javax.net.ssl.trustStorePassword",
-						keyStorePwd);
+//				System.setProperty("javax.net.ssl.keyStore",
+//						keyStoreFile);
+//				System.setProperty("javax.net.ssl.keyStorePassword",
+//						keyStorePwd);
+//				System.setProperty("javax.net.ssl.trustStore",
+//						keyStoreFile);
+//				System.setProperty("javax.net.ssl.trustStorePassword",
+//						keyStorePwd);
 				System.setProperty("https.cipherSuites",
 						cipherSuites);
 				System.setProperty("https.protocols",
@@ -281,6 +290,10 @@ public class XdsBRepositoryManager
 				sysLogConfig = new SSLTCPNetSyslogConfig();
 				sysLogConfig.setHost(syslogServerHost);
 				sysLogConfig.setPort(syslogServerPort);
+				sysLogConfig.setKeyStore(keyStoreFile);
+				sysLogConfig.setKeyStorePassword(keyStorePwd);
+				sysLogConfig.setTrustStore(keyStoreFile);
+				sysLogConfig.setTrustStorePassword(keyStorePwd);
 				Syslog.createInstance("sslTcp",
 						sysLogConfig);
 			}
@@ -350,7 +363,7 @@ public class XdsBRepositoryManager
 		{
 			return;
 		}
-
+		
 		String logMsg = FileUtils.readFileToString(new File(iti41AuditMsgTemplate));
 		
 		// Substitutions...
@@ -1048,7 +1061,9 @@ public class XdsBRepositoryManager
 				}
 				else
 				{
-					externalIdentifierPatientId.setValue(((Element)nodes.item(0)).getAttribute("root"));
+					externalIdentifierPatientId.setValue(((Element)nodes.item(0)).getAttribute("root")
+							+ "^"
+							+ ((Element)nodes.item(0)).getAttribute("extension"));
 				}
 				
 				text = new InternationalStringType();
@@ -1226,6 +1241,17 @@ public class XdsBRepositoryManager
 			
 			logIti41AuditMsg(submissionSetId,
 					patientId);
+
+			if (logXdsBRequestMessages)
+			{
+				OMElement requestElement = repositoryStub.toOM(documentSetRequest, repositoryStub.optimizeContent(
+		                new javax.xml.namespace.QName("urn:ihe:iti:xds-b:2007",
+		                    "ProvideAndRegisterDocumentSetRequest")),
+		                new javax.xml.namespace.QName("urn:ihe:iti:xds-b:2007",
+		    				"ProvideAndRegisterDocumentSetRequest"));
+				Files.write(Paths.get(logOutputPath + documentId + "_ProvideAndRegisterDocumentSetRequest.xml"),
+						requestElement.toString().getBytes());
+			}
 
 			return repositoryStub.documentRepository_ProvideAndRegisterDocumentSetB(documentSetRequest);
 		}

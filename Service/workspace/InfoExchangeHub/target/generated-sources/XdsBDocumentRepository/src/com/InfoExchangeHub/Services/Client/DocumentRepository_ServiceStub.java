@@ -401,7 +401,7 @@ public class DocumentRepository_ServiceStub extends org.apache.axis2.client.Stub
         return returnMap;
     }
 
-    private boolean optimizeContent(javax.xml.namespace.QName opName) {
+    public boolean optimizeContent(javax.xml.namespace.QName opName) {
         if (opNameArray == null) {
             return false;
         }
@@ -535,7 +535,7 @@ public class DocumentRepository_ServiceStub extends org.apache.axis2.client.Stub
         return envelope;
     }
 
-    private org.apache.axiom.om.OMElement toOM(
+    public org.apache.axiom.om.OMElement toOM(
     		XdsBDocumentRepository.src.ihe.iti.xds_b._2007.ProvideAndRegisterDocumentSetRequestType param,
         boolean optimizeContent, javax.xml.namespace.QName methodQName)
         throws org.apache.axis2.AxisFault {

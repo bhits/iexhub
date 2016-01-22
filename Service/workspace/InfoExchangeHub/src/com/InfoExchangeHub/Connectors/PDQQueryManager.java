@@ -43,7 +43,7 @@ public class PDQQueryManager
 	private static boolean debugSSL = false;
 
 	private static String iti47AuditMsgTemplate = null;
-	private static SyslogConfigIF sysLogConfig = null;
+	private static SSLTCPNetSyslogConfig sysLogConfig = null;
 	private static final String propertiesFile = "/temp/IExHub.properties";
 
 	/** Logger */
@@ -116,14 +116,14 @@ public class PDQQueryManager
 				}
 
 				// TCP over SSL (secure) syslog
-				System.setProperty("javax.net.ssl.keyStore",
-						keyStoreFile);
-				System.setProperty("javax.net.ssl.keyStorePassword",
-						keyStorePwd);
-				System.setProperty("javax.net.ssl.trustStore",
-						keyStoreFile);
-				System.setProperty("javax.net.ssl.trustStorePassword",
-						keyStorePwd);
+//				System.setProperty("javax.net.ssl.keyStore",
+//						keyStoreFile);
+//				System.setProperty("javax.net.ssl.keyStorePassword",
+//						keyStorePwd);
+//				System.setProperty("javax.net.ssl.trustStore",
+//						keyStoreFile);
+//				System.setProperty("javax.net.ssl.trustStorePassword",
+//						keyStorePwd);
 				System.setProperty("https.cipherSuites",
 						cipherSuites);
 				System.setProperty("https.protocols",
@@ -138,6 +138,10 @@ public class PDQQueryManager
 				sysLogConfig = new SSLTCPNetSyslogConfig();
 				sysLogConfig.setHost(syslogServerHost);
 				sysLogConfig.setPort(syslogServerPort);
+				sysLogConfig.setKeyStore(keyStoreFile);
+				sysLogConfig.setKeyStorePassword(keyStorePwd);
+				sysLogConfig.setTrustStore(keyStoreFile);
+				sysLogConfig.setTrustStorePassword(keyStorePwd);
 				Syslog.createInstance("sslTcp",
 						sysLogConfig);
 			}

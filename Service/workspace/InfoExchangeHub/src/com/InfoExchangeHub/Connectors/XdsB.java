@@ -5,8 +5,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Properties;
+import java.util.UUID;
 
 import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMElement;
@@ -48,7 +51,10 @@ import com.InfoExchangeHub.Services.Client.DocumentRepository_ServiceStub.Retrie
 
 public class XdsB
 {
-    private static String keyStoreFile = "c:/temp/1264.jks";
+	private static boolean logXdsBRequestMessages = false;
+	private static String logOutputPath = "c:/temp/";
+
+	private static String keyStoreFile = "c:/temp/1264.jks";
 	private static String keyStorePwd = "IEXhub";
 	private static String cipherSuites = "TLS_RSA_WITH_AES_128_CBC_SHA";
 	private static String httpsProtocols = "TLSv1";
@@ -56,7 +62,7 @@ public class XdsB
 	private static String iti18AuditMsgTemplate = null;
 	private static String iti43AuditMsgTemplate = null;
 
-	private static SyslogConfigIF sysLogConfig = null;
+	private static SSLTCPNetSyslogConfig sysLogConfig = null;
 	
 	/** Logger */
     public static Logger log = Logger.getLogger(XdsB.class);
@@ -109,6 +115,10 @@ public class XdsB
 		{
 			props.load(new FileInputStream(propertiesFile));
 			
+			XdsB.logOutputPath = (props.getProperty("LogOutputPath") == null) ? XdsB.logOutputPath
+					: props.getProperty("LogOutputPath");
+			XdsB.logXdsBRequestMessages = (props.getProperty("LogXdsBRequestMessages") == null) ? XdsB.logXdsBRequestMessages
+					: Boolean.parseBoolean(props.getProperty("LogXdsBRequestMessages"));
 			XdsB.debugSSL = (props.getProperty("DebugSSL") == null) ? XdsB.debugSSL
 					: Boolean.parseBoolean(props.getProperty("DebugSSL"));
 			XdsB.testMode  = (props.getProperty("TestMode") == null) ? XdsB.testMode
@@ -155,14 +165,14 @@ public class XdsB
 				}
 
 				// TCP over SSL (secure) syslog
-				System.setProperty("javax.net.ssl.keyStore",
-						keyStoreFile);
-				System.setProperty("javax.net.ssl.keyStorePassword",
-						keyStorePwd);
-				System.setProperty("javax.net.ssl.trustStore",
-						keyStoreFile);
-				System.setProperty("javax.net.ssl.trustStorePassword",
-						keyStorePwd);
+//				System.setProperty("javax.net.ssl.keyStore",
+//						keyStoreFile);
+//				System.setProperty("javax.net.ssl.keyStorePassword",
+//						keyStorePwd);
+//				System.setProperty("javax.net.ssl.trustStore",
+//						keyStoreFile);
+//				System.setProperty("javax.net.ssl.trustStorePassword",
+//						keyStorePwd);
 				System.setProperty("https.cipherSuites",
 						cipherSuites);
 				System.setProperty("https.protocols",
@@ -177,6 +187,10 @@ public class XdsB
 				sysLogConfig = new SSLTCPNetSyslogConfig();
 				sysLogConfig.setHost(syslogServerHost);
 				sysLogConfig.setPort(syslogServerPort);
+				sysLogConfig.setKeyStore(keyStoreFile);
+				sysLogConfig.setKeyStorePassword(keyStorePwd);
+				sysLogConfig.setTrustStore(keyStoreFile);
+				sysLogConfig.setTrustStorePassword(keyStorePwd);
 				Syslog.createInstance("sslTcp",
 						sysLogConfig);
 			}
@@ -558,6 +572,12 @@ public class XdsB
 			logIti18AuditMsg(queryText,
 					patientID);
 
+			if (logXdsBRequestMessages)
+			{
+				Files.write(Paths.get(logOutputPath + UUID.randomUUID().toString() + "_RegistryStoredQueryRequest.xml"),
+						requestElement.toString().getBytes());
+			}
+
 			return registryStub.documentRegistry_RegistryStoredQuery(request);
 		}
 		catch (Exception e)
@@ -602,7 +622,15 @@ public class XdsB
 			}
 			
 			documentSetRequest.setRetrieveDocumentSetRequest(documentSetRequestType);
-			
+
+			if (logXdsBRequestMessages)
+			{
+				OMElement requestElement = documentSetRequest.getOMElement(RetrieveDocumentSetRequest.MY_QNAME,
+						soapFactory);
+				Files.write(Paths.get(logOutputPath + UUID.randomUUID().toString() + "_RetrieveDocumentSetRequest.xml"),
+						requestElement.toString().getBytes());
+			}
+
 			return repositoryStub.documentRepository_RetrieveDocumentSet(documentSetRequest);
 		}
 		catch (Exception e)
