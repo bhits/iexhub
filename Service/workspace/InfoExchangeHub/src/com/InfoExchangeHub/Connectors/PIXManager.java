@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -41,6 +43,8 @@ public class PIXManager
 	private static String cipherSuites = "TLS_RSA_WITH_AES_128_CBC_SHA";
 	private static String httpsProtocols = "TLSv1";
 	private static boolean debugSSL = false;
+	private static boolean logPixRequestMessages = false;
+	private static String logOutputPath = "c:/temp/";
 
 	private static String iti44AuditMsgTemplate = null;
 	private static String iti45AuditMsgTemplate = null;
@@ -71,6 +75,10 @@ public class PIXManager
 		{
 			props.load(new FileInputStream(propertiesFile));
 			
+			PIXManager.logOutputPath = (props.getProperty("LogOutputPath") == null) ? PIXManager.logOutputPath
+					: props.getProperty("LogOutputPath");
+			PIXManager.logPixRequestMessages = (props.getProperty("LogPIXRequestMessages") == null) ? PIXManager.logPixRequestMessages
+					: Boolean.parseBoolean(props.getProperty("LogPIXRequestMessages"));
 			PIXManager.keyStoreFile = (props.getProperty("PIXKeyStoreFile") == null) ? PIXManager.keyStoreFile
 					: props.getProperty("PIXKeyStoreFile");
 			PIXManager.keyStorePwd = (props.getProperty("PIXKeyStorePwd") == null) ? PIXManager.keyStorePwd
@@ -434,6 +442,12 @@ public class PIXManager
     				"PRPA_IN201309UV02"));
 		String queryText = requestElement.toString();
 		
+		if (logPixRequestMessages)
+		{
+			Files.write(Paths.get(logOutputPath + UUID.randomUUID().toString() + "_PIXGetIdentifiersRequest.xml"),
+					requestElement.toString().getBytes());
+		}
+
 		logIti45AuditMsg(queryText,
 				patientId + "^^^&" + domainOID + "&ISO");
 
@@ -686,6 +700,17 @@ public class PIXManager
 		pRPA_IN201301UV02.setControlActProcess(controlAct);
 
 		logIti44AuditMsg(patientId + "^^^&" + PIXManager.iExHubDomainOid + "&" + PIXManager.iExHubAssigningAuthority);
+
+		if (logPixRequestMessages)
+		{
+			OMElement requestElement = pixManagerStub.toOM(pRPA_IN201301UV02, pixManagerStub.optimizeContent(
+	                new javax.xml.namespace.QName("urn:hl7-org:v3",
+	                    "PRPA_IN201301UV02")),
+	                new javax.xml.namespace.QName("urn:hl7-org:v3",
+	    				"PRPA_IN201301UV02"));
+			Files.write(Paths.get(logOutputPath + UUID.randomUUID().toString() + "_PIXRegisterPatientRequest.xml"),
+					requestElement.toString().getBytes());
+		}
 
 		return pixManagerStub.pIXManager_PRPA_IN201301UV02(pRPA_IN201301UV02);
 	}

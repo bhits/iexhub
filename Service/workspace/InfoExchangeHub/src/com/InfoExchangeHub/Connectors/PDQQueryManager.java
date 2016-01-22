@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.InetAddress;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.rmi.RemoteException;
 import java.util.Properties;
 import java.util.UUID;
@@ -41,6 +43,8 @@ public class PDQQueryManager
 	private static String cipherSuites = "TLS_RSA_WITH_AES_128_CBC_SHA";
 	private static String httpsProtocols = "TLSv1";
 	private static boolean debugSSL = false;
+	private static boolean logPdqRequestMessages = false;
+	private static String logOutputPath = "c:/temp/";
 
 	private static String iti47AuditMsgTemplate = null;
 	private static SSLTCPNetSyslogConfig sysLogConfig = null;
@@ -68,6 +72,10 @@ public class PDQQueryManager
 		{
 			props.load(new FileInputStream(propertiesFile));
 			
+			PDQQueryManager.logOutputPath = (props.getProperty("LogOutputPath") == null) ? PDQQueryManager.logOutputPath
+					: props.getProperty("LogOutputPath");
+			PDQQueryManager.logPdqRequestMessages = (props.getProperty("LogPDQRequestMessages") == null) ? PDQQueryManager.logPdqRequestMessages
+					: Boolean.parseBoolean(props.getProperty("LogPDQRequestMessages"));
 			PDQQueryManager.keyStoreFile = (props.getProperty("PDQKeyStoreFile") == null) ? PDQQueryManager.keyStoreFile
 					: props.getProperty("PDQKeyStoreFile");
 			PDQQueryManager.keyStorePwd = (props.getProperty("PDQKeyStorePwd") == null) ? PDQQueryManager.keyStorePwd
@@ -238,7 +246,7 @@ public class PDQQueryManager
 			-1);
 	}
 
-	public void queryCancel(PRPAIN201306UV02 queryResult) throws RemoteException
+	public void queryCancel(PRPAIN201306UV02 queryResult) throws IOException
 	{
 		QUQIIN000003UV01Type qUQIIN000003UV01 = new QUQIIN000003UV01Type();
 
@@ -318,17 +326,28 @@ public class PDQQueryManager
 
 		qUQIIN000003UV01.setControlActProcess(controlAct);
 
+		if (logPdqRequestMessages)
+		{
+			OMElement requestElement = pdqSupplierStub.toOM(qUQIIN000003UV01, pdqSupplierStub.optimizeContent(
+	                new javax.xml.namespace.QName("urn:hl7-org:v3",
+	                    "QUQI_IN000003UV01_Cancel")),
+	                new javax.xml.namespace.QName("urn:hl7-org:v3",
+	    				"QUQI_IN000003UV01_Cancel"));
+			Files.write(Paths.get(logOutputPath + UUID.randomUUID().toString() + "_PDQQueryCancelRequest.xml"),
+					requestElement.toString().getBytes());
+		}
+
 		pdqSupplierStub.pDQSupplier_QUQI_IN000003UV01_Cancel(qUQIIN000003UV01);
 	}
 	
-	public PRPAIN201306UV02 queryContinue(PRPAIN201306UV02 queryResult) throws RemoteException
+	public PRPAIN201306UV02 queryContinue(PRPAIN201306UV02 queryResult) throws IOException
 	{
 		return queryContinue(queryResult,
 				-1);
 	}
 
 	public PRPAIN201306UV02 queryContinue(PRPAIN201306UV02 queryResult,
-			int resultSetSize) throws RemoteException
+			int resultSetSize) throws IOException
 	{
 		QUQIIN000003UV01Type qUQIIN000003UV01 = new QUQIIN000003UV01Type();
 
@@ -410,6 +429,18 @@ public class PDQQueryManager
 		controlAct.setQueryContinuation(queryContinuation);
 
 		qUQIIN000003UV01.setControlActProcess(controlAct);
+		
+		if (logPdqRequestMessages)
+		{
+			OMElement requestElement = pdqSupplierStub.toOM(qUQIIN000003UV01, pdqSupplierStub.optimizeContent(
+	                new javax.xml.namespace.QName("urn:hl7-org:v3",
+	                    "QUQI_IN000003UV01_Continue")),
+	                new javax.xml.namespace.QName("urn:hl7-org:v3",
+	    				"QUQI_IN000003UV01_Continue"));
+			Files.write(Paths.get(logOutputPath + UUID.randomUUID().toString() + "_PDQQueryContinueRequest.xml"),
+					requestElement.toString().getBytes());
+		}
+
 		return pdqSupplierStub.pDQSupplier_QUQI_IN000003UV01_Continue(qUQIIN000003UV01);
 	}
 	
@@ -592,6 +623,12 @@ public class PDQQueryManager
                 new javax.xml.namespace.QName("urn:hl7-org:v3",
     				"PRPA_IN201305UV02"));
 		String queryText = requestElement.toString();
+		
+		if (logPdqRequestMessages)
+		{
+			Files.write(Paths.get(logOutputPath + UUID.randomUUID().toString() + "_PDQQueryRequest.xml"),
+					requestElement.toString().getBytes());
+		}
 
 		logIti47AuditMsg(queryText,
 				patientId + "^^^&" + patientIdDomain + "&ISO");
