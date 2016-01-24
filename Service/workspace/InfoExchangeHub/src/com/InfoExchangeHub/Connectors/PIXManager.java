@@ -70,6 +70,13 @@ public class PIXManager
 
 	public PIXManager(String endpointURI) throws AxisFault, Exception
 	{
+		this(endpointURI,
+				false);
+	}
+	
+	public PIXManager(String endpointURI,
+			boolean enableTLS) throws AxisFault, Exception
+	{
 		Properties props = new Properties();
 		try
 		{
@@ -182,7 +189,31 @@ public class PIXManager
 			// Instantiate PIXManager client stub and enable WS-Addressing...
 			pixManagerStub = new PIXManager_ServiceStub(endpointURI);
 			pixManagerStub._getServiceClient().engageModule("addressing");
-			
+
+			if (enableTLS)
+			{
+				System.setProperty("javax.net.ssl.keyStore",
+						keyStoreFile);
+				System.setProperty("javax.net.ssl.keyStorePassword",
+						keyStorePwd);
+				System.setProperty("javax.net.ssl.trustStore",
+						keyStoreFile);
+				System.setProperty("javax.net.ssl.trustStorePassword",
+						keyStorePwd);
+				System.setProperty("https.cipherSuites",
+						cipherSuites);
+				System.setProperty("https.protocols",
+						httpsProtocols);
+				
+				if (debugSSL)
+				{
+					System.setProperty("javax.net.debug",
+							"ssl");
+				}
+				
+				pixManagerStub._getServiceClient().engageModule("rampart");
+			}
+
 			log.info("PIXManager connector successfully initialized, endpointURI="
 					+ endpointURI);
 		}

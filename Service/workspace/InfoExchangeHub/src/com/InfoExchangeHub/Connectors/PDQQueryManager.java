@@ -67,6 +67,13 @@ public class PDQQueryManager
 	
 	public PDQQueryManager(String endpointURI) throws AxisFault, Exception
 	{
+		this(endpointURI,
+				false);
+	}
+	
+	public PDQQueryManager(String endpointURI,
+			boolean enableTLS) throws AxisFault, Exception
+	{
 		Properties props = new Properties();
 		try
 		{
@@ -157,7 +164,31 @@ public class PDQQueryManager
 			// Instantiate PDQSupplier client stub and enable WS-Addressing...
 			pdqSupplierStub = new PDQSupplier_ServiceStub(endpointURI);
 			pdqSupplierStub._getServiceClient().engageModule("addressing");
-			
+
+			if (enableTLS)
+			{
+				System.setProperty("javax.net.ssl.keyStore",
+						keyStoreFile);
+				System.setProperty("javax.net.ssl.keyStorePassword",
+						keyStorePwd);
+				System.setProperty("javax.net.ssl.trustStore",
+						keyStoreFile);
+				System.setProperty("javax.net.ssl.trustStorePassword",
+						keyStorePwd);
+				System.setProperty("https.cipherSuites",
+						cipherSuites);
+				System.setProperty("https.protocols",
+						httpsProtocols);
+				
+				if (debugSSL)
+				{
+					System.setProperty("javax.net.debug",
+							"ssl");
+				}
+				
+				pdqSupplierStub._getServiceClient().engageModule("rampart");
+			}
+
 			log.info("PDQQueryManager connector successfully initialized, endpointURI="
 					+ endpointURI);
 		}

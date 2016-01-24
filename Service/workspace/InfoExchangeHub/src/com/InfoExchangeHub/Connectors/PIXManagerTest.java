@@ -43,6 +43,29 @@ public class PIXManagerTest
 	 * Test method for {@link com.InfoExchangeHub.Connectors.PIXManager#patientRegistryGetIdentifiers(java.lang.String, java.lang.String, boolean)}.
 	 */
 	@Test
+	public void testPatientRegistryGetIdentifiersWithDataSourceTLS()
+	{
+		// ITI-45-Consumer message
+		PIXManager pixManager = null;
+		try
+		{
+			pixManager = new PIXManager(PIXManagerEndpointURI,
+					true);
+			
+			PRPAIN201310UV02 pixResponse = pixManager.patientRegistryGetIdentifiers("PIXL1",
+					"2.16.840.1.113883.3.72.5.9.1",
+					true);
+		}
+		catch (Exception e)
+		{
+			fail("Error - " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Test method for {@link com.InfoExchangeHub.Connectors.PIXManager#patientRegistryGetIdentifiers(java.lang.String, java.lang.String, boolean)}.
+	 */
+	@Test
 	public void testPatientRegistryGetIdentifiersNoDataSource()
 	{
 		// ITI-45-Consumer message
@@ -50,6 +73,29 @@ public class PIXManagerTest
 		try
 		{
 			pixManager = new PIXManager(PIXManagerEndpointURI);
+			
+			PRPAIN201310UV02 pixResponse = pixManager.patientRegistryGetIdentifiers("PIXL1",
+					"2.16.840.1.113883.3.72.5.9.1",
+					false);
+		}
+		catch (Exception e)
+		{
+			fail("Error - " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Test method for {@link com.InfoExchangeHub.Connectors.PIXManager#patientRegistryGetIdentifiers(java.lang.String, java.lang.String, boolean)}.
+	 */
+	@Test
+	public void testPatientRegistryGetIdentifiersNoDataSourceTLS()
+	{
+		// ITI-45-Consumer message
+		PIXManager pixManager = null;
+		try
+		{
+			pixManager = new PIXManager(PIXManagerEndpointURI,
+					true);
 			
 			PRPAIN201310UV02 pixResponse = pixManager.patientRegistryGetIdentifiers("PIXL1",
 					"2.16.840.1.113883.3.72.5.9.1",
@@ -72,6 +118,35 @@ public class PIXManagerTest
 		try
 		{
 			pixManager = new PIXManager(PIXManagerEndpointURI);
+			
+			MCCIIN000002UV01 pixRegistrationResponse = pixManager.registerPatient("ALAN",
+					"ALPHA",
+					null,
+					"12/8/1978",
+					"M",
+					"PIX");
+	
+//			assertTrue("Error - unexpected return value for RegisterPatient message",
+//					pixRegistrationResponse.toString());
+		}
+		catch (Exception e)
+		{
+			fail("Error - " + e.getMessage());
+		}
+	}
+	
+	/**
+	 * Test method for {@link com.InfoExchangeHub.Connectors.PIXManager#registerPatient(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
+	 */
+	@Test
+	public void testRegisterPatientTLS()
+	{
+		// ITI-44-Source-Feed message
+		PIXManager pixManager = null;
+		try
+		{
+			pixManager = new PIXManager(PIXManagerEndpointURI,
+					true);
 			
 			MCCIIN000002UV01 pixRegistrationResponse = pixManager.registerPatient("ALAN",
 					"ALPHA",
