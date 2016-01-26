@@ -16,6 +16,7 @@ import PDQSupplier.src.org.hl7.v3.PRPAIN201306UV02;
 public class PDQQueryManagerTest
 {
 	private static final String PDQManagerEndpointURI = "http://129.6.24.79:9090";
+	private static final String PDQManagerTLSEndpointURI = "https://philips50:8443/philips/services/pixmanager";
 
 	/**
 	 * Test method for {@link com.InfoExchangeHub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
@@ -87,11 +88,42 @@ public class PDQQueryManagerTest
 		try
 		{
 			pdqQueryManager = new PDQQueryManager(PDQManagerEndpointURI);
-			PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.queryPatientDemographics(null,
-					"GREGORYX",
+			PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.queryPatientDemographics("CHIP",
+					"MOORE",
 					null,
 					null,
-					"F",
+					"M",
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null);
+		}
+		catch (Exception e)
+		{
+			fail("Error - " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Test method for {@link com.InfoExchangeHub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
+	 */
+	@Test
+	public void testITI47ConsumerQueryPatientNameAdministrativeSex_NoOtherIDsScopingOrganization_TLS()
+	{
+		PDQQueryManager pdqQueryManager = null;
+		try
+		{
+			pdqQueryManager = new PDQQueryManager(PDQManagerTLSEndpointURI,
+					true);
+			PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.queryPatientDemographics("CHIP",
+					"MOORE",
+					null,
+					null,
+					"M",
 					null,
 					null,
 					null,
@@ -151,6 +183,37 @@ public class PDQQueryManagerTest
 					"GREGORYX",
 					null,
 					"10/15/1929",
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null);
+		}
+		catch (Exception e)
+		{
+			fail("Error - " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Test method for {@link com.InfoExchangeHub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
+	 */
+	@Test
+	public void testITI47ConsumerQueryPatientNameDOB_NoOtherIDsScopingOrganization_TLS()
+	{
+		PDQQueryManager pdqQueryManager = null;
+		try
+		{
+			pdqQueryManager = new PDQQueryManager(PDQManagerTLSEndpointURI,
+					true);
+			PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.queryPatientDemographics(null,
+					"MOORE",
+					null,
+					"7/6/1951",
 					null,
 					null,
 					null,
@@ -250,6 +313,37 @@ public class PDQQueryManagerTest
 					"HJ-361",
 					"2.16.840.1.113883.3.72.5.9.1",
 					"2.16.840.1.113883.3.72.5.9.1");
+		}
+		catch (Exception e)
+		{
+			fail("Error - " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Test method for {@link com.InfoExchangeHub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
+	 */
+	@Test
+	public void testITI47ConsumerQueryPatientPatientId_OtherIDsScopingOrganization_TLS()
+	{
+		PDQQueryManager pdqQueryManager = null;
+		try
+		{
+			pdqQueryManager = new PDQQueryManager(PDQManagerTLSEndpointURI,
+					true);
+			PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.queryPatientDemographics(null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					"IHERED-993^^^&1.3.6.1.4.1.21367.13.20.1000&ISO",
+					null,
+					"1.3.6.1.4.1.21367.13.20.1000");
 		}
 		catch (Exception e)
 		{

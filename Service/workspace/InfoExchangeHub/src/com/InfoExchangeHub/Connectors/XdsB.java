@@ -53,6 +53,7 @@ public class XdsB
 {
 	private static boolean logXdsBRequestMessages = false;
 	private static String logOutputPath = "c:/temp/";
+	private static boolean logSyslogAuditMsgsLocally = false;
 
 	private static String keyStoreFile = "c:/temp/1264.jks";
 	private static String keyStorePwd = "IEXhub";
@@ -115,6 +116,8 @@ public class XdsB
 		{
 			props.load(new FileInputStream(propertiesFile));
 			
+			XdsB.logSyslogAuditMsgsLocally = (props.getProperty("LogSyslogAuditMsgsLocally") == null) ? XdsB.logSyslogAuditMsgsLocally
+					: Boolean.parseBoolean(props.getProperty("LogSyslogAuditMsgsLocally"));
 			XdsB.logOutputPath = (props.getProperty("LogOutputPath") == null) ? XdsB.logOutputPath
 					: props.getProperty("LogOutputPath");
 			XdsB.logXdsBRequestMessages = (props.getProperty("LogXdsBRequestMessages") == null) ? XdsB.logXdsBRequestMessages
@@ -411,7 +414,12 @@ public class XdsB
 		
 		logMsg = logMsg.replace("$PatientId$",
 				patientId);
-		
+
+		if (logSyslogAuditMsgsLocally)
+		{
+			log.info(logMsg);
+		}
+
 		// Log the syslog message
 		Syslog.getInstance("sslTcp").info(logMsg);
 	}
@@ -474,7 +482,12 @@ public class XdsB
 			logMsg = logMsg.replace("$HomeCommunityId$",
 					"");
 		}
-		
+
+		if (logSyslogAuditMsgsLocally)
+		{
+			log.info(logMsg);
+		}
+
 		// Log the syslog message
 		Syslog.getInstance("sslTcp").info(logMsg);
 	}

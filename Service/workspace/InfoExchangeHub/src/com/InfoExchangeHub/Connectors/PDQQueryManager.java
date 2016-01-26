@@ -43,8 +43,10 @@ public class PDQQueryManager
 	private static String cipherSuites = "TLS_RSA_WITH_AES_128_CBC_SHA";
 	private static String httpsProtocols = "TLSv1";
 	private static boolean debugSSL = false;
+
 	private static boolean logPdqRequestMessages = false;
 	private static String logOutputPath = "c:/temp/";
+	private static boolean logSyslogAuditMsgsLocally = false;
 
 	private static String iti47AuditMsgTemplate = null;
 	private static SSLTCPNetSyslogConfig sysLogConfig = null;
@@ -61,6 +63,7 @@ public class PDQQueryManager
 	private static String otherIDsScopingOrganizationOID = "2.16.840.1.113883.3.72.5.9.1";
 	private static String receiverApplicationRepresentedOrganization = "2.16.840.1.113883.3.72.6.1";
 	private static String iExHubDomainOID = "2.16.840.1.113883.3.72.5.9.1";
+	private static String iExHubSenderDeviceID = "1.3.6.1.4.1.21367.13.10.215";
 
 	private static PDQSupplier_ServiceStub pdqSupplierStub = null;
 	private static String endpointURI = null;
@@ -79,6 +82,10 @@ public class PDQQueryManager
 		{
 			props.load(new FileInputStream(propertiesFile));
 			
+			PDQQueryManager.logSyslogAuditMsgsLocally = (props.getProperty("LogSyslogAuditMsgsLocally") == null) ? PDQQueryManager.logSyslogAuditMsgsLocally
+					: Boolean.parseBoolean(props.getProperty("LogSyslogAuditMsgsLocally"));
+			PDQQueryManager.iExHubSenderDeviceID = (props.getProperty("IExHubSenderDeviceID") == null) ? PDQQueryManager.iExHubSenderDeviceID
+					: props.getProperty("IExHubSenderDeviceID");
 			PDQQueryManager.logOutputPath = (props.getProperty("LogOutputPath") == null) ? PDQQueryManager.logOutputPath
 					: props.getProperty("LogOutputPath");
 			PDQQueryManager.logPdqRequestMessages = (props.getProperty("LogPDQRequestMessages") == null) ? PDQQueryManager.logPdqRequestMessages
@@ -242,6 +249,11 @@ public class PDQQueryManager
 
 		logMsg = logMsg.replace("$PatientId$",
 				patientId);
+		
+		if (logSyslogAuditMsgsLocally)
+		{
+			log.info(logMsg);
+		}
 		
 		// Log the syslog message
 		Syslog.getInstance("sslTcp").info(logMsg);
@@ -625,7 +637,8 @@ public class PDQQueryManager
 		{
 			// Populate otherIDsScopingOrganization...
 			PRPAMT201306UV02OtherIDsScopingOrganization otherIDsScopingOrg = new PRPAMT201306UV02OtherIDsScopingOrganization();
-			paramList.getOtherIDsScopingOrganization().add(setOtherIDsScopingOrganization(otherIDsScopingOrg));
+			paramList.getOtherIDsScopingOrganization().add(setOtherIDsScopingOrganization(otherIDsScopingOrg,
+					otherIDsScopingOrganization));
 		}
 
 		if (resultSetSize > 0)
@@ -756,7 +769,7 @@ public class PDQQueryManager
 		senderDevice.setClassCode(EntityClassDevice.DEV);
 		senderDevice.setDeterminerCode("INSTANCE");
 		II senderDeviceId = new II();
-		senderDeviceId.setRoot(iExHubDomainOID);
+		senderDeviceId.setRoot(iExHubSenderDeviceID);
 		senderDevice.getId().add(senderDeviceId);
 		sender.setDevice(senderDevice);
 		qUQIIN000003UV01.setSender(sender);		
@@ -770,7 +783,7 @@ public class PDQQueryManager
 		senderDevice.setClassCode(EntityClassDevice.DEV);
 		senderDevice.setDeterminerCode("INSTANCE");
 		II senderDeviceId = new II();
-		senderDeviceId.setRoot(iExHubDomainOID);
+		senderDeviceId.setRoot(iExHubSenderDeviceID);
 		senderDevice.getId().add(senderDeviceId);
 		MCCIMT000100UV01Agent senderAsAgent = new MCCIMT000100UV01Agent();
 		senderAsAgent.getClassCode().add("AGNT");
@@ -845,10 +858,12 @@ public class PDQQueryManager
 		return adminGender;
 	}
 	
-	private PRPAMT201306UV02OtherIDsScopingOrganization setOtherIDsScopingOrganization(PRPAMT201306UV02OtherIDsScopingOrganization otherIDsScopingOrganization)
+	private PRPAMT201306UV02OtherIDsScopingOrganization setOtherIDsScopingOrganization(PRPAMT201306UV02OtherIDsScopingOrganization otherIDsScopingOrganization,
+			String otherIDsScopingOrganizationString)
 	{
 		II scopingOrganizationId = new II();
-		scopingOrganizationId.setRoot(otherIDsScopingOrganizationOID);
+		scopingOrganizationId.setRoot((otherIDsScopingOrganizationString == null) ? otherIDsScopingOrganizationOID
+				: otherIDsScopingOrganizationString);
 		otherIDsScopingOrganization.getValue().add(scopingOrganizationId);
 		ST otherIDsScopingOrganizationSemanticsText = new ST();
 		otherIDsScopingOrganizationSemanticsText.getContent().add("OtherIDs.scopingOrganization.id");

@@ -7,6 +7,8 @@ import static org.junit.Assert.*;
 import PIXManager.src.org.hl7.v3.MCCIIN000002UV01;
 import PIXManager.src.org.hl7.v3.PRPAIN201310UV02;
 
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.junit.*;
 
 /**
@@ -49,11 +51,11 @@ public class PIXManagerTest
 		PIXManager pixManager = null;
 		try
 		{
-			pixManager = new PIXManager(PIXManagerEndpointURI,
+			pixManager = new PIXManager(/*PIXManagerEndpointURI*/ null,
 					true);
 			
-			PRPAIN201310UV02 pixResponse = pixManager.patientRegistryGetIdentifiers("PIXL1",
-					"2.16.840.1.113883.3.72.5.9.1",
+			PRPAIN201310UV02 pixResponse = pixManager.patientRegistryGetIdentifiers("IHEFACILITY-998",
+					"1.3.6.1.4.1.21367.3000.1.6",
 					true);
 		}
 		catch (Exception e)
@@ -94,11 +96,11 @@ public class PIXManagerTest
 		PIXManager pixManager = null;
 		try
 		{
-			pixManager = new PIXManager(PIXManagerEndpointURI,
+			pixManager = new PIXManager(/*PIXManagerEndpointURI*/ null,
 					true);
 			
-			PRPAIN201310UV02 pixResponse = pixManager.patientRegistryGetIdentifiers("PIXL1",
-					"2.16.840.1.113883.3.72.5.9.1",
+			PRPAIN201310UV02 pixResponse = pixManager.patientRegistryGetIdentifiers("IHEFACILITY-998",
+					"1.3.6.1.4.1.21367.3000.1.6",
 					false);
 		}
 		catch (Exception e)
@@ -145,16 +147,38 @@ public class PIXManagerTest
 		PIXManager pixManager = null;
 		try
 		{
-			pixManager = new PIXManager(PIXManagerEndpointURI,
+			pixManager = new PIXManager(/*PIXManagerEndpointURI*/ null,
 					true);
 			
-			MCCIIN000002UV01 pixRegistrationResponse = pixManager.registerPatient("ALAN",
-					"ALPHA",
+			DateTime oidTimeValue = DateTime.now(DateTimeZone.UTC);
+//			MCCIIN000002UV01 pixRegistrationResponse = pixManager.registerPatient("WILLIAM",
+//					"WALTERS",
+//					null,
+//					"5/5/1955",
+//					"M",
+//					String.valueOf(oidTimeValue.getMillis()));
+
+//			MCCIIN000002UV01 pixRegistrationResponse = pixManager.registerPatient("ALICE",
+//					"MAIDEN",
+//					null,
+//					"5/5/1955",
+//					"M",
+//					String.valueOf(oidTimeValue.getMillis()));
+
+//			MCCIIN000002UV01 pixRegistrationResponse = pixManager.registerPatient("ALYSSA",
+//					"EVERSOLVE",
+//					null,
+//					"5/5/1955",
+//					"M",
+//					String.valueOf(oidTimeValue.getMillis()));
+
+			MCCIIN000002UV01 pixRegistrationResponse = pixManager.registerPatient("ALICE",
+					"EVERSOLVE",
 					null,
-					"12/8/1978",
+					"5/5/1955",
 					"M",
-					"PIX");
-	
+					String.valueOf(oidTimeValue.getMillis()));
+
 //			assertTrue("Error - unexpected return value for RegisterPatient message",
 //					pixRegistrationResponse.toString());
 		}

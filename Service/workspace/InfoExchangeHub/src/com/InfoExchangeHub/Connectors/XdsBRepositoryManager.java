@@ -70,8 +70,10 @@ public class XdsBRepositoryManager
 
 	private static final String propertiesFile = "/temp/IExHub.properties";
 	private static boolean testMode = false;
+
 	private static boolean logXdsBRequestMessages = false;
 	private static String logOutputPath = "c:/temp/";
+	private static boolean logSyslogAuditMsgsLocally = false;
 
     private static String keyStoreFile = "c:/temp/1264.jks";
 	private static String keyStorePwd = "IEXhub";
@@ -154,6 +156,8 @@ public class XdsBRepositoryManager
 		{
 			props.load(new FileInputStream(propertiesFile));
 			
+			XdsBRepositoryManager.logSyslogAuditMsgsLocally = (props.getProperty("LogSyslogAuditMsgsLocally") == null) ? XdsBRepositoryManager.logSyslogAuditMsgsLocally
+					: Boolean.parseBoolean(props.getProperty("LogSyslogAuditMsgsLocally"));
 			XdsBRepositoryManager.logOutputPath = (props.getProperty("LogOutputPath") == null) ? XdsBRepositoryManager.logOutputPath
 					: props.getProperty("LogOutputPath");
 			XdsBRepositoryManager.logXdsBRequestMessages = (props.getProperty("LogXdsBRequestMessages") == null) ? XdsBRepositoryManager.logXdsBRequestMessages
@@ -397,6 +401,11 @@ public class XdsBRepositoryManager
 
 		logMsg = logMsg.replace("$SubmissionSetId$",
 				submissionSetId);
+
+		if (logSyslogAuditMsgsLocally)
+		{
+			log.info(logMsg);
+		}
 
 		// Log the syslog message
 		Syslog.getInstance("sslTcp").info(logMsg);

@@ -21,6 +21,7 @@ import PIXManager.src.org.hl7.v3.*;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.productivity.java.syslog4j.Syslog;
@@ -43,8 +44,10 @@ public class PIXManager
 	private static String cipherSuites = "TLS_RSA_WITH_AES_128_CBC_SHA";
 	private static String httpsProtocols = "TLSv1";
 	private static boolean debugSSL = false;
+	
 	private static boolean logPixRequestMessages = false;
 	private static String logOutputPath = "c:/temp/";
+	private static boolean logSyslogAuditMsgsLocally = false;
 
 	private static String iti44AuditMsgTemplate = null;
 	private static String iti45AuditMsgTemplate = null;
@@ -64,6 +67,8 @@ public class PIXManager
 	private static String dataSourceOID = "2.16.840.1.113883.3.72.5.9.3";
 	private static String iExHubDomainOid = "2.16.840.1.113883.3.72.5.9.1";
 	private static String iExHubAssigningAuthority = "ISO";
+	private static String iExHubSenderDeviceID = "1.3.6.1.4.1.21367.13.10.215";
+	private static String patientIdAssigningAuthority = "1.3.6.1.4.1.21367.13.20.200";
 
 	private static PIXManager_ServiceStub pixManagerStub = null;
 	private static final ObjectFactory objectFactory = new ObjectFactory();
@@ -82,6 +87,12 @@ public class PIXManager
 		{
 			props.load(new FileInputStream(propertiesFile));
 			
+			PIXManager.logSyslogAuditMsgsLocally = (props.getProperty("LogSyslogAuditMsgsLocally") == null) ? PIXManager.logSyslogAuditMsgsLocally
+					: Boolean.parseBoolean(props.getProperty("LogSyslogAuditMsgsLocally"));
+			PIXManager.iExHubSenderDeviceID = (props.getProperty("IExHubSenderDeviceID") == null) ? PIXManager.iExHubSenderDeviceID
+					: props.getProperty("IExHubSenderDeviceID");
+			PIXManager.patientIdAssigningAuthority = (props.getProperty("PatientIDAssigningAuthority") == null) ? PIXManager.patientIdAssigningAuthority
+					: props.getProperty("PatientIDAssigningAuthority");
 			PIXManager.logOutputPath = (props.getProperty("LogOutputPath") == null) ? PIXManager.logOutputPath
 					: props.getProperty("LogOutputPath");
 			PIXManager.logPixRequestMessages = (props.getProperty("LogPIXRequestMessages") == null) ? PIXManager.logPixRequestMessages
@@ -263,7 +274,12 @@ public class PIXManager
 		
 		logMsg = logMsg.replace("$PatientId$",
 				patientId);
-		
+
+		if (logSyslogAuditMsgsLocally)
+		{
+			log.info(logMsg);
+		}
+
 		// Log the syslog message
 		Syslog.getInstance("sslTcp").info(logMsg);
 	}
@@ -313,7 +329,12 @@ public class PIXManager
 		
 		logMsg = logMsg.replace("$PatientId$",
 				patientId);
-		
+
+		if (logSyslogAuditMsgsLocally)
+		{
+			log.info(logMsg);
+		}
+
 		// Log the syslog message
 		Syslog.getInstance("sslTcp").info(logMsg);
 	}
@@ -396,7 +417,7 @@ public class PIXManager
 		senderDevice.setClassCode(EntityClassDevice.DEV);
 		senderDevice.setDeterminerCode("INSTANCE");
 		II senderDeviceId = new II();
-		senderDeviceId.setRoot(PIXManager.iExHubDomainOid);
+		senderDeviceId.setRoot(PIXManager.iExHubSenderDeviceID);
 		senderDevice.getId().add(senderDeviceId);
 		sender.setDevice(senderDevice);
 		pRPA_IN201309UV02.setSender(sender);
@@ -576,7 +597,7 @@ public class PIXManager
 		senderDevice.setClassCode(EntityClassDevice.DEV);
 		senderDevice.setDeterminerCode("INSTANCE");
 		II senderDeviceId = new II();
-		senderDeviceId.setRoot(PIXManager.iExHubDomainOid);
+		senderDeviceId.setRoot(PIXManager.iExHubSenderDeviceID);
 		senderDevice.getId().add(senderDeviceId);
 		MCCIMT000100UV01Agent senderAsAgent = new MCCIMT000100UV01Agent();
 		senderAsAgent.getClassCode().add("AGNT");
@@ -612,7 +633,7 @@ public class PIXManager
 		PRPAMT201301UV02Patient patient = new PRPAMT201301UV02Patient();
 		patient.getClassCode().add("PAT");
 		II constructedPatientId = new II();
-		constructedPatientId.setRoot(PIXManager.iExHubDomainOid);
+		constructedPatientId.setRoot(PIXManager.patientIdAssigningAuthority);
 		constructedPatientId.setAssigningAuthorityName(PIXManager.iExHubAssigningAuthority);
 		constructedPatientId.setExtension(patientId);
 		patient.getId().add(constructedPatientId);
@@ -669,6 +690,18 @@ public class PIXManager
 
 		patientPerson.getClassCode().add("PSN");
 		patientPerson.setDeterminerCode("INSTANCE");
+		
+		DateTimeFormatter formatter = DateTimeFormat.forPattern("MM/dd/yyyy");
+		DateTime birthDateTime = formatter.parseDateTime(dateOfBirth);
+		StringBuilder birthDateBuilder = new StringBuilder();
+		birthDateBuilder.append(birthDateTime.getYear());
+		birthDateBuilder.append((birthDateTime.getMonthOfYear() < 10) ? ("0" + birthDateTime.getMonthOfYear())
+				: birthDateTime.getMonthOfYear());
+		birthDateBuilder.append((birthDateTime.getDayOfMonth() < 10) ? ("0" + birthDateTime.getDayOfMonth())
+				: birthDateTime.getDayOfMonth());
+		TS birthTime = new TS();
+		birthTime.setValue(birthDateBuilder.toString());
+		patientPerson.setBirthTime(birthTime);
 		
 		JAXBElement<PRPAMT201301UV02Person> patientPersonElement = objectFactory.createPRPAMT201301UV02PatientPatientPerson(patientPerson);
 		patient.setPatientPerson(patientPersonElement);
