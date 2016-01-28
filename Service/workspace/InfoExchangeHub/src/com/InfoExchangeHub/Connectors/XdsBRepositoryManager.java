@@ -298,6 +298,8 @@ public class XdsBRepositoryManager
 				sysLogConfig.setKeyStorePassword(keyStorePwd);
 				sysLogConfig.setTrustStore(keyStoreFile);
 				sysLogConfig.setTrustStorePassword(keyStorePwd);
+				sysLogConfig.setUseStructuredData(true);
+				sysLogConfig.setMaxMessageLength(4096);
 				Syslog.createInstance("sslTcp",
 						sysLogConfig);
 			}

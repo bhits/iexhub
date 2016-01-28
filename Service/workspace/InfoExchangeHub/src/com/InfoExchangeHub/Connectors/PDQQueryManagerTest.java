@@ -15,8 +15,8 @@ import PDQSupplier.src.org.hl7.v3.PRPAIN201306UV02;
  */
 public class PDQQueryManagerTest
 {
-	private static final String PDQManagerEndpointURI = "http://129.6.24.79:9090";
-	private static final String PDQManagerTLSEndpointURI = "https://philips50:8443/philips/services/pixmanager";
+	private static final String PDQManagerEndpointURI = null;
+	private static final String PDQManagerTLSEndpointURI = null;
 
 	/**
 	 * Test method for {@link com.InfoExchangeHub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
@@ -38,6 +38,37 @@ public class PDQQueryManagerTest
 					"ROCK SPRINGS",
 					"WY",
 					"82901",
+					null,
+					null,
+					null);
+		}
+		catch (Exception e)
+		{
+			fail("Error - " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Test method for {@link com.InfoExchangeHub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
+	 */
+	@Test
+	public void testITI47ConsumerQueryPatientNameAddress_NoOtherIDsScopingOrganization_TLS()
+	{
+		PDQQueryManager pdqQueryManager = null;
+		try
+		{
+			pdqQueryManager = new PDQQueryManager(null,
+					true);
+			PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.queryPatientDemographics(null,
+					"MOORE",
+					null,
+					null,
+					null,
+					null,
+					"10 PINETREE",
+					null,
+					null,
+					null,
 					null,
 					null,
 					null);
@@ -87,12 +118,12 @@ public class PDQQueryManagerTest
 		PDQQueryManager pdqQueryManager = null;
 		try
 		{
-			pdqQueryManager = new PDQQueryManager(PDQManagerEndpointURI);
+			pdqQueryManager = new PDQQueryManager(/*PDQManagerEndpointURI*/ null);
 			PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.queryPatientDemographics("CHIP",
 					"MOORE",
 					null,
 					null,
-					"M",
+					null,
 					null,
 					null,
 					null,
@@ -117,13 +148,13 @@ public class PDQQueryManagerTest
 		PDQQueryManager pdqQueryManager = null;
 		try
 		{
-			pdqQueryManager = new PDQQueryManager(PDQManagerTLSEndpointURI,
+			pdqQueryManager = new PDQQueryManager(null,
 					true);
 			PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.queryPatientDemographics("CHIP",
 					"MOORE",
 					null,
 					null,
-					"M",
+					null,
 					null,
 					null,
 					null,
@@ -208,7 +239,7 @@ public class PDQQueryManagerTest
 		PDQQueryManager pdqQueryManager = null;
 		try
 		{
-			pdqQueryManager = new PDQQueryManager(PDQManagerTLSEndpointURI,
+			pdqQueryManager = new PDQQueryManager(null,
 					true);
 			PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.queryPatientDemographics(null,
 					"MOORE",
@@ -384,6 +415,53 @@ public class PDQQueryManagerTest
 			
 			// Now send a PDQ query cancel message (QUQI_IN000003UV01)
 			pdqQueryManager.queryCancel(pdqQueryResponse);
+		}
+		catch (Exception e)
+		{
+			fail("Error - " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Test method for {@link com.InfoExchangeHub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
+	 */
+	@Test
+	public void testITI47ConsumerQueryContinuationOptionTLS()
+	{
+		PDQQueryManager pdqQueryManager = null;
+		try
+		{
+			pdqQueryManager = new PDQQueryManager(null,
+					true);
+			PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.queryPatientDemographics("Maria",
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					null,
+					2);
+			
+			// Now send the PDQ query continuation message (QUQI_IN000003UV01), requesting five additional records...
+			pdqQueryResponse = pdqQueryManager.queryContinue(pdqQueryResponse,
+					2);
+
+			// Now send the PDQ query continuation message (QUQI_IN000003UV01), requesting five additional records...
+//			pdqQueryResponse = pdqQueryManager.queryContinue(pdqQueryResponse,
+//					2);
+
+			// Now send the PDQ query continuation message (QUQI_IN000003UV01), requesting five additional records...
+//			pdqQueryResponse = pdqQueryManager.queryContinue(pdqQueryResponse,
+//					2);
+
+			// Now send a PDQ query cancel message (QUQI_IN000003UV01)
+//			pdqQueryManager.queryCancel(pdqQueryResponse);
 		}
 		catch (Exception e)
 		{

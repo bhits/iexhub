@@ -93,11 +93,11 @@ public class PDQQueryManager
 			PDQQueryManager.keyStoreFile = (props.getProperty("PDQKeyStoreFile") == null) ? PDQQueryManager.keyStoreFile
 					: props.getProperty("PDQKeyStoreFile");
 			PDQQueryManager.keyStorePwd = (props.getProperty("PDQKeyStorePwd") == null) ? PDQQueryManager.keyStorePwd
-					: props.getProperty("PIXKeyStorePwd");
-			PDQQueryManager.cipherSuites = (props.getProperty("PIXCipherSuites") == null) ? PDQQueryManager.cipherSuites
-					: props.getProperty("PIXCipherSuites");
-			PDQQueryManager.httpsProtocols = (props.getProperty("PIXHttpsProtocols") == null) ? PDQQueryManager.httpsProtocols
-					: props.getProperty("PIXHttpsProtocols");
+					: props.getProperty("PDQKeyStorePwd");
+			PDQQueryManager.cipherSuites = (props.getProperty("PDQCipherSuites") == null) ? PDQQueryManager.cipherSuites
+					: props.getProperty("PDQCipherSuites");
+			PDQQueryManager.httpsProtocols = (props.getProperty("PDQHttpsProtocols") == null) ? PDQQueryManager.httpsProtocols
+					: props.getProperty("PDQHttpsProtocols");
 			PDQQueryManager.debugSSL = (props.getProperty("DebugSSL") == null) ? PDQQueryManager.debugSSL
 					: Boolean.parseBoolean(props.getProperty("DebugSSL"));
 			PDQQueryManager.receiverApplicationName = (props.getProperty("PDQReceiverApplicationName") == null) ? PDQQueryManager.receiverApplicationName
@@ -116,7 +116,7 @@ public class PDQQueryManager
 			// If endpoint URI's are null, then set to the values in the properties file...
 			if (endpointURI == null)
 			{
-				endpointURI = props.getProperty("PIXManagerEndpointURI");
+				endpointURI = props.getProperty("PDQManagerEndpointURI");
 			}
 			
 			PDQQueryManager.endpointURI = endpointURI;
@@ -606,8 +606,10 @@ public class PDQQueryManager
 		}
 
 		// Create LivingSubjectName...
-		if ((familyName != null) &&
-			(familyName.length() > 0))
+		if (((familyName != null) &&
+			 (familyName.length() > 0)) ||
+			((givenName != null) &&
+			 (givenName.length() > 0)))
 		{
 			PRPAMT201306UV02LivingSubjectName livingSubjectName = new PRPAMT201306UV02LivingSubjectName();
 			paramList.getLivingSubjectName().add(setLivingSubjectName(livingSubjectName,
@@ -615,7 +617,7 @@ public class PDQQueryManager
 					givenName,
 					middleName));
 		}
-		
+
 		// Create patientAddress if present...
 		if (((addressStreet != null) && (addressStreet.length() > 0)) ||
 			((addressCity != null) && (addressCity.length() > 0)) ||
@@ -804,18 +806,16 @@ public class PDQQueryManager
 			String givenName,
 			String middleName)
 	{
-		EN enFamily = null;
+		EN enCompleteName = null;
 		EnFamily enFamily2 = new EnFamily();
 		if ((familyName != null) &&
 			(familyName.length() > 0))
 		{
 			enFamily2.getContent().add(familyName);
-			enFamily = new EN();
-			enFamily.getContent().add(factory.createENFamily(enFamily2));
+			enCompleteName = new EN();
+			enCompleteName.getContent().add(factory.createENFamily(enFamily2));
 		}
 		
-		livingSubjectName.getValue().add(enFamily);
-
 		EN enGiven = null;
 		EnGiven enGiven2 = new EnGiven();
 		if ((givenName != null) &&
@@ -835,7 +835,12 @@ public class PDQQueryManager
 			
 			enGiven = new EN();
 			enGiven.getContent().add(factory.createENGiven(enGiven2));
-			livingSubjectName.getValue().add(enGiven);
+			enCompleteName.getContent().add(factory.createENGiven(enGiven2));
+			livingSubjectName.getValue().add(enCompleteName);
+		}
+		else
+		{
+			livingSubjectName.getValue().add(enCompleteName);
 		}
 				
 		ST livingSubjectNameSemanticsText = new ST();
