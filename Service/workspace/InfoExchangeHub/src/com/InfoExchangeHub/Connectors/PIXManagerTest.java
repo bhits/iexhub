@@ -151,12 +151,12 @@ public class PIXManagerTest
 					true);
 			
 			DateTime oidTimeValue = DateTime.now(DateTimeZone.UTC);
-			MCCIIN000002UV01 pixRegistrationResponse = pixManager.registerPatient("WILLIAM",
-					"WALTERS",
-					null,
-					"5/5/1955",
-					"M",
-					String.valueOf(oidTimeValue.getMillis()));
+//			MCCIIN000002UV01 pixRegistrationResponse = pixManager.registerPatient("WILLIAM",
+//					"WALTERS",
+//					null,
+//					"5/5/1955",
+//					"M",
+//					String.valueOf(oidTimeValue.getMillis()));
 
 //			MCCIIN000002UV01 pixRegistrationResponse = pixManager.registerPatient("ALICE",
 //					"MAIDEN",
@@ -172,12 +172,12 @@ public class PIXManagerTest
 //					"M",
 //					String.valueOf(oidTimeValue.getMillis()));
 
-//			MCCIIN000002UV01 pixRegistrationResponse = pixManager.registerPatient("ALICE",
-//					"EVERSOLVE",
-//					null,
-//					"5/5/1955",
-//					"M",
-//					String.valueOf(oidTimeValue.getMillis()));
+			MCCIIN000002UV01 pixRegistrationResponse = pixManager.registerPatient("ALICE",
+					"EVERSOLVE",
+					null,
+					"5/5/1955",
+					"M",
+					"1453993451564");
 
 //			assertTrue("Error - unexpected return value for RegisterPatient message",
 //					pixRegistrationResponse.toString());

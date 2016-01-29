@@ -7,7 +7,6 @@ import java.math.BigInteger;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.rmi.RemoteException;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -26,7 +25,6 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.productivity.java.syslog4j.Syslog;
-import org.productivity.java.syslog4j.SyslogConfigIF;
 import org.productivity.java.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig;
 
 import com.InfoExchangeHub.Exceptions.UnexpectedServerException;
@@ -164,6 +162,8 @@ public class PDQQueryManager
 				sysLogConfig.setKeyStorePassword(keyStorePwd);
 				sysLogConfig.setTrustStore(keyStoreFile);
 				sysLogConfig.setTrustStorePassword(keyStorePwd);
+				sysLogConfig.setUseStructuredData(true);
+				sysLogConfig.setMaxMessageLength(8192);
 				Syslog.createInstance("sslTcp",
 						sysLogConfig);
 			}
@@ -208,7 +208,8 @@ public class PDQQueryManager
 	private void logIti47AuditMsg(String queryText,
 			String patientId) throws IOException
 	{
-		if (sysLogConfig == null)
+		if ((sysLogConfig == null) ||
+            (iti47AuditMsgTemplate == null))
 		{
 			return;
 		}
@@ -255,8 +256,9 @@ public class PDQQueryManager
 			log.info(logMsg);
 		}
 		
-		// Log the syslog message
+		// Log the syslog message and close connection
 		Syslog.getInstance("sslTcp").info(logMsg);
+		Syslog.getInstance("sslTcp").flush();
 	}
 
 	public PRPAIN201306UV02 queryPatientDemographics(String givenName,
@@ -286,10 +288,12 @@ public class PDQQueryManager
 			patientId,
 			patientIdDomain,
 			otherIDsScopingOrganization,
-			-1);
+			-1,
+			null);
 	}
 
-	public void queryCancel(PRPAIN201306UV02 queryResult) throws IOException
+	public void queryCancel(PRPAIN201306UV02 queryResult,
+			String existingQueryId) throws IOException
 	{
 		QUQIIN000003UV01Type qUQIIN000003UV01 = new QUQIIN000003UV01Type();
 
@@ -354,7 +358,8 @@ public class PDQQueryManager
 		QUQIMT000001UV01QueryContinuation queryContinuation = new QUQIMT000001UV01QueryContinuation();
 		II queryId = new II();
 		queryId.setRoot(queryIdOID);
-		queryId.setExtension("NIST_CONTINUATION");
+		queryId.setExtension(((existingQueryId != null) && (existingQueryId.length() > 0)) ? existingQueryId
+				: "NIST_CONTINUATION");
 		queryContinuation.setQueryId(queryId);
 		
 		INT resultSetSizeINT = new INT();
@@ -386,11 +391,13 @@ public class PDQQueryManager
 	public PRPAIN201306UV02 queryContinue(PRPAIN201306UV02 queryResult) throws IOException
 	{
 		return queryContinue(queryResult,
-				-1);
+				-1,
+				null);
 	}
 
 	public PRPAIN201306UV02 queryContinue(PRPAIN201306UV02 queryResult,
-			int resultSetSize) throws IOException
+			int resultSetSize,
+			String existingQueryId) throws IOException
 	{
 		QUQIIN000003UV01Type qUQIIN000003UV01 = new QUQIIN000003UV01Type();
 
@@ -455,7 +462,8 @@ public class PDQQueryManager
 		QUQIMT000001UV01QueryContinuation queryContinuation = new QUQIMT000001UV01QueryContinuation();
 		II queryId = new II();
 		queryId.setRoot(queryIdOID);
-		queryId.setExtension("NIST_CONTINUATION");
+		queryId.setExtension(((existingQueryId != null) && (existingQueryId.length() > 0)) ? existingQueryId
+				: "NIST_CONTINUATION");
 		queryContinuation.setQueryId(queryId);
 		
 		if (resultSetSize > 0)
@@ -501,6 +509,39 @@ public class PDQQueryManager
 			String patientIdDomain,
 			String otherIDsScopingOrganization,
 			int resultSetSize) throws IOException
+	{
+		return queryPatientDemographics(givenName,
+			familyName,
+			middleName,
+			dateOfBirth,
+			gender,
+			motherMaidenName,
+			addressStreet,
+			addressCity,
+			addressState,
+			addressPostalCode,
+			patientId,
+			patientIdDomain,
+			otherIDsScopingOrganization,
+			resultSetSize,
+			null);
+	}
+	
+	public PRPAIN201306UV02 queryPatientDemographics(String givenName,
+			String familyName,
+			String middleName,
+			String dateOfBirth,
+			String gender,
+			String motherMaidenName,
+			String addressStreet,
+			String addressCity,
+			String addressState,
+			String addressPostalCode,
+			String patientId,
+			String patientIdDomain,
+			String otherIDsScopingOrganization,
+			int resultSetSize,
+			String existingQueryId) throws IOException
 	{
 //		if ((familyName == null) ||
 //			(familyName.length() == 0))
@@ -561,7 +602,7 @@ public class PDQQueryManager
 		PRPAMT201306UV02QueryByParameter queryByParam = new PRPAMT201306UV02QueryByParameter();
 		II queryId = new II();
 		queryId.setRoot(queryIdOID);
-		queryId.setExtension((resultSetSize > 0) ? "NIST_CONTINUATION"
+		queryId.setExtension((resultSetSize > 0) ? existingQueryId
 				: guid);
 		queryByParam.setQueryId(queryId);
 		CS responseModalityCode = new CS();

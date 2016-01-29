@@ -32,7 +32,6 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.productivity.java.syslog4j.Syslog;
-import org.productivity.java.syslog4j.SyslogConfigIF;
 import org.productivity.java.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -299,7 +298,7 @@ public class XdsBRepositoryManager
 				sysLogConfig.setTrustStore(keyStoreFile);
 				sysLogConfig.setTrustStorePassword(keyStorePwd);
 				sysLogConfig.setUseStructuredData(true);
-				sysLogConfig.setMaxMessageLength(4096);
+				sysLogConfig.setMaxMessageLength(8192);
 				Syslog.createInstance("sslTcp",
 						sysLogConfig);
 			}
@@ -365,7 +364,8 @@ public class XdsBRepositoryManager
 	private void logIti41AuditMsg(String submissionSetId,
 			String patientId) throws IOException
 	{
-		if (sysLogConfig == null)
+		if ((sysLogConfig == null) ||
+            (iti41AuditMsgTemplate == null))
 		{
 			return;
 		}
@@ -409,8 +409,9 @@ public class XdsBRepositoryManager
 			log.info(logMsg);
 		}
 
-		// Log the syslog message
+		// Log the syslog message and close connection
 		Syslog.getInstance("sslTcp").info(logMsg);
+		Syslog.getInstance("sslTcp").flush();
 	}
 
 	public RegistryResponseType provideAndRegisterDocumentSet(byte[] cdaDocument,

@@ -25,7 +25,6 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.productivity.java.syslog4j.Syslog;
-import org.productivity.java.syslog4j.SyslogConfigIF;
 import org.productivity.java.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig;
 
 import com.InfoExchangeHub.Exceptions.*;
@@ -179,6 +178,8 @@ public class PIXManager
 				sysLogConfig.setKeyStorePassword(keyStorePwd);
 				sysLogConfig.setTrustStore(keyStoreFile);
 				sysLogConfig.setTrustStorePassword(keyStorePwd);
+				sysLogConfig.setUseStructuredData(true);
+				sysLogConfig.setMaxMessageLength(8192);
 				Syslog.createInstance("sslTcp",
 						sysLogConfig);
 			}
@@ -236,7 +237,8 @@ public class PIXManager
 
 	private void logIti44AuditMsg(String patientId) throws IOException
 	{
-		if (sysLogConfig == null)
+		if ((sysLogConfig == null) ||
+            (iti44AuditMsgTemplate == null))
 		{
 			return;
 		}
@@ -280,14 +282,16 @@ public class PIXManager
 			log.info(logMsg);
 		}
 
-		// Log the syslog message
+		// Log the syslog message and close connection
 		Syslog.getInstance("sslTcp").info(logMsg);
+		Syslog.getInstance("sslTcp").flush();
 	}
 
 	private void logIti45AuditMsg(String queryText,
 			String patientId) throws IOException
 	{
-		if (sysLogConfig == null)
+		if ((sysLogConfig == null) ||
+            (iti45AuditMsgTemplate == null))
 		{
 			return;
 		}
@@ -335,8 +339,9 @@ public class PIXManager
 			log.info(logMsg);
 		}
 
-		// Log the syslog message
+		// Log the syslog message and close connection
 		Syslog.getInstance("sslTcp").info(logMsg);
+		Syslog.getInstance("sslTcp").flush();
 	}
 
 	public PRPAIN201310UV02 patientRegistryGetIdentifiers(String patientId,

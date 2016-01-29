@@ -5,6 +5,8 @@ package com.InfoExchangeHub.Connectors;
 
 import static org.junit.Assert.*;
 
+import java.util.UUID;
+
 import org.junit.Test;
 
 import PDQSupplier.src.org.hl7.v3.PRPAIN201306UV02;
@@ -394,6 +396,7 @@ public class PDQQueryManagerTest
 			// Per the NIST server's instructions for this test, send a valid query message to query about all patients named WILXLIS and ask for incremental
 			//   response (limited to 1 record)... 
 			pdqQueryManager = new PDQQueryManager(PDQManagerEndpointURI);
+			String queryId = UUID.randomUUID().toString();
 			PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.queryPatientDemographics(null,
 					"WILXLIS",
 					null,
@@ -407,14 +410,17 @@ public class PDQQueryManagerTest
 					null,
 					null,
 					null,
-					1);
+					1,
+					queryId);
 			
 			// Now send the PDQ query continuation message (QUQI_IN000003UV01), requesting one additional record...
 			pdqQueryResponse = pdqQueryManager.queryContinue(pdqQueryResponse,
-					1);
+					1,
+					queryId);
 			
 			// Now send a PDQ query cancel message (QUQI_IN000003UV01)
-			pdqQueryManager.queryCancel(pdqQueryResponse);
+//			pdqQueryManager.queryCancel(pdqQueryResponse,
+//					queryId);
 		}
 		catch (Exception e)
 		{
@@ -433,7 +439,12 @@ public class PDQQueryManagerTest
 		{
 			pdqQueryManager = new PDQQueryManager(null,
 					true);
-			PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.queryPatientDemographics("Maria",
+			String queryId = UUID.randomUUID().toString();
+			PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.queryPatientDemographics(null,
+					null,
+					null,
+					null,
+					"M",
 					null,
 					null,
 					null,
@@ -442,23 +453,21 @@ public class PDQQueryManagerTest
 					null,
 					null,
 					null,
-					null,
-					null,
-					null,
-					null,
-					2);
+					2,
+					queryId);
 			
 			// Now send the PDQ query continuation message (QUQI_IN000003UV01), requesting five additional records...
 			pdqQueryResponse = pdqQueryManager.queryContinue(pdqQueryResponse,
-					2);
+					2,
+					queryId);
 
 			// Now send the PDQ query continuation message (QUQI_IN000003UV01), requesting five additional records...
 //			pdqQueryResponse = pdqQueryManager.queryContinue(pdqQueryResponse,
-//					2);
+//					5);
 
 			// Now send the PDQ query continuation message (QUQI_IN000003UV01), requesting five additional records...
 //			pdqQueryResponse = pdqQueryManager.queryContinue(pdqQueryResponse,
-//					2);
+//					5);
 
 			// Now send a PDQ query cancel message (QUQI_IN000003UV01)
 //			pdqQueryManager.queryCancel(pdqQueryResponse);

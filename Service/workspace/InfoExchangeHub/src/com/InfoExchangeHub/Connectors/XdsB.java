@@ -24,7 +24,6 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.productivity.java.syslog4j.Syslog;
-import org.productivity.java.syslog4j.SyslogConfigIF;
 import org.productivity.java.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig;
 
 import com.InfoExchangeHub.Exceptions.UnexpectedServerException;
@@ -62,8 +61,6 @@ public class XdsB
 
 	private static String iti18AuditMsgTemplate = null;
 	private static String iti43AuditMsgTemplate = null;
-
-	private static SSLTCPNetSyslogConfig sysLogConfig = null;
 	
 	/** Logger */
     public static Logger log = Logger.getLogger(XdsB.class);
@@ -80,7 +77,9 @@ public class XdsB
 	private static String registryEndpointURI = null;
 	private static String repositoryEndpointURI = null;
 	private static boolean testMode = false;
-	
+
+	private static SSLTCPNetSyslogConfig sysLogConfig = null;
+
 	public static void setRegistryEndpointURI(String registryEndpointURI)
 	{
 		if (registryStub != null)
@@ -194,6 +193,8 @@ public class XdsB
 				sysLogConfig.setKeyStorePassword(keyStorePwd);
 				sysLogConfig.setTrustStore(keyStoreFile);
 				sysLogConfig.setTrustStorePassword(keyStorePwd);
+				sysLogConfig.setUseStructuredData(true);
+				sysLogConfig.setMaxMessageLength(8192);
 				Syslog.createInstance("sslTcp",
 						sysLogConfig);
 			}
@@ -375,11 +376,12 @@ public class XdsB
 	private void logIti18AuditMsg(String queryText,
 			String patientId) throws IOException
 	{
-		if (sysLogConfig == null)
+		if ((sysLogConfig == null) ||
+            (iti18AuditMsgTemplate == null))
 		{
 			return;
 		}
-
+		
 		String logMsg = FileUtils.readFileToString(new File(iti18AuditMsgTemplate));
 		
 		// Substitutions...
@@ -420,8 +422,9 @@ public class XdsB
 			log.info(logMsg);
 		}
 
-		// Log the syslog message
+		// Log the syslog message and close connection
 		Syslog.getInstance("sslTcp").info(logMsg);
+		Syslog.getInstance("sslTcp").flush();
 	}
 
 	private void logIti43AuditMsg(String documentId,
@@ -429,7 +432,8 @@ public class XdsB
 			String homeCommunityId,
 			String patientId) throws IOException
 	{
-		if (sysLogConfig == null)
+		if ((sysLogConfig == null) ||
+            (iti43AuditMsgTemplate == null))
 		{
 			return;
 		}
@@ -488,8 +492,9 @@ public class XdsB
 			log.info(logMsg);
 		}
 
-		// Log the syslog message
+		// Log the syslog message and close connection
 		Syslog.getInstance("sslTcp").info(logMsg);
+		Syslog.getInstance("sslTcp").flush();
 	}
 
 	public AdhocQueryResponse registryStoredQuery(String patientID,
@@ -498,8 +503,6 @@ public class XdsB
 	{
 		AdhocQueryRequest request = new AdhocQueryRequest();
 		AdhocQueryType adhocQuery = new AdhocQueryType();
-		
-//		patientID = "'086666c2fd154f7^^^&1.3.6.1.4.1.21367.2005.13.20.3000&ISO'";
 		
 		SlotType1 slot = new SlotType1();
 		LongName name = new LongName();
