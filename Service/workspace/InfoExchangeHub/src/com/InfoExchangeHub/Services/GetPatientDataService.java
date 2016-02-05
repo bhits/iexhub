@@ -107,9 +107,9 @@ public class GetPatientDataService
 	private static XdsB xdsB = null;
 	private static boolean testMode = false;
 	private static String propertiesFile = "/temp/IExHub.properties";
-	private static String repositoryUniqueId = "1.19.6.24.109.42.1.5";
+	private static String repositoryUniqueId = "1.3.6.1.4.1.21367.13.40.226";
 	private static String cdaToJsonTransformXslt = null;
-	private static String iExHubDomainOid = "2.16.840.1.113883.3.72.5.9.1";
+	private static String iExHubDomainOid = "1.3.6.1.4.1.21367.13.50.300132";
 	private static String iExHubAssigningAuthority = "ISO";
 
 	@GET
@@ -314,143 +314,146 @@ public class GetPatientDataService
 					log.info("XdsB repository connector retrieval succeeded");
 
 					// Invoke appropriate map(s) to process documents in documentSetResponse...
-					DocumentResponse_type0[] docResponseArray = documentSetResponse.getRetrieveDocumentSetResponse().getRetrieveDocumentSetResponseTypeSequence_type0().getDocumentResponse();
-					if (docResponseArray != null)
+					if (documentSetResponse.getRetrieveDocumentSetResponse().getRetrieveDocumentSetResponseTypeSequence_type0() != null)
 					{
-						jsonOutput.append("{\"Documents\":[");
-						boolean first = true;
-						try
+						DocumentResponse_type0[] docResponseArray = documentSetResponse.getRetrieveDocumentSetResponse().getRetrieveDocumentSetResponseTypeSequence_type0().getDocumentResponse();
+						if (docResponseArray != null)
 						{
-							for (DocumentResponse_type0 document : docResponseArray)
+							jsonOutput.append("{\"Documents\":[");
+							boolean first = true;
+							try
 							{
-								if (!first)
+								for (DocumentResponse_type0 document : docResponseArray)
 								{
-									jsonOutput.append(",");
-								}
-								first = false;
-								
-								log.info("Processing document ID="
-										+ document.getDocumentUniqueId().getLongName());
-								
-								String mimeType = docResponseArray[0].getMimeType().getLongName();
-								if (mimeType.compareToIgnoreCase("text/xml") == 0)
-								{
-									String filename = "test/" + document.getDocumentUniqueId().getLongName() + ".xml";
-									log.info("Persisting document to filesystem, filename="
-											+ filename);
-									DataHandler dh = document.getDocument();
-									File file = new File(filename);
-									FileOutputStream fileOutStream = new FileOutputStream(file);
-									dh.writeTo(fileOutStream);
-									fileOutStream.close();
-
-									DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-									DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-									Document doc = dBuilder.parse(new FileInputStream(filename));
-									XPath xPath = XPathFactory.newInstance().newXPath();
-									NodeList nodes = (NodeList)xPath.evaluate("/ClinicalDocument/templateId",
-									        doc.getDocumentElement(),
-									        XPathConstants.NODESET);
-
-									boolean templateFound = false;
-									if (nodes.getLength() > 0)
+									if (!first)
 									{
-										log.info("Searching for /ClinicalDocument/templateId, document ID="
-												+ document.getDocumentUniqueId().getLongName());
-										
-										for (int i = 0; i < nodes.getLength(); ++i)
-										{
-										    String val = ((Element)nodes.item(i)).getAttribute("root");
-										    if ((val != null) &&
-										    	(val.compareToIgnoreCase("2.16.840.1.113883.10.20.22.1.2") == 0))
-										    {
-										    	log.info("/ClinicalDocument/templateId node found, document ID="
-										    			+ document.getDocumentUniqueId().getLongName());
-										    	
-												// CCDA 1.1 validation check...
-												Handler handler = new Handler();
-												handler.setValid(true);
-	//											ClinicalDocument clinicalDocument = CDAUtil.load(new FileInputStream(filename),
-	//													handler);
-	//											ByteArrayOutputStream output = new ByteArrayOutputStream();
-	//											CDAUtil.save(clinicalDocument,
-	//													output);
+										jsonOutput.append(",");
+									}
+									first = false;
+									
+									log.info("Processing document ID="
+											+ document.getDocumentUniqueId().getLongName());
+									
+									String mimeType = docResponseArray[0].getMimeType().getLongName();
+									if (mimeType.compareToIgnoreCase("text/xml") == 0)
+									{
+										String filename = "test/" + document.getDocumentUniqueId().getLongName() + ".xml";
+										log.info("Persisting document to filesystem, filename="
+												+ filename);
+										DataHandler dh = document.getDocument();
+										File file = new File(filename);
+										FileOutputStream fileOutStream = new FileOutputStream(file);
+										dh.writeTo(fileOutStream);
+										fileOutStream.close();
 	
-												if (handler.isValid())
-												{
-//													log.info("Invoking map, document ID="
-//															+ document.getDocumentUniqueId().getLongName());
-													
-//													String mapOutput = invokeMap(filename);
-
-//													log.info("Map invocation successful, document ID="
-//															+ document.getDocumentUniqueId().getLongName());
-
-													// Persist transformed CCDA to filesystem for auditing...
-//													Files.write(Paths.get("test/" + document.getDocumentUniqueId().getLongName() + "_TransformedToPatientPortalXML.xml"),
-//															mapOutput.getBytes());
-
-//													log.info("Persisted transformed CCDA document to filesystem, filename="
-//															+ "test/"
-//															+ document.getDocumentUniqueId().getLongName()
-//															+ "_TransformedToPatientPortalXML.xml");
-
-													log.info("Invoking XSL transform, document ID="
-															+ document.getDocumentUniqueId().getLongName());
-
-											        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-											        factory.setNamespaceAware(true);
-											        DocumentBuilder builder = factory.newDocumentBuilder();
-											        Document mappedDoc = builder.parse(new File(/*"test/" + document.getDocumentUniqueId().getLongName() + "_TransformedToPatientPortalXML.xml"*/ filename));
-											        DOMSource source = new DOMSource(mappedDoc);
-											 
-											        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-											        
-											        Transformer transformer = transformerFactory.newTransformer(new StreamSource(GetPatientDataService.cdaToJsonTransformXslt));
-													String jsonFilename = "test/" + document.getDocumentUniqueId().getLongName() + ".json";
-													File jsonFile = new File(jsonFilename);
-													FileOutputStream jsonFileOutStream = new FileOutputStream(jsonFile);
-											        StreamResult result = new StreamResult(jsonFileOutStream);
-											        transformer.transform(source,
-											        		result);
-													jsonFileOutStream.close();
-
-													log.info("Successfully transformed CCDA to JSON, filename="
-															+ jsonFilename);
-													
-//										            patientDataResponse.getDocuments().add(new String(readAllBytes(get(jsonFilename))));
-													jsonOutput.append(new String(readAllBytes(get(jsonFilename))));
-													
-											    	templateFound = true;
-												}
-												else
-												{
-													patientDataResponse.getErrorMsgs().add("Document retrieved is not a valid C-CDA 1.1 document - document ID="
-															+ document.getDocumentUniqueId().getLongName());									
-												}
-										    }
+										DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+										DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+										Document doc = dBuilder.parse(new FileInputStream(filename));
+										XPath xPath = XPathFactory.newInstance().newXPath();
+										NodeList nodes = (NodeList)xPath.evaluate("/ClinicalDocument/templateId",
+										        doc.getDocumentElement(),
+										        XPathConstants.NODESET);
+	
+										boolean templateFound = false;
+										if (nodes.getLength() > 0)
+										{
+											log.info("Searching for /ClinicalDocument/templateId, document ID="
+													+ document.getDocumentUniqueId().getLongName());
+											
+											for (int i = 0; i < nodes.getLength(); ++i)
+											{
+											    String val = ((Element)nodes.item(i)).getAttribute("root");
+											    if ((val != null) &&
+											    	(val.compareToIgnoreCase("2.16.840.1.113883.10.20.22.1.2") == 0))
+											    {
+											    	log.info("/ClinicalDocument/templateId node found, document ID="
+											    			+ document.getDocumentUniqueId().getLongName());
+											    	
+													// CCDA 1.1 validation check...
+													Handler handler = new Handler();
+													handler.setValid(true);
+		//											ClinicalDocument clinicalDocument = CDAUtil.load(new FileInputStream(filename),
+		//													handler);
+		//											ByteArrayOutputStream output = new ByteArrayOutputStream();
+		//											CDAUtil.save(clinicalDocument,
+		//													output);
+		
+													if (handler.isValid())
+													{
+	//													log.info("Invoking map, document ID="
+	//															+ document.getDocumentUniqueId().getLongName());
+														
+	//													String mapOutput = invokeMap(filename);
+	
+	//													log.info("Map invocation successful, document ID="
+	//															+ document.getDocumentUniqueId().getLongName());
+	
+														// Persist transformed CCDA to filesystem for auditing...
+	//													Files.write(Paths.get("test/" + document.getDocumentUniqueId().getLongName() + "_TransformedToPatientPortalXML.xml"),
+	//															mapOutput.getBytes());
+	
+	//													log.info("Persisted transformed CCDA document to filesystem, filename="
+	//															+ "test/"
+	//															+ document.getDocumentUniqueId().getLongName()
+	//															+ "_TransformedToPatientPortalXML.xml");
+	
+														log.info("Invoking XSL transform, document ID="
+																+ document.getDocumentUniqueId().getLongName());
+	
+												        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+												        factory.setNamespaceAware(true);
+												        DocumentBuilder builder = factory.newDocumentBuilder();
+												        Document mappedDoc = builder.parse(new File(/*"test/" + document.getDocumentUniqueId().getLongName() + "_TransformedToPatientPortalXML.xml"*/ filename));
+												        DOMSource source = new DOMSource(mappedDoc);
+												 
+												        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+												        
+												        Transformer transformer = transformerFactory.newTransformer(new StreamSource(GetPatientDataService.cdaToJsonTransformXslt));
+														String jsonFilename = "test/" + document.getDocumentUniqueId().getLongName() + ".json";
+														File jsonFile = new File(jsonFilename);
+														FileOutputStream jsonFileOutStream = new FileOutputStream(jsonFile);
+												        StreamResult result = new StreamResult(jsonFileOutStream);
+												        transformer.transform(source,
+												        		result);
+														jsonFileOutStream.close();
+	
+														log.info("Successfully transformed CCDA to JSON, filename="
+																+ jsonFilename);
+														
+	//										            patientDataResponse.getDocuments().add(new String(readAllBytes(get(jsonFilename))));
+														jsonOutput.append(new String(readAllBytes(get(jsonFilename))));
+														
+												    	templateFound = true;
+													}
+													else
+													{
+														patientDataResponse.getErrorMsgs().add("Document retrieved is not a valid C-CDA 1.1 document - document ID="
+																+ document.getDocumentUniqueId().getLongName());									
+													}
+											    }
+											}
+										}
+										
+										if (!templateFound)
+									    {
+									    	// Document doesn't match the template ID - add to error list...
+									    	patientDataResponse.getErrorMsgs().add("Document retrieved doesn't match required template ID - document ID="
+									    			+ document.getDocumentUniqueId().getLongName());
 										}
 									}
-									
-									if (!templateFound)
-								    {
-								    	// Document doesn't match the template ID - add to error list...
-								    	patientDataResponse.getErrorMsgs().add("Document retrieved doesn't match required template ID - document ID="
-								    			+ document.getDocumentUniqueId().getLongName());
+									else
+									{
+										patientDataResponse.getErrorMsgs().add("Document retrieved is not XML - document ID="
+												+ document.getDocumentUniqueId().getLongName());
 									}
 								}
-								else
-								{
-									patientDataResponse.getErrorMsgs().add("Document retrieved is not XML - document ID="
-											+ document.getDocumentUniqueId().getLongName());
-								}
 							}
-						}
-						catch (Exception e)
-						{
-							log.error("Error encountered, "
-									+ e.getMessage());
-							throw e;
+							catch (Exception e)
+							{
+								log.error("Error encountered, "
+										+ e.getMessage());
+								throw e;
+							}
 						}
 					}
 
