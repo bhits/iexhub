@@ -111,6 +111,7 @@ public class GetPatientDataService
 	private static String cdaToJsonTransformXslt = null;
 	private static String iExHubDomainOid = "1.3.6.1.4.1.21367.13.50.300132";
 	private static String iExHubAssigningAuthority = "ISO";
+	private static String testJSONDocumentPathname= null;
 
 	@GET
 	@Consumes({MediaType.APPLICATION_JSON})
@@ -127,6 +128,8 @@ public class GetPatientDataService
 				props.load(new FileInputStream(propertiesFile));
 				GetPatientDataService.testMode = (props.getProperty("TestMode") == null) ? GetPatientDataService.testMode
 						: Boolean.parseBoolean(props.getProperty("TestMode"));
+				GetPatientDataService.testJSONDocumentPathname = (props.getProperty("TestJSONDocumentPathname") == null) ? GetPatientDataService.testJSONDocumentPathname
+						: props.getProperty("TestJSONDocumentPathname");
 				GetPatientDataService.cdaToJsonTransformXslt = (props.getProperty("CDAToJSONTransformXSLT") == null) ? GetPatientDataService.cdaToJsonTransformXslt
 						: props.getProperty("CDAToJSONTransformXSLT");
 				GetPatientDataService.iExHubDomainOid = (props.getProperty("IExHubDomainOID") == null) ? GetPatientDataService.iExHubDomainOid
@@ -475,7 +478,7 @@ public class GetPatientDataService
 			// Return canned document for sprint #16 demo.  Sprint #17 will return JSON created by MDMI map (code below outside of this block).
 			try
 			{
-				retVal = FileUtils.readFileToString(new File("test/sampleJson.txt"));
+				retVal = FileUtils.readFileToString(new File(GetPatientDataService.testJSONDocumentPathname));
 				return Response.status(Response.Status.OK).entity(retVal).type(MediaType.APPLICATION_JSON).build();
 			}
 			catch (Exception e)
