@@ -1,4 +1,4 @@
 # JSON test files
 
 
->These files can be configured as the default response files in "test mode" 
+>These test files may  be configured as the default response when services are run in "test mode" .

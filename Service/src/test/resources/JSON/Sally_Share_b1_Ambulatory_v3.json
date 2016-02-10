@@ -218,18 +218,6 @@
         
         {
             
-        "BEid":"10160-0^2.16.840.1.113883.6.1",
-    
-        "title":"Medications",       
-    
-        "content":"<div><table><thead><tr><th>Date</th><th>Prescription</th><th>Directions</th><th>Status</th><th>Indications</th><th>Fill Instructions</th></tr></thead><tbody><tr><td>2/12/2016</td><td><span>Methadone 1mg/ml SF</span></td><td>3 doses, 40 ml</td><td>Active</td><td>Opioid Abuse Disorder</td><td><span>Packaged doses</span></td></tr><tr><td>2/12/2016</td><td>Albuterol 0.09 MG/ACTUAT inhalant solution</td><td>0.09 MG/ACTUAT inhalant solution, 2 puffs once</td><td>Active</td><td>Asthma</td><td>Generic Substitition Allowed</td></tr><tr><td>2/15/2016</td><td>Methadone 1mg/ml SF</td><td>2 doses, 40 ml</td><td>Active</td><td>Opioid Abuse Disorder</td><td>Packaged doses</td></tr><tr><td>2/17/2016</td><td>Methadone 1mg/ml SF</td><td>3 doses, 40 ml</td><td>Active</td><td>Opioid Abuse Disorder</td><td>Packaged doses</td></tr></tbody></table></div>"         
-    
-        }
-        
-            ,
-        
-        {
-            
         "BEid":"18776-5^2.16.840.1.113883.6.1",
     
         "title":"CARE PLAN",       
@@ -338,7 +326,9 @@
     
 
            }
-         ] } 
+         ] 
+		 }
+]
+}		 
                 
-   ]
-}   
+    
