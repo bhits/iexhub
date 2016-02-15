@@ -700,6 +700,14 @@ MEDICATIONS
                            <td>Opioid Abuse Disorder</td>
                            <td>Packaged doses</td>
                         </tr>
+                        <tr>
+                           <td>3/03/2016</td>
+                           <td>Bupropion Hydrochloride 100 MG [Wellbutrin] Tablets</td>
+                           <td>30 doses, 100 mg tablets</td>                           
+                           <td>Active</td>
+                           <td>Depressive Disorder</td>
+                           <td>Generic Substitition Allowed</td>
+                        </tr>
                      </tbody>
                   </table>
                </text>
@@ -2534,6 +2542,7 @@ PROBLEM LIST
                      listType="ordered">
                      <item>Opioid Abuse Disorder : Status - Active</item>
                      <item>Asthma : Status - Active</item>
+                     <item>Depressive Disorder : Status - Active</item>
                   </list>
                </text>
                <entry
