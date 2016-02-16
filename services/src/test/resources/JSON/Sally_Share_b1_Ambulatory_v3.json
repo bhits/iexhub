@@ -15,7 +15,7 @@
                 
 
                     "dob":
-                        "1947-05-01 ",
+                        "1977-05-01 ",
                     "gender":
                         "Female",
                     
@@ -28,7 +28,7 @@
                     
                     "ids":[
                     
-                        "123-101-5230^2.16.840.1.113883.4.1"
+                        "940140b7-7c8b-4491-90f4-4819ded969bf^1.3.6.1.4.1.21367.13.20.3000"
                         
                         ],
                     
@@ -41,11 +41,11 @@
                  "addressLine":"1357 Amber Drive\n"
                 
                 
-                    ,"city":"Beaverton"
+                    ,"city":"Richmond"
                 
-                    ,"state":"OR"
+                    ,"state":"VA"
                 
-                    ,"code":"97006"
+                    ,"code":"23222"
                 
                     ,"country":"US"
                 
@@ -84,20 +84,20 @@
                     
                         {
                             
-                "providerName":"Dr. Henry Seven"
+                "providerName":"Dr. Nancy Nightingale"
                 
                 
-                    ,"organizationName":"Community Health and Hospitals"
+                    ,"organizationName":"Community Health Clinic"
                    
                 
                         }
                         ,
                         {
                             
-                "providerName":"Dr. Henry Seven"
+                "providerName":"Dr. Nancy Nightingale"
                 
                 
-                    ,"organizationName":"Community Health and Hospitals"
+                    ,"organizationName":"Community Health Clinic"
                    
                 
                         }
@@ -123,11 +123,11 @@
                  "addressLine":"Get Well Clinic Facility\n1002 Healthcare Dr.\n"
                 
                 
-                    ,"city":"Portland"
+                    ,"city":"Richmond"
                 
-                    ,"state":"OR"
+                    ,"state":"VA"
                 
-                    ,"code":"97005"
+                    ,"code":"23222"
                 
                     ,"country":"United States of America"
                 
@@ -200,7 +200,7 @@
     
         "title":"ENCOUNTERS",       
     
-        "content":"<div><table><thead><tr><th>Encounter</th><th>Performer</th><th>Location</th><th>Date</th></tr></thead><tbody><tr><td><span></span> Pnuemonia</td><td>Dr Henry Seven</td><td>Community Health and Hospitals</td><td>20120806</td></tr></tbody></table></div>"         
+        "content":"<div><table><thead><tr><th>Encounter</th><th>Performer</th><th>Location</th><th>Date</th></tr></thead><tbody><tr><td><span></span> Pnuemonia</td><td>Dr Nancy Nightingale</td><td>Community Health Clinic</td><td>20120806</td></tr><tr><td><span></span>Asthma</td><td>Dr Nancy Nightingale</td><td>Community Health Clinic</td><td>20140116</td></tr></tbody></table></div>"         
     
         }
         
@@ -248,7 +248,7 @@
     
         "title":"PROBLEMS",       
     
-        "content":"<div><span></span><ol><li>Opioid Abuse Disorder : Status - Active</li><li>Asthma : Status - Active</li><li>Depressive Disorde : Status - Active</li></ol></div>"         
+        "content":"<div><span></span><ol><li>Opioid Abuse Disorder : Status - Active</li><li>Asthma : Status - Active</li><li>Depressive Disorder : Status - Active</li></ol></div>"         
     
         }
         
@@ -320,7 +320,7 @@
     
         "title":"HOSPITAL DISCHARGE INSTRUCTIONS",       
     
-        "content":"<div><span>Ms. Share, you have been seen by Dr. Henry Seven at Local Community Hospital from August 8th until August 13th 2012. You are currently being discharged from Local Community Hospital. Dr. Seven has provided the following instructions to you at this time; should you have any questions please contact a member of your healthcare team prior to discharge. If you have left the hospital and have questions, please contact Dr. Seven at 555-555-1002. Instructions:</span><ol><li>Take all medications as prescribed.</li><li>Please monitor your peak flows. If your peak flows drop to 50% of normal, call my office immediately or return to the Emergency Room.</li><li>If you experience any of the following symptoms, call my office immediately or return to the Emergency Room:                        <ol><li>Shortness of Breath</li><li>Dizziness or Light-headedness</li><li>Fever, chills, or diffuse body aches</li><li>Pain or redness at the site of any previous intravenous catheter</li><li>Any other unusual problem</li></ol></li></ol></div>"         
+        "content":"<div><span>Ms. Share, you have been seen by Dr. Nightingale at Local Community Hospital from August 8th until August 13th 2014. You are currently being discharged from Local Community Hospital. Dr. Nightingale has provided the following instructions to you at this time; should you have any questions please contact a member of your healthcare team prior to discharge. If you have left the hospital and have questions, please contact Dr. Nightingale at 555-555-1002. Instructions:</span><ol><li>Take all medications as prescribed.</li><li>Please monitor your peak flows. If your peak flows drop to 50% of normal, call my office immediately or return to the Emergency Room.</li><li>If you experience any of the following symptoms, call my office immediately or return to the Emergency Room:                        <ol><li>Shortness of Breath</li><li>Dizziness or Light-headedness</li><li>Fever, chills, or diffuse body aches</li><li>Pain or redness at the site of any previous intravenous catheter</li><li>Any other unusual problem</li></ol></li></ol></div>"         
     
         }
         
@@ -331,7 +331,6 @@
          ] } 
                 
     
-      
 ]
 }		 
                 

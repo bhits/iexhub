@@ -62,32 +62,28 @@
       
       <!-- CONF 5267 -->
       <patientRole>
-         <!-- Patient MRN recorded as an ID -->
+         <!-- IHEBLUE domain -->
          <id
-            extension="123-101-5230"
-            root="2.16.840.1.113883.4.1"/>
-         
+            extension="940140b7-7c8b-4491-90f4-4819ded969bf"
+            root="1.3.6.1.4.1.21367.13.20.3000"/>         
          <!-- CONF 5271 -->
          <addr
             use="HP">
             <!-- HP is "primary home" from codeSystem 2.16.840.1.113883.5.1119 -->
             <streetAddressLine>1357 Amber Drive</streetAddressLine>
-            <city>Beaverton</city>
-            <state>OR</state>
-            <postalCode>97006</postalCode>
+            <city>Richmond</city>
+            <state>VA</state>
+            <postalCode>23222</postalCode>
             <country>US</country>
             <!-- US is "United States" from ISO 3166-1 Country Codes: 1.0.3166.1 -->
-         </addr>
-         
+         </addr>         
          <!-- CONF 5280 -->
          <telecom
             value="tel:(816)276-6909"
             use="HP"/>
-         <!-- HP is "primary home" from HL7 AddressUse 2.16.840.1.113883.5.1119 -->
-         
+         <!-- HP is "primary home" from HL7 AddressUse 2.16.840.1.113883.5.1119 -->         
          <!-- CONF 5283 -->
-         <patient>
-            
+         <patient>            
             <!-- CONF 5284 -->
             <name
                use="L">
@@ -101,7 +97,7 @@
                codeSystem="2.16.840.1.113883.5.1"
                displayName="Female"/>
             <birthTime
-               value="19470501"/>
+               value="19770501"/>
             
             <maritalStatusCode
                code="M"
@@ -126,37 +122,11 @@
                codeSystem="2.16.840.1.113883.6.238"
                codeSystemName="Race and Ethnicity - CDC"/>
                  
-            <guardian>
-               <code
-                  code="GPARNT"
-                  displayName="Grandfather"
-                  codeSystem="2.16.840.1.113883.5.111"
-                  codeSystemName="HL7 Role code"/>
-               <addr
-                  use="HP">
-                  <!-- HP is "primary home" from codeSystem 2.16.840.1.113883.5.1119 -->
-                  <streetAddressLine>1357 Amber Drive</streetAddressLine>
-                  <city>Beaverton</city>
-                  <state>OR</state>
-                  <postalCode>97006</postalCode>
-                  <country>US</country>
-                  <!-- US is "United States" from ISO 3166-1 Country Codes: 1.0.3166.1 -->
-               </addr>
-               <telecom
-                  value="tel:(816)276-6909"
-                  use="HP"/>
-               <guardianPerson>
-                  <name>
-                     <given>Ralph</given>
-                     <family>Share</family>
-                  </name>
-               </guardianPerson>
-            </guardian>
-            <birthplace>
+             <birthplace>
                <place>
                   <addr>
                      <city>Beaverton</city>
-                     <state>OR</state>
+                     <state>VA</state>
                      <postalCode>97006</postalCode>
                      <country>US</country>
                   </addr>
@@ -166,7 +136,7 @@
             <!-- FIX  the Code System to be 639.2 -->
             <languageCommunication>
                <languageCode
-                  code="eng"/>
+                  code="US-en"/>
                <modeCode
                   code="ESP"
                   displayName="Expressed spoken"
@@ -179,15 +149,15 @@
          <providerOrganization>
             <id
                root="1.1.1.1.1.1.1.1.4"/>
-            <name>Community Health and Hospitals</name>
+            <name>Community Health Hospitals</name>
             <telecom
                use="WP"
                value="tel: 555-555-5000"/>
             <addr>
                <streetAddressLine>1002 Healthcare Dr</streetAddressLine>
-               <city>Portland</city>
-               <state>OR</state>
-               <postalCode>97266</postalCode>
+               <city>Richmond</city>
+               <state>VA</state>
+               <postalCode>23222</postalCode>
                <country>US</country>
             </addr>
          </providerOrganization>
@@ -203,9 +173,9 @@
          <addr use="WP">
             <streetAddressLine>Get Well Clinic Facility</streetAddressLine>
             <streetAddressLine>1002 Healthcare Dr.</streetAddressLine>
-            <city>Portland</city>
-            <state>OR</state>
-            <postalCode>97005</postalCode>
+            <city>Richmond</city>
+            <state>VA</state>
+            <postalCode>23222</postalCode>
             <country>United States of America</country>
          </addr>
          <telecom value="tel:(555)555-1002" use="WP"/>
@@ -220,9 +190,9 @@
             <name>Get Well Clinic</name>
             <addr use="WP">
                <streetAddressLine>1002 Healthcare Dr.</streetAddressLine>
-               <city>Portland</city>
-               <state>OR</state>
-               <postalCode>97005</postalCode>
+               <city>Richmond</city>
+               <state>VA</state>
+               <postalCode>23222</postalCode>
                <country>United States of America</country>
             </addr>
          </representedOrganization>
@@ -235,9 +205,9 @@
             extension="999999943252"/>
          <addr>
             <streetAddressLine>1002 Healthcare Drive </streetAddressLine>
-            <city>Portland</city>
-            <state>OR</state>
-            <postalCode>97266</postalCode>
+            <city>Richmond</city>
+            <state>VA</state>
+            <postalCode>23222</postalCode>
             <country>US</country>
          </addr>
          <telecom
@@ -258,55 +228,39 @@
             root="2.16.840.1.113883.19.5"/>
          <addr>
             <streetAddressLine>1002 Healthcare Drive </streetAddressLine>
-            <city>Portland</city>
-            <state>OR</state>
-            <postalCode>97266</postalCode>
+            <city>Richmond</city>
+            <state>VA</state>
+            <postalCode>23222</postalCode>
             <country>US</country>
          </addr>
          <telecom
             use="WP"
             value="tel:555-555-1002"/>
          <assignedPerson>
-            <name>
-               <given>Henry</given>
-               <family>Seven</family>
+            <name>               
+               <given>Nancy</given>
+               <family>Nightingale</family>
             </name>
          </assignedPerson>
       </assignedEntity>
    </informant>
-   <informant>
-      <relatedEntity
-         classCode="PRS">
-         <!-- classCode PRS represents a person with personal relationship with the patient. -->
-         <code
-            code="SPS"
-            displayName="SPOUSE"
-            codeSystem="2.16.840.1.113883.1.11.19563"
-            codeSystemName="Personal Relationship Role Type Value Set"/>
-         <relatedPerson>
-            <name>
-               <given>Frank</given>
-               <family>Share</family>
-            </name>
-         </relatedPerson>
-      </relatedEntity>
-   </informant>
+   
    <custodian>
       <assignedCustodian>
          <representedCustodianOrganization>
             <id
                extension="99999999"
                root="2.16.840.1.113883.4.6"/>
-            <name>Community Health and Hospitals</name>
+            <name>Community Health Clinic</name>
             <telecom
                value="tel: 555-555-1002"
                use="WP"/>
             <addr
                use="WP">
                <streetAddressLine>1002 Healthcare Drive </streetAddressLine>
-               <city>Portland</city>
-               <state>OR</state>
-               <postalCode>97266</postalCode>
+               <city>Richmond</city>
+               <state>VA</state>
+               <postalCode>23222</postalCode>
                <country>US</country>
             </addr>
          </representedCustodianOrganization>
@@ -316,12 +270,12 @@
       <intendedRecipient>
          <informationRecipient>
             <name>
-               <given>Henry</given>
-               <family>Seven</family>
+               <given>Nancy</given>
+               <family>Nightingale</family>
             </name>
          </informationRecipient>
          <receivedOrganization>
-            <name>Community Health and Hospitals</name>
+            <name>Community Health Clinic</name>
          </receivedOrganization>
       </intendedRecipient>
    </informationRecipient>
@@ -336,9 +290,9 @@
             root="2.16.840.1.113883.4.6"/>
          <addr>
             <streetAddressLine>1002 Healthcare Drive </streetAddressLine>
-            <city>Portland</city>
-            <state>OR</state>
-            <postalCode>97266</postalCode>
+            <city>Richmond</city>
+            <state>VA</state>
+            <postalCode>23222</postalCode>
             <country>US</country>
          </addr>
          <telecom
@@ -346,8 +300,8 @@
             value="tel:555-555-1002"/>
          <assignedPerson>
             <name>
-               <given>Henry</given>
-               <family>Seven</family>
+               <given>Nancy</given>
+               <family>Nightingale</family>
             </name>
          </assignedPerson>
       </assignedEntity>
@@ -363,9 +317,9 @@
             root="2.16.840.1.113883.4.6"/>
          <addr>
             <streetAddressLine>1002 Healthcare Drive </streetAddressLine>
-            <city>Portland</city>
-            <state>OR</state>
-            <postalCode>97266</postalCode>
+            <city>Richmond</city>
+            <state>VA</state>
+            <postalCode>23222</postalCode>
             <country>US</country>
          </addr>
          <telecom
@@ -373,9 +327,9 @@
             value="tel:555-555-1002"/>
          <assignedPerson>
             <name>
-               <given>Henry</given>
-               <family>Seven</family>
-            </name>
+               <given>Nancy</given>
+               <family>Nightingale</family>
+               </name>
          </assignedPerson>
       </assignedEntity>
    </authenticator>
@@ -391,7 +345,7 @@
             <!-- HP is "primary home" from codeSystem 2.16.840.1.113883.5.1119 -->
             <streetAddressLine>1357 Amber Drive</streetAddressLine>
             <city>Beaverton</city>
-            <state>OR</state>
+            <state>VA</state>
             <postalCode>97006</postalCode>
             <country>US</country>
             <!-- US is "United States" from ISO 3166-1 Country Codes: 1.0.3166.1 -->
@@ -418,7 +372,7 @@
             <!-- HP is "primary home" from codeSystem 2.16.840.1.113883.5.1119 -->
             <streetAddressLine>1357 Amber Drive</streetAddressLine>
             <city>Beaverton</city>
-            <state>OR</state>
+            <state>VA</state>
             <postalCode>97006</postalCode>
             <country>US</country>
             <!-- US is "United States" from ISO 3166-1 Country Codes: 1.0.3166.1 -->
@@ -475,9 +429,9 @@
                   codeSystem="2.16.840.1.113883.6.101"/>
                <addr>
                   <streetAddressLine>1002 Healthcare Dr</streetAddressLine>
-                  <city>Portland</city>
-                  <state>OR</state>
-                  <postalCode>97266</postalCode>
+                  <city>Richmond</city>
+                  <state>VA</state>
+                  <postalCode>23222</postalCode>
                   <country>US</country>
                </addr>
                <telecom
@@ -486,22 +440,22 @@
                <assignedPerson>
                   <name>
                      <prefix>Dr.</prefix>
-                     <given>Henry</given>
-                     <family>Seven</family>
+                     <given>Nancy</given>
+               <family>Nightingale</family>
                   </name>
                </assignedPerson>
                <representedOrganization>
                   <id
                      root="2.16.840.1.113883.19.5.9999.1393"/>
-                  <name>Community Health and Hospitals</name>
+                  <name>Community Health Clinic</name>
                   <telecom
                      value="tel:+1-555-555-5000"
                      use="WP"/>
                   <addr>
                      <streetAddressLine>1002 Healthcare Drive </streetAddressLine>
-                     <city>Portland</city>
-                     <state>OR</state>
-                     <postalCode>97266</postalCode>
+                     <city>Richmond</city>
+                     <state>VA</state>
+                     <postalCode>23222</postalCode>
                      <country>US</country>
                   </addr>
                </representedOrganization>
@@ -533,9 +487,9 @@
                   codeSystem="2.16.840.1.113883.6.101"/>
                <addr>
                   <streetAddressLine>1002 Healthcare Dr</streetAddressLine>
-                  <city>Portland</city>
-                  <state>OR</state>
-                  <postalCode>97266</postalCode>
+                  <city>Richmond</city>
+                  <state>VA</state>
+                  <postalCode>23222</postalCode>
                   <country>US</country>
                </addr>
                <telecom
@@ -544,22 +498,22 @@
                <assignedPerson>
                   <name>
                      <prefix>Dr.</prefix>
-                     <given>Henry</given>
-                     <family>Seven</family>
+                     <given>Nancy</given>
+               <family>Nightingale</family>
                   </name>
                </assignedPerson>
                <representedOrganization>
                   <id
                      root="2.16.840.1.113883.19.5.9999.1393"/>
-                  <name>Community Health and Hospitals</name>
+                  <name>Community Health Clinic</name>
                   <telecom
                      value="tel:+1-555-555-5000"
                      use="HP"/>
                   <addr>
                      <streetAddressLine>1002 Healthcare Drive </streetAddressLine>
-                     <city>Portland</city>
-                     <state>OR</state>
-                     <postalCode>97266</postalCode>
+                     <city>Richmond</city>
+                     <state>VA</state>
+                     <postalCode>23222</postalCode>
                      <country>US</country>
                   </addr>
                </representedOrganization>
@@ -588,8 +542,8 @@
                <assignedPerson>
                   <name>
                      <prefix>Dr</prefix>
-                     <given>Henry</given>
-                     <family>Seven</family>
+                     <given>Nancy</given>
+               <family>Nightingale</family>
                   </name>
                </assignedPerson>
             </assignedEntity>
@@ -600,8 +554,8 @@
                <assignedPerson>
                   <name>
                      <prefix>Dr</prefix>
-                     <given>Henry</given>
-                     <family>Seven</family>
+                     <given>Nancy</given>
+               <family>Nightingale</family>
                   </name>
                </assignedPerson>
             </assignedEntity>
@@ -794,7 +748,7 @@ MEDICATIONS
                            <representedOrganization>
                               <id
                                  root="2.16.840.1.113883.19.5.9999.1393"/>
-                              <name>Community Health and Hospitals</name>
+                              <name>Community Health Clinic</name>
                               <telecom
                                  nullFlavor="UNK"/>
                               <addr
@@ -906,9 +860,9 @@ MEDICATIONS
                                     root="2.16.840.1.113883.19.5.9999.456"/>
                                  <addr>
                                     <streetAddressLine>1002 Healthcare Dr</streetAddressLine>
-                                    <city>Portland</city>
-                                    <state>OR</state>
-                                    <postalCode>97266</postalCode>
+                                    <city>Richmond</city>
+                                    <state>VA</state>
+                                    <postalCode>23222</postalCode>
                                     <country>US</country>
                                  </addr>
                               </assignedEntity>
@@ -925,9 +879,8 @@ MEDICATIONS
                                     nullFlavor="UNK"/>
                                  <assignedPerson>
                                     <name>
-                                       <prefix>Dr.</prefix>
-                                       <given>Henry</given>
-                                       <family>Seven</family>
+                                       <prefix>Dr.</prefix><given>Nancy</given>
+               <family>Nightingale</family>
                                     </name>
                                  </assignedPerson>
                               </assignedAuthor>
@@ -1005,24 +958,23 @@ MEDICATIONS
                                     extension="2981823"/>
                                  <addr>
                                     <streetAddressLine>1002 Healthcare Dr</streetAddressLine>
-                                    <city>Portland</city>
-                                    <state>OR</state>
-                                    <postalCode>97266</postalCode>
+                                    <city>Richmond</city>
+                                    <state>VA</state>
+                                    <postalCode>23222</postalCode>
                                     <country>US</country>
                                  </addr>
                                  <telecom
                                     nullFlavor="UNK"/>
                                  <assignedPerson>
                                     <name>
-                                       <prefix>Dr.</prefix>
-                                       <given>Henry</given>
-                                       <family>Seven</family>
+                                       <prefix>Dr.</prefix><given>Nancy</given>
+               <family>Nightingale</family>
                                     </name>
                                  </assignedPerson>
                                  <representedOrganization>
                                     <id
                                        root="2.16.840.1.113883.19.5.9999.1393"/>
-                                    <name>Community Health and Hospitals</name>
+                                    <name>Community Health Clinic</name>
                                     <telecom
                                        nullFlavor="UNK"/>
                                     <addr
@@ -1205,7 +1157,7 @@ HOSPITAL DISCHARGE MEDICATIONS
                                  <representedOrganization>
                                     <id
                                        root="2.16.840.1.113883.19.5.9999.1395"/>
-                                    <name>Community Health and Hospitals</name>
+                                    <name>Community Health Clinic</name>
                                     <telecom
                                        nullFlavor="UNK"/>
                                     <addr
@@ -1317,9 +1269,9 @@ HOSPITAL DISCHARGE MEDICATIONS
                                           root="2.16.840.1.113883.19.5.9999.456"/>
                                        <addr>
                                           <streetAddressLine>1002 Healthcare Dr</streetAddressLine>
-                                          <city>Portland</city>
-                                          <state>OR</state>
-                                          <postalCode>97266</postalCode>
+                                          <city>Richmond</city>
+                                          <state>VA</state>
+                                          <postalCode>23222</postalCode>
                                           <country>US</country>
                                        </addr>
                                     </assignedEntity>
@@ -1336,9 +1288,8 @@ HOSPITAL DISCHARGE MEDICATIONS
                                           nullFlavor="UNK"/>
                                        <assignedPerson>
                                           <name>
-                                             <prefix>Dr.</prefix>
-                                             <given>Henry</given>
-                                             <family>Seven</family>
+                                             <prefix>Dr.</prefix><given>Nancy</given>
+               <family>Nightingale</family>
                                           </name>
                                        </assignedPerson>
                                     </assignedAuthor>
@@ -1418,24 +1369,23 @@ HOSPITAL DISCHARGE MEDICATIONS
                                           extension="2981825"/>
                                        <addr>
                                           <streetAddressLine>1002 Healthcare Dr</streetAddressLine>
-                                          <city>Portland</city>
-                                          <state>OR</state>
-                                          <postalCode>97266</postalCode>
+                                          <city>Richmond</city>
+                                          <state>VA</state>
+                                          <postalCode>23222</postalCode>
                                           <country>US</country>
                                        </addr>
                                        <telecom
                                           nullFlavor="UNK"/>
                                        <assignedPerson>
                                           <name>
-                                             <prefix>Dr.</prefix>
-                                             <given>Henry</given>
-                                             <family>Seven</family>
+                                             <prefix>Dr.</prefix><given>Nancy</given>
+               <family>Nightingale</family>
                                           </name>
                                        </assignedPerson>
                                        <representedOrganization>
                                           <id
                                              root="2.16.840.1.113883.19.5.9999.1395"/>
-                                          <name>Community Health and Hospitals</name>
+                                          <name>Community Health Clinic</name>
                                           <telecom
                                              nullFlavor="UNK"/>
                                           <addr
@@ -2033,9 +1983,17 @@ ENCOUNTERS
                            <td>
                               <content
                                  ID="Encounter1"/> Pnuemonia</td>
-                           <td>Dr Henry Seven</td>
-                           <td>Community Health and Hospitals</td>
+                           <td>Dr Nancy Nightingale</td>
+                           <td>Community Health Clinic</td>
                            <td>20120806</td>
+                        </tr>
+                        <tr>
+                           <td>
+                              <content
+                                 ID="Encounter1"/>Asthma</td>
+                           <td>Dr Nancy Nightingale</td>
+                           <td>Community Health Clinic</td>
+                           <td>20140116</td>
                         </tr>
                      </tbody>
                   </table>
@@ -2088,16 +2046,16 @@ ENCOUNTERS
                               displayName="Urgent Care Center"/>
                            <addr>
                               <streetAddressLine>1002 Healthcare Dr</streetAddressLine>
-                              <city>Portland</city>
-                              <state>OR</state>
-                              <postalCode>97266</postalCode>
+                              <city>Richmond</city>
+                              <state>VA</state>
+                              <postalCode>23222</postalCode>
                               <country>US</country>
                            </addr>
                            <telecom
                               nullFlavor="UNK"/>
                            <playingEntity
                               classCode="PLC">
-                              <name>Community Health and Hospitals</name>
+                              <name>Community Health Clinic</name>
                            </playingEntity>
                         </participantRole>
                      </participant>
@@ -2929,9 +2887,9 @@ PROCEDURES
                                  extension="1234"/>
                               <addr>
                                  <streetAddressLine>1002 Healthcare Dr</streetAddressLine>
-                                 <city>Portland</city>
-                                 <state>OR</state>
-                                 <postalCode>97266</postalCode>
+                                 <city>Richmond</city>
+                                 <state>VA</state>
+                                 <postalCode>23222</postalCode>
                                  <country>US</country>
                               </addr>
                               <telecom
@@ -2940,7 +2898,7 @@ PROCEDURES
                               <representedOrganization>
                                  <id
                                     root="2.16.840.1.113883.19.5"/>
-                                 <name>Community Health and Hospitals</name>
+                                 <name>Community Health Clinic</name>
                                  <telecom
                                     nullFlavor="UNK"/>
                                  <addr
@@ -2962,16 +2920,16 @@ PROCEDURES
                                  displayName="Urgent Care Center"/>
                               <addr>
                                  <streetAddressLine>1002 Healthcare Dr</streetAddressLine>
-                                 <city>Portland</city>
-                                 <state>OR</state>
-                                 <postalCode>97266</postalCode>
+                                 <city>Richmond</city>
+                                 <state>VA</state>
+                                 <postalCode>23222</postalCode>
                                  <country>US</country>
                               </addr>
                               <telecom
                                  nullFlavor="UNK"/>
                               <playingEntity
                                  classCode="PLC">
-                                 <name>Community Health and Hospitals</name>
+                                 <name>Community Health Clinic</name>
                               </playingEntity>
                            </participantRole>
                         </participant>
@@ -3774,7 +3732,7 @@ HOSPITAL DISCHARGE INSTRUCTIONS
                <title>HOSPITAL DISCHARGE INSTRUCTIONS</title>
                <text>
                   <content>
-                     Ms. Share, you have been seen by Dr. Henry Seven at Local Community Hospital from August 8th until August 13th 2012. You are currently being discharged from Local Community Hospital. Dr. Seven has provided the following instructions to you at this time; should you have any questions please contact a member of your healthcare team prior to discharge. If you have left the hospital and have questions, please contact Dr. Seven at 555-555-1002. 
+                     Ms. Share, you have been seen by Dr. Nightingale at Local Community Hospital from August 8th until August 13th 2014. You are currently being discharged from Local Community Hospital. Dr. Nightingale has provided the following instructions to you at this time; should you have any questions please contact a member of your healthcare team prior to discharge. If you have left the hospital and have questions, please contact Dr. Nightingale at 555-555-1002. 
                      Instructions:
                   </content>
                   <list

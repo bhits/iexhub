@@ -1,6 +1,6 @@
 <!--
   Title: CDA to UI XML
-  Basedcon CDA.xsl intended to select only data appropriate for display
+  Based on CDA.xsl intended to select only data appropriate for display
   Version 1.0 : Create JSON for HL7 markup
   Version 2.0: Create HTML for Section.content
   
@@ -8,10 +8,7 @@
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:n1="urn:hl7-org:v3" xmlns:in="urn:inline-variable-data" >
     <xsl:output method="html" omit-xml-declaration="yes" indent="no"/>
-
-    <xsl:strip-space elements="*"/>
-
-    
+    <xsl:strip-space elements="*"/>    
     <xsl:param name="limit-external-images" select="'no'"/>
     <!-- A vertical bar separated list of URI prefixes, such as "http://www.example.com|https://www.example.com" -->
     <xsl:param name="external-image-whitelist"/>
@@ -206,7 +203,7 @@
     <xsl:template name="legalAuthenticator">
         <xsl:if test="n1:legalAuthenticator">
             "legalAuthenticator":{
-                "name":\:
+                "name":
                     "<xsl:call-template name="show-assignedEntity">
                         <xsl:with-param name="asgnEntity"
                             select="n1:legalAuthenticator/n1:assignedEntity"/>
@@ -423,7 +420,7 @@
                             "service":
                                 "<xsl:call-template name="show-code">
                                     <xsl:with-param name="code" select="n1:serviceEvent/n1:code"/>
-                                </xsl:call-template>\n<xsl:call-template name="firstCharCaseUp">
+                                </xsl:call-template><xsl:value-of select="$newline"/><xsl:call-template name="firstCharCaseUp">
                                     <xsl:with-param name="data" select="$displayName"/>
                                 </xsl:call-template>",                            
                             <xsl:if test="n1:serviceEvent/n1:effectiveTime">
@@ -1384,7 +1381,7 @@
                 <xsl:if test="$address/@use">
                     "type":"<xsl:call-template name="translateTelecomCode"><xsl:with-param name="code" select="$address/@use"/></xsl:call-template>",
                 </xsl:if>
-                 "addressLine":"<xsl:if test="string-length($address/n1:streetAddressLine)"><xsl:for-each select="$address/n1:streetAddressLine"><xsl:value-of select="."/>\n</xsl:for-each>
+                 "addressLine":"<xsl:if test="string-length($address/n1:streetAddressLine)"><xsl:for-each select="$address/n1:streetAddressLine"><xsl:value-of select="."/><xsl:value-of select="$newline"/></xsl:for-each>
                 </xsl:if><xsl:if test="$address/n1:streetName"> <xsl:value-of select="$address/n1:streetName"/> <xsl:value-of select="$address/n1:houseNumber"/></xsl:if>"
                 
                 <xsl:if test="string-length($address/n1:city)>0">
