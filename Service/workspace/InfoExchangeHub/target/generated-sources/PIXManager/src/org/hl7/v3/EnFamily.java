@@ -1,13 +1,8 @@
 
 package PIXManager.src.org.hl7.v3;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlMixed;
 import javax.xml.bind.annotation.XmlType;
 
 
@@ -33,13 +28,5 @@ import javax.xml.bind.annotation.XmlType;
 public class EnFamily
     extends ENXP
 {
-    @XmlMixed
-    protected List<Serializable> content;
 
-    public List<Serializable> getContent() {
-        if (content == null) {
-            content = new ArrayList<Serializable>();
-        }
-        return this.content;
-    }
 }

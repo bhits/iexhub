@@ -43,6 +43,7 @@ public class PDQQueryManager
 	private static boolean debugSSL = false;
 
 	private static boolean logPdqRequestMessages = false;
+	private static boolean logPdqResponseMessages = false;
 	private static String logOutputPath = "c:/temp/";
 	private static boolean logSyslogAuditMsgsLocally = false;
 
@@ -88,6 +89,8 @@ public class PDQQueryManager
 					: props.getProperty("LogOutputPath");
 			PDQQueryManager.logPdqRequestMessages = (props.getProperty("LogPDQRequestMessages") == null) ? PDQQueryManager.logPdqRequestMessages
 					: Boolean.parseBoolean(props.getProperty("LogPDQRequestMessages"));
+			PDQQueryManager.logPdqResponseMessages = (props.getProperty("LogPDQResponseMessages") == null) ? PDQQueryManager.logPdqResponseMessages
+					: Boolean.parseBoolean(props.getProperty("LogPDQResponseMessages"));
 			PDQQueryManager.keyStoreFile = (props.getProperty("PDQKeyStoreFile") == null) ? PDQQueryManager.keyStoreFile
 					: props.getProperty("PDQKeyStoreFile");
 			PDQQueryManager.keyStorePwd = (props.getProperty("PDQKeyStorePwd") == null) ? PDQQueryManager.keyStorePwd
@@ -120,13 +123,14 @@ public class PDQQueryManager
 			PDQQueryManager.endpointURI = endpointURI;
 
 			// If Syslog server host is specified, then configure...
+			iti47AuditMsgTemplate = props.getProperty("Iti47AuditMsgTemplate");
 			String syslogServerHost = props.getProperty("SyslogServerHost");
 			int syslogServerPort = (props.getProperty("SyslogServerPort") != null) ? Integer.parseInt(props.getProperty("SyslogServerPort"))
 					: -1;
 			if ((syslogServerHost != null) &&
+				(syslogServerHost.length() > 0) &&
 				(syslogServerPort > -1))
 			{
-				iti47AuditMsgTemplate = props.getProperty("Iti47AuditMsgTemplate");
 				if (iti47AuditMsgTemplate == null)
 				{
 					log.error("ITI-47 audit message templates not specified in properties file, "
@@ -208,12 +212,6 @@ public class PDQQueryManager
 	private void logIti47AuditMsg(String queryText,
 			String patientId) throws IOException
 	{
-		if ((sysLogConfig == null) ||
-            (iti47AuditMsgTemplate == null))
-		{
-			return;
-		}
-
 		String logMsg = FileUtils.readFileToString(new File(iti47AuditMsgTemplate));
 		
 		// Substitutions...
@@ -255,7 +253,13 @@ public class PDQQueryManager
 		{
 			log.info(logMsg);
 		}
-		
+
+		if ((sysLogConfig == null) ||
+            (iti47AuditMsgTemplate == null))
+		{
+			return;
+		}
+
 		// Log the syslog message and close connection
 		Syslog.getInstance("sslTcp").info(logMsg);
 		Syslog.getInstance("sslTcp").flush();
@@ -292,7 +296,7 @@ public class PDQQueryManager
 			null);
 	}
 
-	public void queryCancel(PRPAIN201306UV02 queryResult,
+	public MCCIIN000002UV01 queryCancel(PRPAIN201306UV02 queryResult,
 			String existingQueryId) throws IOException
 	{
 		QUQIIN000003UV01Type qUQIIN000003UV01 = new QUQIIN000003UV01Type();
@@ -374,18 +378,32 @@ public class PDQQueryManager
 
 		qUQIIN000003UV01.setControlActProcess(controlAct);
 
+		UUID logMsgId = null;
 		if (logPdqRequestMessages)
 		{
+			logMsgId = UUID.randomUUID();
 			OMElement requestElement = pdqSupplierStub.toOM(qUQIIN000003UV01, pdqSupplierStub.optimizeContent(
 	                new javax.xml.namespace.QName("urn:hl7-org:v3",
 	                    "QUQI_IN000003UV01_Cancel")),
 	                new javax.xml.namespace.QName("urn:hl7-org:v3",
 	    				"QUQI_IN000003UV01_Cancel"));
-			Files.write(Paths.get(logOutputPath + UUID.randomUUID().toString() + "_PDQQueryCancelRequest.xml"),
+			Files.write(Paths.get(logOutputPath + logMsgId.toString() + "_PDQQueryCancelRequest.xml"),
 					requestElement.toString().getBytes());
 		}
 
-		pdqSupplierStub.pDQSupplier_QUQI_IN000003UV01_Cancel(qUQIIN000003UV01);
+		MCCIIN000002UV01 response = pdqSupplierStub.pDQSupplier_QUQI_IN000003UV01_Cancel(qUQIIN000003UV01);
+		if (logPdqResponseMessages)
+		{
+			OMElement responseElement = pdqSupplierStub.toOM(response, pdqSupplierStub.optimizeContent(
+	                new javax.xml.namespace.QName("urn:hl7-org:v3",
+	                    "MCCI_IN000002UV01")),
+	                new javax.xml.namespace.QName("urn:hl7-org:v3",
+	    				"MCCI_IN000002UV01"));
+			Files.write(Paths.get(logOutputPath + ((logMsgId == null) ? UUID.randomUUID().toString() : logMsgId.toString()) + "_PDQQueryCancelResponse.xml"),
+					responseElement.toString().getBytes());			
+		}
+
+		return response;
 	}
 	
 	public PRPAIN201306UV02 queryContinue(PRPAIN201306UV02 queryResult) throws IOException
@@ -481,18 +499,32 @@ public class PDQQueryManager
 
 		qUQIIN000003UV01.setControlActProcess(controlAct);
 		
+		UUID logMsgId = null;
 		if (logPdqRequestMessages)
 		{
+			logMsgId = UUID.randomUUID();
 			OMElement requestElement = pdqSupplierStub.toOM(qUQIIN000003UV01, pdqSupplierStub.optimizeContent(
 	                new javax.xml.namespace.QName("urn:hl7-org:v3",
 	                    "QUQI_IN000003UV01_Continue")),
 	                new javax.xml.namespace.QName("urn:hl7-org:v3",
 	    				"QUQI_IN000003UV01_Continue"));
-			Files.write(Paths.get(logOutputPath + UUID.randomUUID().toString() + "_PDQQueryContinueRequest.xml"),
+			Files.write(Paths.get(logOutputPath + logMsgId.toString() + "_PDQQueryContinueRequest.xml"),
 					requestElement.toString().getBytes());
 		}
 
-		return pdqSupplierStub.pDQSupplier_QUQI_IN000003UV01_Continue(qUQIIN000003UV01);
+		PRPAIN201306UV02 response = pdqSupplierStub.pDQSupplier_QUQI_IN000003UV01_Continue(qUQIIN000003UV01);
+		if (logPdqResponseMessages)
+		{
+			OMElement responseElement = pdqSupplierStub.toOM(response, pdqSupplierStub.optimizeContent(
+	                new javax.xml.namespace.QName("urn:hl7-org:v3",
+	                    "PRPA_IN201306UV02")),
+	                new javax.xml.namespace.QName("urn:hl7-org:v3",
+	    				"PRPA_IN201306UV02"));
+			Files.write(Paths.get(logOutputPath + ((logMsgId == null) ? UUID.randomUUID().toString() : logMsgId.toString()) + "_PDQQueryContinueResponse.xml"),
+					responseElement.toString().getBytes());			
+		}
+
+		return response;
 	}
 	
 	public PRPAIN201306UV02 queryPatientDemographics(String givenName,
@@ -711,16 +743,30 @@ public class PDQQueryManager
     				"PRPA_IN201305UV02"));
 		String queryText = requestElement.toString();
 		
+		UUID logMsgId = null;
 		if (logPdqRequestMessages)
 		{
-			Files.write(Paths.get(logOutputPath + UUID.randomUUID().toString() + "_PDQQueryRequest.xml"),
-					requestElement.toString().getBytes());
+			logMsgId = UUID.randomUUID();
+			Files.write(Paths.get(logOutputPath + logMsgId.toString() + "_PDQQueryRequest.xml"),
+					queryText.getBytes());
 		}
 
 		logIti47AuditMsg(queryText,
 				patientId + "^^^&" + patientIdDomain + "&ISO");
 
-		return pdqSupplierStub.pDQSupplier_PRPA_IN201305UV02(pRPA_IN201305UV02);
+		PRPAIN201306UV02 response = pdqSupplierStub.pDQSupplier_PRPA_IN201305UV02(pRPA_IN201305UV02);
+		if (logPdqResponseMessages)
+		{
+			OMElement responseElement = pdqSupplierStub.toOM(response, pdqSupplierStub.optimizeContent(
+	                new javax.xml.namespace.QName("urn:hl7-org:v3",
+	                    "PRPA_IN201306UV02")),
+	                new javax.xml.namespace.QName("urn:hl7-org:v3",
+	    				"PRPA_IN201306UV02"));
+			Files.write(Paths.get(logOutputPath + ((logMsgId == null) ? UUID.randomUUID().toString() : logMsgId.toString()) + "_PDQQueryResponse.xml"),
+					responseElement.toString().getBytes());			
+		}
+		
+		return response;
 	}
 	
 	private void setCreationTime(QUQIIN000003UV01Type qUQIIN000003UV01)

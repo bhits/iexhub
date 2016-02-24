@@ -152,8 +152,8 @@ public class PDQQueryManagerTest
 		{
 			pdqQueryManager = new PDQQueryManager(null,
 					true);
-			PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.queryPatientDemographics("CHIP",
-					"MOORE",
+			PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.queryPatientDemographics("SALLY",
+					"SHARE",
 					null,
 					null,
 					null,

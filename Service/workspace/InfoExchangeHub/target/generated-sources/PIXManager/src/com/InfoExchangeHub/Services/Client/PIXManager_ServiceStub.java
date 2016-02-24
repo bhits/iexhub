@@ -471,7 +471,7 @@ public class PIXManager_ServiceStub extends org.apache.axis2.client.Stub {
         return envelope;
     }
 
-    private org.apache.axiom.om.OMElement toOM(
+    public org.apache.axiom.om.OMElement toOM(
         PIXManager.src.org.hl7.v3.PRPAIN201310UV02 param, boolean optimizeContent,
         javax.xml.namespace.QName methodQName)
         throws org.apache.axis2.AxisFault {
@@ -589,7 +589,7 @@ public class PIXManager_ServiceStub extends org.apache.axis2.client.Stub {
         return envelope;
     }
 
-    private org.apache.axiom.om.OMElement toOM(
+    public org.apache.axiom.om.OMElement toOM(
         PIXManager.src.org.hl7.v3.MCCIIN000002UV01 param, boolean optimizeContent,
         javax.xml.namespace.QName methodQName)
         throws org.apache.axis2.AxisFault {

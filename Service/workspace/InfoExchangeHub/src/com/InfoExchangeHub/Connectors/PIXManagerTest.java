@@ -99,8 +99,8 @@ public class PIXManagerTest
 			pixManager = new PIXManager(/*PIXManagerEndpointURI*/ null,
 					true);
 			
-			PRPAIN201310UV02 pixResponse = pixManager.patientRegistryGetIdentifiers("IHEFACILITY-998",
-					"1.3.6.1.4.1.21367.3000.1.6",
+			PRPAIN201310UV02 pixResponse = pixManager.patientRegistryGetIdentifiers("1455985023678",
+					"1.3.6.1.4.1.21367.13.20.200",
 					false);
 		}
 		catch (Exception e)
@@ -151,12 +151,12 @@ public class PIXManagerTest
 					true);
 			
 			DateTime oidTimeValue = DateTime.now(DateTimeZone.UTC);
-//			MCCIIN000002UV01 pixRegistrationResponse = pixManager.registerPatient("WILLIAM",
-//					"WALTERS",
-//					null,
-//					"5/5/1955",
-//					"M",
-//					String.valueOf(oidTimeValue.getMillis()));
+			MCCIIN000002UV01 pixRegistrationResponse = pixManager.registerPatient("SALLY",
+					"SHARE",
+					null,
+					"5/1/1977",
+					"F",
+					String.valueOf(oidTimeValue.getMillis()));
 
 //			MCCIIN000002UV01 pixRegistrationResponse = pixManager.registerPatient("ALICE",
 //					"MAIDEN",
@@ -172,12 +172,12 @@ public class PIXManagerTest
 //					"M",
 //					String.valueOf(oidTimeValue.getMillis()));
 
-			MCCIIN000002UV01 pixRegistrationResponse = pixManager.registerPatient("ALICE",
-					"EVERSOLVE",
-					null,
-					"5/5/1955",
-					"M",
-					"1453993451564");
+//			MCCIIN000002UV01 pixRegistrationResponse = pixManager.registerPatient("ALICE",
+//					"EVERSOLVE",
+//					null,
+//					"5/5/1955",
+//					"M",
+//					"1453993451564");
 
 //			assertTrue("Error - unexpected return value for RegisterPatient message",
 //					pixRegistrationResponse.toString());

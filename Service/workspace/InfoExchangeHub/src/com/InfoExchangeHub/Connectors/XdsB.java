@@ -149,14 +149,15 @@ public class XdsB
 			XdsB.repositoryEndpointURI = repositoryEndpointURI;
 
 			// If Syslog server host is specified, then configure...
+			iti18AuditMsgTemplate = props.getProperty("Iti18AuditMsgTemplate");
+			iti43AuditMsgTemplate = props.getProperty("Iti43AuditMsgTemplate");
 			String syslogServerHost = props.getProperty("SyslogServerHost");
 			int syslogServerPort = (props.getProperty("SyslogServerPort") != null) ? Integer.parseInt(props.getProperty("SyslogServerPort"))
 					: -1;
 			if ((syslogServerHost != null) &&
+				(syslogServerHost.length() > 0) &&
 				(syslogServerPort > -1))
 			{
-				iti18AuditMsgTemplate = props.getProperty("Iti18AuditMsgTemplate");
-				iti43AuditMsgTemplate = props.getProperty("Iti43AuditMsgTemplate");
 				if ((iti18AuditMsgTemplate == null) ||
 					(iti43AuditMsgTemplate == null))
 				{
@@ -376,12 +377,6 @@ public class XdsB
 	private void logIti18AuditMsg(String queryText,
 			String patientId) throws IOException
 	{
-		if ((sysLogConfig == null) ||
-            (iti18AuditMsgTemplate == null))
-		{
-			return;
-		}
-		
 		String logMsg = FileUtils.readFileToString(new File(iti18AuditMsgTemplate));
 		
 		// Substitutions...
@@ -422,6 +417,12 @@ public class XdsB
 			log.info(logMsg);
 		}
 
+		if ((sysLogConfig == null) ||
+            (iti18AuditMsgTemplate == null))
+		{
+			return;
+		}
+
 		// Log the syslog message and close connection
 		Syslog.getInstance("sslTcp").info(logMsg);
 		Syslog.getInstance("sslTcp").flush();
@@ -432,12 +433,6 @@ public class XdsB
 			String homeCommunityId,
 			String patientId) throws IOException
 	{
-		if ((sysLogConfig == null) ||
-            (iti43AuditMsgTemplate == null))
-		{
-			return;
-		}
-
 		String logMsg = FileUtils.readFileToString(new File(iti43AuditMsgTemplate));
 		
 		// Substitutions...
@@ -490,6 +485,12 @@ public class XdsB
 		if (logSyslogAuditMsgsLocally)
 		{
 			log.info(logMsg);
+		}
+
+		if ((sysLogConfig == null) ||
+            (iti43AuditMsgTemplate == null))
+		{
+			return;
 		}
 
 		// Log the syslog message and close connection

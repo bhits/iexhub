@@ -30,8 +30,11 @@ public class XdsBRepositoryManagerTest
 //	private static final String xdsBRegistryTLSEndpointURI = "https://cerner14:9070/ihe/services/xdsregistryb";
 //	private static final String xdsBRepositoryTLSEndpointURI = "https://tiani---cisco72:8443/XDS3/rep";
 //	private static final String xdsBRegistryTLSEndpointURI = "https://ith-icoserve12:1243/Registry/services/RegistryService";
-	private static final String xdsBRegistryTLSEndpointURI = "https://merge11:443/iti18";
-	private static final String xdsBRepositoryTLSEndpointURI = "https://10.242.43.13:5000/repository";
+//	private static final String xdsBRegistryTLSEndpointURI = "https://merge11:443/iti18";
+//	private static final String xdsBRepositoryTLSEndpointURI = "https://10.242.43.13:5000/repository";
+	private static final String xdsBRegistryTLSEndpointURI = "https://demohie.thinkengage.com/XDS3/reg";
+	private static final String xdsBRepositoryTLSEndpointURI = "https://demohie.thinkengage.com/SpiritProxy/repository";
+
 	private static XdsBRepositoryManager XdsBRepository = null;
 	/**
 	 * Test method for {@link com.InfoExchangeHub.Connectors.XdsBRepositoryManager#ProvideAndRegisterDocumentSet(java.lang.String, java.util.List)}.
@@ -73,7 +76,8 @@ public class XdsBRepositoryManagerTest
 	{
 //		String cdaFilename = "c:/temp/b2 Adam Everyman ToC_IHERED-2298.xml";
 //		String cdaFilename = "c:/temp/b2 Adam Everyman ToC_IHEGREEN-2376.xml";
-		String cdaFilename = "c:/temp/b2 Adam Everyman ToC_IHEBLUE-1019.xml";
+//		String cdaFilename = "c:/temp/b2 Adam Everyman ToC_IHEBLUE-1019.xml";
+		String cdaFilename = "c:/temp/Sally_Share_b1_Ambulatory_v3.xml";
 		try
 		{
 			log.info("Repository TLS ProvideAndRegisterDocumentSet (ITI-41) unit test started...");

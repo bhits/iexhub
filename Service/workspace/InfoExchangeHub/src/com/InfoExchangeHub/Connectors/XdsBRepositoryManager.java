@@ -255,13 +255,14 @@ public class XdsBRepositoryManager
 			XdsBRepositoryManager.repositoryEndpointURI = repositoryEndpointURI;
 
 			// If Syslog server host is specified, then configure...
+			iti41AuditMsgTemplate = props.getProperty("Iti41AuditMsgTemplate");
 			String syslogServerHost = props.getProperty("SyslogServerHost");
 			int syslogServerPort = (props.getProperty("SyslogServerPort") != null) ? Integer.parseInt(props.getProperty("SyslogServerPort"))
 					: -1;
 			if ((syslogServerHost != null) &&
+				(syslogServerHost.length() > 0) &&
 				(syslogServerPort > -1))
 			{
-				iti41AuditMsgTemplate = props.getProperty("Iti41AuditMsgTemplate");
 				if (iti41AuditMsgTemplate == null)
 				{
 					log.error("ITI-41 audit message template not specified in properties file, "
@@ -363,13 +364,7 @@ public class XdsBRepositoryManager
 
 	private void logIti41AuditMsg(String submissionSetId,
 			String patientId) throws IOException
-	{
-		if ((sysLogConfig == null) ||
-            (iti41AuditMsgTemplate == null))
-		{
-			return;
-		}
-		
+	{		
 		String logMsg = FileUtils.readFileToString(new File(iti41AuditMsgTemplate));
 		
 		// Substitutions...
@@ -407,6 +402,12 @@ public class XdsBRepositoryManager
 		if (logSyslogAuditMsgsLocally)
 		{
 			log.info(logMsg);
+		}
+
+		if ((sysLogConfig == null) ||
+            (iti41AuditMsgTemplate == null))
+		{
+			return;
 		}
 
 		// Log the syslog message and close connection

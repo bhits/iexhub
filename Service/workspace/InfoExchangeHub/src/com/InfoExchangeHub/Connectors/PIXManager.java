@@ -45,6 +45,7 @@ public class PIXManager
 	private static boolean debugSSL = false;
 	
 	private static boolean logPixRequestMessages = false;
+	private static boolean logPixResponseMessages = false;
 	private static String logOutputPath = "c:/temp/";
 	private static boolean logSyslogAuditMsgsLocally = false;
 
@@ -96,6 +97,8 @@ public class PIXManager
 					: props.getProperty("LogOutputPath");
 			PIXManager.logPixRequestMessages = (props.getProperty("LogPIXRequestMessages") == null) ? PIXManager.logPixRequestMessages
 					: Boolean.parseBoolean(props.getProperty("LogPIXRequestMessages"));
+			PIXManager.logPixResponseMessages = (props.getProperty("LogPIXResponseMessages") == null) ? PIXManager.logPixResponseMessages
+					: Boolean.parseBoolean(props.getProperty("LogPIXResponseMessages"));
 			PIXManager.keyStoreFile = (props.getProperty("PIXKeyStoreFile") == null) ? PIXManager.keyStoreFile
 					: props.getProperty("PIXKeyStoreFile");
 			PIXManager.keyStorePwd = (props.getProperty("PIXKeyStorePwd") == null) ? PIXManager.keyStorePwd
@@ -134,14 +137,15 @@ public class PIXManager
 			PIXManager.endpointURI = endpointURI;
 
 			// If Syslog server host is specified, then configure...
+			iti44AuditMsgTemplate = props.getProperty("Iti44AuditMsgTemplate");
+			iti45AuditMsgTemplate = props.getProperty("Iti45AuditMsgTemplate");
 			String syslogServerHost = props.getProperty("SyslogServerHost");
 			int syslogServerPort = (props.getProperty("SyslogServerPort") != null) ? Integer.parseInt(props.getProperty("SyslogServerPort"))
 					: -1;
 			if ((syslogServerHost != null) &&
+				(syslogServerHost.length() > 0) &&
 				(syslogServerPort > -1))
 			{
-				iti44AuditMsgTemplate = props.getProperty("Iti44AuditMsgTemplate");
-				iti45AuditMsgTemplate = props.getProperty("Iti45AuditMsgTemplate");
 				if ((iti44AuditMsgTemplate == null) ||
 					(iti45AuditMsgTemplate == null))
 				{
@@ -237,12 +241,6 @@ public class PIXManager
 
 	private void logIti44AuditMsg(String patientId) throws IOException
 	{
-		if ((sysLogConfig == null) ||
-            (iti44AuditMsgTemplate == null))
-		{
-			return;
-		}
-
 		String logMsg = FileUtils.readFileToString(new File(iti44AuditMsgTemplate));
 		
 		// Substitutions...
@@ -282,6 +280,12 @@ public class PIXManager
 			log.info(logMsg);
 		}
 
+		if ((sysLogConfig == null) ||
+            (iti44AuditMsgTemplate == null))
+		{
+			return;
+		}
+
 		// Log the syslog message and close connection
 		Syslog.getInstance("sslTcp").info(logMsg);
 		Syslog.getInstance("sslTcp").flush();
@@ -290,12 +294,6 @@ public class PIXManager
 	private void logIti45AuditMsg(String queryText,
 			String patientId) throws IOException
 	{
-		if ((sysLogConfig == null) ||
-            (iti45AuditMsgTemplate == null))
-		{
-			return;
-		}
-
 		String logMsg = FileUtils.readFileToString(new File(iti45AuditMsgTemplate));
 		
 		// Substitutions...
@@ -337,6 +335,12 @@ public class PIXManager
 		if (logSyslogAuditMsgsLocally)
 		{
 			log.info(logMsg);
+		}
+
+		if ((sysLogConfig == null) ||
+            (iti45AuditMsgTemplate == null))
+		{
+			return;
 		}
 
 		// Log the syslog message and close connection
@@ -499,16 +503,30 @@ public class PIXManager
     				"PRPA_IN201309UV02"));
 		String queryText = requestElement.toString();
 		
+		UUID logMsgId = null;
 		if (logPixRequestMessages)
 		{
-			Files.write(Paths.get(logOutputPath + UUID.randomUUID().toString() + "_PIXGetIdentifiersRequest.xml"),
+			logMsgId = UUID.randomUUID();
+			Files.write(Paths.get(logOutputPath + logMsgId.toString() + "_PIXGetIdentifiersRequest.xml"),
 					requestElement.toString().getBytes());
 		}
 
 		logIti45AuditMsg(queryText,
 				patientId + "^^^&" + domainOID + "&ISO");
 
-		return pixManagerStub.pIXManager_PRPA_IN201309UV02(pRPA_IN201309UV02);
+		PRPAIN201310UV02 response = pixManagerStub.pIXManager_PRPA_IN201309UV02(pRPA_IN201309UV02);
+		if (logPixResponseMessages)
+		{
+			OMElement responseElement = pixManagerStub.toOM(response, pixManagerStub.optimizeContent(
+	                new javax.xml.namespace.QName("urn:hl7-org:v3",
+	                    "PRPA_IN201310UV02")),
+	                new javax.xml.namespace.QName("urn:hl7-org:v3",
+	    				"PRPA_IN201310UV02"));
+			Files.write(Paths.get(logOutputPath + ((logMsgId == null) ? UUID.randomUUID().toString() : logMsgId.toString()) + "_PIXGetIdentifiersResponse.xml"),
+					responseElement.toString().getBytes());			
+		}
+		
+		return response;
 	}
 	
 	public MCCIIN000002UV01 registerPatient(String givenName,
@@ -696,17 +714,20 @@ public class PIXManager
 		patientPerson.getClassCode().add("PSN");
 		patientPerson.setDeterminerCode("INSTANCE");
 		
-		DateTimeFormatter formatter = DateTimeFormat.forPattern("MM/dd/yyyy");
-		DateTime birthDateTime = formatter.parseDateTime(dateOfBirth);
-		StringBuilder birthDateBuilder = new StringBuilder();
-		birthDateBuilder.append(birthDateTime.getYear());
-		birthDateBuilder.append((birthDateTime.getMonthOfYear() < 10) ? ("0" + birthDateTime.getMonthOfYear())
-				: birthDateTime.getMonthOfYear());
-		birthDateBuilder.append((birthDateTime.getDayOfMonth() < 10) ? ("0" + birthDateTime.getDayOfMonth())
-				: birthDateTime.getDayOfMonth());
-		TS birthTime = new TS();
-		birthTime.setValue(birthDateBuilder.toString());
-		patientPerson.setBirthTime(birthTime);
+		if (dateOfBirth != null)
+		{
+			DateTimeFormatter formatter = DateTimeFormat.forPattern("MM/dd/yyyy");
+			DateTime birthDateTime = formatter.parseDateTime(dateOfBirth);
+			StringBuilder birthDateBuilder = new StringBuilder();
+			birthDateBuilder.append(birthDateTime.getYear());
+			birthDateBuilder.append((birthDateTime.getMonthOfYear() < 10) ? ("0" + birthDateTime.getMonthOfYear())
+					: birthDateTime.getMonthOfYear());
+			birthDateBuilder.append((birthDateTime.getDayOfMonth() < 10) ? ("0" + birthDateTime.getDayOfMonth())
+					: birthDateTime.getDayOfMonth());
+			TS birthTime = new TS();
+			birthTime.setValue(birthDateBuilder.toString());
+			patientPerson.setBirthTime(birthTime);
+		}
 		
 		JAXBElement<PRPAMT201301UV02Person> patientPersonElement = objectFactory.createPRPAMT201301UV02PatientPatientPerson(patientPerson);
 		patient.setPatientPerson(patientPersonElement);
@@ -770,17 +791,31 @@ public class PIXManager
 
 		logIti44AuditMsg(patientId + "^^^&" + PIXManager.iExHubDomainOid + "&" + PIXManager.iExHubAssigningAuthority);
 
+		UUID logMsgId = null;
 		if (logPixRequestMessages)
 		{
+			logMsgId = UUID.randomUUID();
 			OMElement requestElement = pixManagerStub.toOM(pRPA_IN201301UV02, pixManagerStub.optimizeContent(
 	                new javax.xml.namespace.QName("urn:hl7-org:v3",
 	                    "PRPA_IN201301UV02")),
 	                new javax.xml.namespace.QName("urn:hl7-org:v3",
 	    				"PRPA_IN201301UV02"));
-			Files.write(Paths.get(logOutputPath + UUID.randomUUID().toString() + "_PIXRegisterPatientRequest.xml"),
+			Files.write(Paths.get(logOutputPath + logMsgId.toString() + "_PIXRegisterPatientRequest.xml"),
 					requestElement.toString().getBytes());
 		}
 
-		return pixManagerStub.pIXManager_PRPA_IN201301UV02(pRPA_IN201301UV02);
+		MCCIIN000002UV01 response = pixManagerStub.pIXManager_PRPA_IN201301UV02(pRPA_IN201301UV02);
+		if (logPixResponseMessages)
+		{
+			OMElement responseElement = pixManagerStub.toOM(response, pixManagerStub.optimizeContent(
+	                new javax.xml.namespace.QName("urn:hl7-org:v3",
+	                    "MCCI_IN000002UV01")),
+	                new javax.xml.namespace.QName("urn:hl7-org:v3",
+	    				"MCCI_IN000002UV01"));
+			Files.write(Paths.get(logOutputPath + ((logMsgId == null) ? UUID.randomUUID().toString() : logMsgId.toString()) + "_PIXRegisterPatientResponse.xml"),
+					responseElement.toString().getBytes());			
+		}
+
+		return response;
 	}
 }

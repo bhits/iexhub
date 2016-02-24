@@ -45,14 +45,16 @@ public class XdsBTest
 //	private static final String xdsBRegistryTLSEndpointURI = "https://cerner14:9070/ihe/services/xdsregistryb";
 //    private static final String xdsBRegistryTLSEndpointURI = "https://ith-icoserve12:1243/Registry/services/RegistryService";
 //	private static final String xdsBRepositoryTLSEndpointURI = "https://tiani---cisco72:8443/XDS3/rep";
-	private static final String xdsBRegistryTLSEndpointURI = "https://merge11:443/iti18";
-	private static final String xdsBRepositoryTLSEndpointURI = "https://10.242.43.13:5000/repository";
+//	private static final String xdsBRegistryTLSEndpointURI = "https://merge11:443/iti18";
+//	private static final String xdsBRepositoryTLSEndpointURI = "https://10.242.43.13:5000/repository";
+	private static final String xdsBRegistryTLSEndpointURI = "https://demohie.thinkengage.com/XDS3/reg";
+	private static final String xdsBRepositoryTLSEndpointURI = "https://demohie.thinkengage.com/SpiritProxy/repository";
 
 //    private static final String xdsBRepositoryUniqueId = "1.3.6.1.4.1.21367.13.40.226";		// Philips XDS.b repository ID
 //    private static final String xdsBRepositoryUniqueId = "1.3.6.1.4.1.21367.13.40.228";			// NIST RED repository ID
-//	private static final String xdsBRepositoryUniqueId = "1.3.6.1.4.1.21367.13.40.216";
+	private static final String xdsBRepositoryUniqueId = "1.3.6.1.4.1.21367.13.40.216";
 //    private static final String xdsBRepositoryUniqueId = "1.3.6.1.4.1.21367.13.40.214";
-	private static final String xdsBRepositoryUniqueId = "1.3.6.1.4.1.21367.13.40.210";    // OpenHIE
+//	private static final String xdsBRepositoryUniqueId = "1.3.6.1.4.1.21367.13.40.210";    // OpenHIE
 	private static XdsB xdsB = null;
 	private static final SOAPFactory soapFactory = OMAbstractFactory.getSOAP12Factory();
 
@@ -205,7 +207,8 @@ public class XdsBTest
 			
 //			String enterpriseMRN = "IHEBLUE-2332^^^&1.3.6.1.4.1.21367.13.20.3000&ISO^PI";
 //			String enterpriseMRN = "IHEBLUE-1019^^^&1.3.6.1.4.1.21367.13.20.3000&ISO";
-			String enterpriseMRN = "IHEGREEN-2376^^^&1.3.6.1.4.1.21367.13.20.2000&ISO";
+//			String enterpriseMRN = "IHEGREEN-2376^^^&1.3.6.1.4.1.21367.13.20.2000&ISO";
+			String enterpriseMRN = "940140b7-7c8b-4491-90f4-4819ded969bf^^^&1.3.6.1.4.1.21367.13.20.3000&ISO";
 			String startDate = null;
 			String endDate = null;
 
@@ -423,7 +426,8 @@ public class XdsBTest
 			
 //			String enterpriseMRN = "IHERED-2332^^^&1.3.6.1.4.1.21367.13.20.1000&ISO^PI";
 //			String enterpriseMRN = "IHEBLUE-1019^^^&1.3.6.1.4.1.21367.13.20.3000&ISO";
-			String enterpriseMRN = "IHEGREEN-2376^^^&1.3.6.1.4.1.21367.13.20.2000&ISO";
+//			String enterpriseMRN = "IHEGREEN-2376^^^&1.3.6.1.4.1.21367.13.20.2000&ISO";
+			String enterpriseMRN = "940140b7-7c8b-4491-90f4-4819ded969bf^^^&1.3.6.1.4.1.21367.13.20.3000&ISO";
 			String startDate = null;
 			String endDate = null;
 

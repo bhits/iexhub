@@ -599,7 +599,7 @@ public class PDQSupplier_ServiceStub extends org.apache.axis2.client.Stub {
         return envelope;
     }
 
-    private org.apache.axiom.om.OMElement toOM(
+    public org.apache.axiom.om.OMElement toOM(
         PDQSupplier.src.org.hl7.v3.PRPAIN201306UV02 param,
         boolean optimizeContent, javax.xml.namespace.QName methodQName)
         throws org.apache.axis2.AxisFault {
@@ -717,7 +717,7 @@ public class PDQSupplier_ServiceStub extends org.apache.axis2.client.Stub {
         return envelope;
     }
 
-    private org.apache.axiom.om.OMElement toOM(
+    public org.apache.axiom.om.OMElement toOM(
         PDQSupplier.src.org.hl7.v3.MCCIIN000002UV01 param,
         boolean optimizeContent, javax.xml.namespace.QName methodQName)
         throws org.apache.axis2.AxisFault {

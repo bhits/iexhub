@@ -34,6 +34,12 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
+import com.google.common.base.Equivalence;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.MapDifference;
+import com.google.common.collect.Maps;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.Diagnostic;
@@ -43,7 +49,7 @@ import org.openhealthtools.mdht.mdmi.MdmiMessage;
 import org.openhealthtools.mdht.mdmi.MdmiModelRef;
 import org.openhealthtools.mdht.mdmi.MdmiTransferInfo;
 import org.openhealthtools.mdht.mdmi.model.MdmiBusinessElementReference;
-import org.openhealthtools.mdht.uml.cda.util.CDAUtil.ValidationHandler;
+//import org.openhealthtools.mdht.uml.cda.util.CDAUtil.ValidationHandler;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -58,11 +64,6 @@ import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub.Registry
 import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub.RegistryObjectListType;
 import com.InfoExchangeHub.Services.Client.DocumentRepository_ServiceStub.DocumentResponse_type0;
 import com.InfoExchangeHub.Services.Client.DocumentRepository_ServiceStub.RetrieveDocumentSetResponse;
-import com.google.common.base.Equivalence;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.MapDifference;
-import com.google.common.collect.Maps;
 
 /**
  * @author A. Sute
@@ -75,33 +76,33 @@ public class GetPatientDataService
     /** Logger */
     public static Logger log = Logger.getLogger(GetPatientDataService.class);
 
-	public static class Handler implements ValidationHandler
-	{
-		boolean isValid = true;
-
-		public boolean isValid() {
-			return isValid;
-		}
-
-		public void setValid( boolean isValid ) {
-			this.isValid = isValid;
-		}
-
-		@Override
-		public void handleError( Diagnostic arg0 ) {
-			isValid = false;
-		}
-
-		@Override
-		public void handleInfo( Diagnostic arg0 ) {
-			// Currently ignoring all informational diagnostics
-		}
-
-		@Override
-		public void handleWarning( Diagnostic arg0 ) {
-			// Currently ignoring all warning diagnostics
-		}
-	}
+//	public static class Handler implements ValidationHandler
+//	{
+//		boolean isValid = true;
+//
+//		public boolean isValid() {
+//			return isValid;
+//		}
+//
+//		public void setValid( boolean isValid ) {
+//			this.isValid = isValid;
+//		}
+//
+//		@Override
+//		public void handleError( Diagnostic arg0 ) {
+//			isValid = false;
+//		}
+//
+//		@Override
+//		public void handleInfo( Diagnostic arg0 ) {
+//			// Currently ignoring all informational diagnostics
+//		}
+//
+//		@Override
+//		public void handleWarning( Diagnostic arg0 ) {
+//			// Currently ignoring all warning diagnostics
+//		}
+//	}
 
 	private static Properties props = null;
 	private static XdsB xdsB = null;
@@ -120,12 +121,16 @@ public class GetPatientDataService
 	{
 		log.info("Entered getPatientData service");
 		
+		boolean tls = false;
 		if (props == null)
 		{
 			try
 			{
 				props = new Properties();
 				props.load(new FileInputStream(propertiesFile));
+				tls = (props.getProperty("XdsBRegistryEndpointURI") == null) ? false
+						: ((props.getProperty("XdsBRegistryEndpointURI").toLowerCase().contains("https") ? true
+								: false));
 				GetPatientDataService.testMode = (props.getProperty("TestMode") == null) ? GetPatientDataService.testMode
 						: Boolean.parseBoolean(props.getProperty("TestMode"));
 				GetPatientDataService.testJSONDocumentPathname = (props.getProperty("TestJSONDocumentPathname") == null) ? GetPatientDataService.testJSONDocumentPathname
@@ -162,7 +167,8 @@ public class GetPatientDataService
 				{
 					log.info("Instantiating XdsB connector...");
 					xdsB = new XdsB(null,
-							null);
+							null,
+							tls);
 					log.info("XdsB connector successfully started");
 				}
 			}
@@ -373,16 +379,16 @@ public class GetPatientDataService
 											    			+ document.getDocumentUniqueId().getLongName());
 											    	
 													// CCDA 1.1 validation check...
-													Handler handler = new Handler();
-													handler.setValid(true);
+//													Handler handler = new Handler();
+//													handler.setValid(true);
 		//											ClinicalDocument clinicalDocument = CDAUtil.load(new FileInputStream(filename),
 		//													handler);
 		//											ByteArrayOutputStream output = new ByteArrayOutputStream();
 		//											CDAUtil.save(clinicalDocument,
 		//													output);
 		
-													if (handler.isValid())
-													{
+//													if (handler.isValid())
+//													{
 	//													log.info("Invoking map, document ID="
 	//															+ document.getDocumentUniqueId().getLongName());
 														
@@ -427,12 +433,12 @@ public class GetPatientDataService
 														jsonOutput.append(new String(readAllBytes(get(jsonFilename))));
 														
 												    	templateFound = true;
-													}
-													else
-													{
-														patientDataResponse.getErrorMsgs().add("Document retrieved is not a valid C-CDA 1.1 document - document ID="
-																+ document.getDocumentUniqueId().getLongName());									
-													}
+//													}
+//													else
+//													{
+//														patientDataResponse.getErrorMsgs().add("Document retrieved is not a valid C-CDA 1.1 document - document ID="
+//																+ document.getDocumentUniqueId().getLongName());									
+//													}
 											    }
 											}
 										}
