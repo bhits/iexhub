@@ -34,11 +34,11 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
-import com.google.common.base.Equivalence;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.MapDifference;
-import com.google.common.collect.Maps;
+import jersey.repackaged.com.google.common.base.Equivalence;
+import jersey.repackaged.com.google.common.base.Predicate;
+import jersey.repackaged.com.google.common.collect.Collections2;
+import jersey.repackaged.com.google.common.collect.MapDifference;
+import jersey.repackaged.com.google.common.collect.Maps;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -108,7 +108,7 @@ public class GetPatientDataService
 	private static XdsB xdsB = null;
 	private static boolean testMode = false;
 	private static String propertiesFile = "/temp/IExHub.properties";
-	private static String repositoryUniqueId = "1.3.6.1.4.1.21367.13.40.226";
+	private static String xdsBRepositoryUniqueId = "1.3.6.1.4.1.21367.13.40.216";
 	private static String cdaToJsonTransformXslt = null;
 	private static String iExHubDomainOid = "1.3.6.1.4.1.21367.13.50.300132";
 	private static String iExHubAssigningAuthority = "ISO";
@@ -141,6 +141,8 @@ public class GetPatientDataService
 						: props.getProperty("IExHubDomainOID");
 				GetPatientDataService.iExHubAssigningAuthority = (props.getProperty("IExHubAssigningAuthority") == null) ? GetPatientDataService.iExHubAssigningAuthority
 						: props.getProperty("IExHubAssigningAuthority");
+				GetPatientDataService.xdsBRepositoryUniqueId = (props.getProperty("XdsBRepositoryUniqueId") == null) ? GetPatientDataService.xdsBRepositoryUniqueId
+						: props.getProperty("XdsBRepositoryUniqueId");
 			}
 			catch (IOException e)
 			{
@@ -215,15 +217,15 @@ public class GetPatientDataService
 					patientId = "'" + patientId + "^^^&" + GetPatientDataService.iExHubDomainOid + "&" + GetPatientDataService.iExHubAssigningAuthority + "'";
 				}
 				
-				if (!patientId.startsWith("'"))
-				{
-					patientId = "'" + patientId;
-				}
-				
-				if (!patientId.endsWith("'"))
-				{
-					patientId += "'";
-				}
+//				if (!patientId.startsWith("'"))
+//				{
+//					patientId = "'" + patientId;
+//				}
+//				
+//				if (!patientId.endsWith("'"))
+//				{
+//					patientId += "'";
+//				}
 				
 				AdhocQueryResponse registryResponse = xdsB.registryStoredQuery(patientId,
 						(startDate != null) ? DateFormat.getDateInstance().format(startDate) : null,
@@ -317,7 +319,7 @@ public class GetPatientDataService
 					}
 					
 					log.info("Invoking XdsB repository connector retrieval...");
-					RetrieveDocumentSetResponse documentSetResponse = xdsB.retrieveDocumentSet(repositoryUniqueId,
+					RetrieveDocumentSetResponse documentSetResponse = xdsB.retrieveDocumentSet(xdsBRepositoryUniqueId,
 							documents,
 							patientId);
 					log.info("XdsB repository connector retrieval succeeded");
