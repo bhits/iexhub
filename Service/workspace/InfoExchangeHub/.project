@@ -3,7 +3,6 @@
 	<name>InfoExchangeHub</name>
 	<comment></comment>
 	<projects>
-		<project>Mdmi</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
