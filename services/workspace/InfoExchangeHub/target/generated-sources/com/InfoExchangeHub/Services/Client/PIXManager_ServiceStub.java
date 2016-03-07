@@ -137,7 +137,7 @@ public class PIXManager_ServiceStub extends org.apache.axis2.client.Stub {
     /**
      * Auto generated method signature
      *
-     * @see com.InfoExchangeHub.Services.Client.PIXManager_Service#pIXManager_PRPA_IN201301UV02
+     * @see org.iexhub.Services.Client.PIXManager_Service#pIXManager_PRPA_IN201301UV02
      * @param pRPA_IN201301UV02
      */
     public org.hl7.v3.MCCIIN000002UV01 pIXManager_PRPA_IN201301UV02(

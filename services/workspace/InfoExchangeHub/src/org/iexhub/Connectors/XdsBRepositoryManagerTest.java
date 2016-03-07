@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.InfoExchangeHub.Connectors;
+package org.iexhub.Connectors;
 
 import static org.junit.Assert.*;
 import static java.nio.file.Files.readAllBytes;
@@ -34,7 +34,7 @@ public class XdsBRepositoryManagerTest
 	private static final String xdsBRepositoryTLSEndpointURI = "https://10.242.43.13:5000/repository";
 	private static XdsBRepositoryManager XdsBRepository = null;
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.XdsBRepositoryManager#ProvideAndRegisterDocumentSet(java.lang.String, java.util.List)}.
+	 * Test method for {@link org.iexhub.Connectors.XdsBRepositoryManager#ProvideAndRegisterDocumentSet(java.lang.String, java.util.List)}.
 	 */
 	@Test
 	public void testProvideAndRegisterDocumentSet()
@@ -66,7 +66,7 @@ public class XdsBRepositoryManagerTest
 	}
 	
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.XdsBRepositoryManager#ProvideAndRegisterDocumentSet(java.lang.String, java.util.List)}.
+	 * Test method for {@link org.iexhub.Connectors.XdsBRepositoryManager#ProvideAndRegisterDocumentSet(java.lang.String, java.util.List)}.
 	 */
 	@Test
 	public void testTLSProvideAndRegisterDocumentSet()

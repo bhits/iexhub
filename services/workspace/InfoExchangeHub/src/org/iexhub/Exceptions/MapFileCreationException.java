@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.InfoExchangeHub.Exceptions;
+package org.iexhub.Exceptions;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;

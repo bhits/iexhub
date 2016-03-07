@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.InfoExchangeHub.Connectors;
+package org.iexhub.Connectors;
 
 import static org.junit.Assert.*;
 
@@ -20,8 +20,8 @@ import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.soap.SOAPFactory;
 import org.apache.log4j.Logger;
+import org.iexhub.Exceptions.UnexpectedServerException;
 
-import com.InfoExchangeHub.Exceptions.UnexpectedServerException;
 import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub.AdhocQueryResponse;
 import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub.ExternalIdentifierType;
 import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub.ExtrinsicObjectType;
@@ -139,7 +139,7 @@ public class XdsBTest
 	}
 	
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.XdsB#registryStoredQuery(java.lang.String, java.lang.String, java.lang.String)}.
+	 * Test method for {@link org.iexhub.Connectors.XdsB#registryStoredQuery(java.lang.String, java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testRegistryStoredQuery()
@@ -191,7 +191,7 @@ public class XdsBTest
 	}
 
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.XdsB#registryStoredQuery(java.lang.String, java.lang.String, java.lang.String)}.
+	 * Test method for {@link org.iexhub.Connectors.XdsB#registryStoredQuery(java.lang.String, java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testTLSRegistryStoredQuery()
@@ -225,7 +225,7 @@ public class XdsBTest
 	}
 
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.XdsB#registryStoredQuery(java.lang.String, java.lang.String, java.lang.String)}.
+	 * Test method for {@link org.iexhub.Connectors.XdsB#registryStoredQuery(java.lang.String, java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testXCARegistryStoredQuery()
@@ -253,7 +253,7 @@ public class XdsBTest
 	}
 
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.XdsB#registryStoredQuery(java.lang.String, java.lang.String, java.lang.String)}.
+	 * Test method for {@link org.iexhub.Connectors.XdsB#registryStoredQuery(java.lang.String, java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testXCARepositoryStoredQuery()
@@ -321,7 +321,7 @@ public class XdsBTest
 	}
 
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.XdsB#retrieveDocumentSet(java.lang.String, java.lang.String)}.
+	 * Test method for {@link org.iexhub.Connectors.XdsB#retrieveDocumentSet(java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testRetrieveDocumentSet()
@@ -409,7 +409,7 @@ public class XdsBTest
 	}
 	
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.XdsB#retrieveDocumentSet(java.lang.String, java.lang.String, boolean)}.
+	 * Test method for {@link org.iexhub.Connectors.XdsB#retrieveDocumentSet(java.lang.String, java.lang.String, boolean)}.
 	 */
 	@Test
 	public void testTLSRetrieveDocumentSet()

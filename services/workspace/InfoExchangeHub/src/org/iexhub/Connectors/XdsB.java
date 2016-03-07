@@ -1,4 +1,4 @@
-package com.InfoExchangeHub.Connectors;
+package org.iexhub.Connectors;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,6 +19,7 @@ import org.apache.axis2.Constants;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.iexhub.Exceptions.UnexpectedServerException;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormatter;
@@ -26,7 +27,6 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.productivity.java.syslog4j.Syslog;
 import org.productivity.java.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig;
 
-import com.InfoExchangeHub.Exceptions.UnexpectedServerException;
 import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub;
 import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub.AdhocQueryRequest;
 import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub.AdhocQueryResponse;
@@ -237,7 +237,7 @@ public class XdsB
 					
 //					RampartConfig rampartConfig = new RampartConfig();
 //					rampartConfig.setUser("client");
-//					rampartConfig.setPwCbClass("com.InfoExchangeHub.Connectors.PWCBHandler");
+//					rampartConfig.setPwCbClass("org.iexhub.Connectors.PWCBHandler");
 //
 //					CryptoConfig sigCrypto = new CryptoConfig();
 //					sigCrypto.setProvider("org.apache.ws.security.components.crypto.Merlin");

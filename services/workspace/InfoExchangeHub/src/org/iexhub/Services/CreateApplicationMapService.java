@@ -1,4 +1,4 @@
-package com.InfoExchangeHub.Services;
+package org.iexhub.Services;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -13,10 +13,9 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.io.FileUtils;
-
-import com.InfoExchangeHub.Exceptions.MapFileCreationException;
-import com.InfoExchangeHub.Exceptions.URLToMapFileCopyException;
-import com.InfoExchangeHub.Exceptions.UnexpectedServerException;
+import org.iexhub.Exceptions.MapFileCreationException;
+import org.iexhub.Exceptions.URLToMapFileCopyException;
+import org.iexhub.Exceptions.UnexpectedServerException;
 
 /**
  * @author A. Sute

@@ -1,4 +1,4 @@
-package com.InfoExchangeHub.Connectors;
+package org.iexhub.Connectors;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,6 +15,7 @@ import org.apache.axis2.AxisFault;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.iexhub.Exceptions.UnexpectedServerException;
 
 import PDQSupplier.src.com.InfoExchangeHub.Services.Client.PDQSupplier_ServiceStub;
 import PDQSupplier.src.org.hl7.v3.*;
@@ -26,8 +27,6 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.productivity.java.syslog4j.Syslog;
 import org.productivity.java.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig;
-
-import com.InfoExchangeHub.Exceptions.UnexpectedServerException;
 
 /**
  * @author A. Sute

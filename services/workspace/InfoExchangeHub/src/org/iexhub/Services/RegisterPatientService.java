@@ -1,4 +1,4 @@
-package com.InfoExchangeHub.Services;
+package org.iexhub.Services;
 
 import java.io.File;
 import javax.ws.rs.Consumes;
@@ -11,9 +11,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import org.apache.commons.io.FileUtils;
+import org.iexhub.Connectors.PIXManager;
+import org.iexhub.Exceptions.*;
+
 import PIXManager.src.org.hl7.v3.MCCIIN000002UV01;
-import com.InfoExchangeHub.Connectors.PIXManager;
-import com.InfoExchangeHub.Exceptions.*;
 
 /**
  * @author A. Sute

@@ -1,4 +1,4 @@
-package com.InfoExchangeHub.Connectors;
+package org.iexhub.Connectors;
 
 import org.apache.ws.security.WSPasswordCallback;
 

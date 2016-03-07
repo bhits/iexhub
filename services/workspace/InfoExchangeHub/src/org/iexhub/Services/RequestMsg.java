@@ -1,4 +1,4 @@
-package com.InfoExchangeHub.Services;
+package org.iexhub.Services;
 
 import java.util.Date;
 

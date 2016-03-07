@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.InfoExchangeHub.Connectors;
+package org.iexhub.Connectors;
 
 import static org.junit.Assert.*;
 import PIXManager.src.org.hl7.v3.MCCIIN000002UV01;
@@ -20,7 +20,7 @@ public class PIXManagerTest
 	private static final String PIXManagerEndpointURI = "http://129.6.24.79:9090";
 
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.PIXManager#patientRegistryGetIdentifiers(java.lang.String, java.lang.String, boolean)}.
+	 * Test method for {@link org.iexhub.Connectors.PIXManager#patientRegistryGetIdentifiers(java.lang.String, java.lang.String, boolean)}.
 	 */
 	@Test
 	public void testPatientRegistryGetIdentifiersWithDataSource()
@@ -42,7 +42,7 @@ public class PIXManagerTest
 	}
 
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.PIXManager#patientRegistryGetIdentifiers(java.lang.String, java.lang.String, boolean)}.
+	 * Test method for {@link org.iexhub.Connectors.PIXManager#patientRegistryGetIdentifiers(java.lang.String, java.lang.String, boolean)}.
 	 */
 	@Test
 	public void testPatientRegistryGetIdentifiersWithDataSourceTLS()
@@ -65,7 +65,7 @@ public class PIXManagerTest
 	}
 
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.PIXManager#patientRegistryGetIdentifiers(java.lang.String, java.lang.String, boolean)}.
+	 * Test method for {@link org.iexhub.Connectors.PIXManager#patientRegistryGetIdentifiers(java.lang.String, java.lang.String, boolean)}.
 	 */
 	@Test
 	public void testPatientRegistryGetIdentifiersNoDataSource()
@@ -87,7 +87,7 @@ public class PIXManagerTest
 	}
 
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.PIXManager#patientRegistryGetIdentifiers(java.lang.String, java.lang.String, boolean)}.
+	 * Test method for {@link org.iexhub.Connectors.PIXManager#patientRegistryGetIdentifiers(java.lang.String, java.lang.String, boolean)}.
 	 */
 	@Test
 	public void testPatientRegistryGetIdentifiersNoDataSourceTLS()
@@ -110,7 +110,7 @@ public class PIXManagerTest
 	}
 
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.PIXManager#registerPatient(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
+	 * Test method for {@link org.iexhub.Connectors.PIXManager#registerPatient(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testRegisterPatient()
@@ -138,7 +138,7 @@ public class PIXManagerTest
 	}
 	
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.PIXManager#registerPatient(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
+	 * Test method for {@link org.iexhub.Connectors.PIXManager#registerPatient(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testRegisterPatientTLS()

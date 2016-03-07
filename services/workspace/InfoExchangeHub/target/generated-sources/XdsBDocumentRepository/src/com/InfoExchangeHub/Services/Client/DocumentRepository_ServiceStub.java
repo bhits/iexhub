@@ -150,7 +150,7 @@ public class DocumentRepository_ServiceStub extends org.apache.axis2.client.Stub
     /**
      * Auto generated method signature
      *
-     * @see com.InfoExchangeHub.Services.Client.DocumentRepository_Service#documentRepository_RetrieveDocumentSet
+     * @see org.iexhub.Services.Client.DocumentRepository_Service#documentRepository_RetrieveDocumentSet
      * @param retrieveDocumentSetRequest
      */
     public XdsBDocumentRepository.src.ihe.iti.xds_b._2007.RetrieveDocumentSetResponseType documentRepository_RetrieveDocumentSet(
@@ -269,7 +269,7 @@ public class DocumentRepository_ServiceStub extends org.apache.axis2.client.Stub
     /**
      * Auto generated method signature
      *
-     * @see com.InfoExchangeHub.Services.Client.DocumentRepository_Service#documentRepository_ProvideAndRegisterDocumentSetB
+     * @see org.iexhub.Services.Client.DocumentRepository_Service#documentRepository_ProvideAndRegisterDocumentSetB
      * @param provideAndRegisterDocumentSetRequest
      */
     public XdsBDocumentRepository.src.oasis.names.tc.ebxml_regrep.xsd.rs._3.RegistryResponseType documentRepository_ProvideAndRegisterDocumentSetB(

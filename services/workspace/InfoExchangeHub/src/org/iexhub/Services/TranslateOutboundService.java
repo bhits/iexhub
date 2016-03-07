@@ -1,4 +1,4 @@
-package com.InfoExchangeHub.Services;
+package org.iexhub.Services;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
@@ -11,6 +11,14 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.iexhub.Exceptions.InvalidExchangeFormatException;
+import org.iexhub.Exceptions.InvalidSourceModelException;
+import org.iexhub.Exceptions.InvalidTargetModelException;
+import org.iexhub.Exceptions.MessageTransformException;
+import org.iexhub.Exceptions.SourceMapMissingException;
+import org.iexhub.Exceptions.SourceMsgMissingException;
+import org.iexhub.Exceptions.TargetMapMissingException;
+import org.iexhub.Exceptions.UnexpectedServerException;
 import org.openhealthtools.mdht.mdmi.Mdmi;
 import org.openhealthtools.mdht.mdmi.MdmiConfig;
 import org.openhealthtools.mdht.mdmi.MdmiMessage;
@@ -18,14 +26,6 @@ import org.openhealthtools.mdht.mdmi.MdmiModelRef;
 import org.openhealthtools.mdht.mdmi.MdmiTransferInfo;
 import org.openhealthtools.mdht.mdmi.model.MdmiBusinessElementReference;
 
-import com.InfoExchangeHub.Exceptions.InvalidExchangeFormatException;
-import com.InfoExchangeHub.Exceptions.InvalidSourceModelException;
-import com.InfoExchangeHub.Exceptions.InvalidTargetModelException;
-import com.InfoExchangeHub.Exceptions.MessageTransformException;
-import com.InfoExchangeHub.Exceptions.SourceMapMissingException;
-import com.InfoExchangeHub.Exceptions.SourceMsgMissingException;
-import com.InfoExchangeHub.Exceptions.TargetMapMissingException;
-import com.InfoExchangeHub.Exceptions.UnexpectedServerException;
 import com.google.common.base.Equivalence;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;

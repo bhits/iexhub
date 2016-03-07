@@ -156,7 +156,7 @@ public class PDQSupplier_ServiceStub extends org.apache.axis2.client.Stub {
     /**
      * Auto generated method signature
      *
-     * @see com.InfoExchangeHub.Services.Client.PDQSupplier_Service#pDQSupplier_QUQI_IN000003UV01_Continue
+     * @see org.iexhub.Services.Client.PDQSupplier_Service#pDQSupplier_QUQI_IN000003UV01_Continue
      * @param qUQI_IN000003UV01
      */
     public PDQSupplier.src.org.hl7.v3.PRPAIN201306UV02 pDQSupplier_QUQI_IN000003UV01_Continue(
@@ -275,7 +275,7 @@ public class PDQSupplier_ServiceStub extends org.apache.axis2.client.Stub {
     /**
      * Auto generated method signature
      *
-     * @see com.InfoExchangeHub.Services.Client.PDQSupplier_Service#pDQSupplier_PRPA_IN201305UV02
+     * @see org.iexhub.Services.Client.PDQSupplier_Service#pDQSupplier_PRPA_IN201305UV02
      * @param pRPA_IN201305UV02
      */
     public PDQSupplier.src.org.hl7.v3.PRPAIN201306UV02 pDQSupplier_PRPA_IN201305UV02(
@@ -394,7 +394,7 @@ public class PDQSupplier_ServiceStub extends org.apache.axis2.client.Stub {
     /**
      * Auto generated method signature
      *
-     * @see com.InfoExchangeHub.Services.Client.PDQSupplier_Service#pDQSupplier_QUQI_IN000003UV01_Cancel
+     * @see org.iexhub.Services.Client.PDQSupplier_Service#pDQSupplier_QUQI_IN000003UV01_Cancel
      * @param qUQI_IN000003UV01_Cancel
      */
     public PDQSupplier.src.org.hl7.v3.MCCIIN000002UV01 pDQSupplier_QUQI_IN000003UV01_Cancel(

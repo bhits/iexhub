@@ -1,4 +1,4 @@
-package com.InfoExchangeHub.Services;
+package org.iexhub.Services;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -37,6 +37,8 @@ import javax.xml.xpath.XPathFactory;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.Diagnostic;
+import org.iexhub.Connectors.XdsB;
+import org.iexhub.Exceptions.*;
 import org.openhealthtools.mdht.mdmi.Mdmi;
 import org.openhealthtools.mdht.mdmi.MdmiConfig;
 import org.openhealthtools.mdht.mdmi.MdmiMessage;
@@ -48,8 +50,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import com.InfoExchangeHub.Connectors.XdsB;
-import com.InfoExchangeHub.Exceptions.*;
 import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub.AdhocQueryResponse;
 import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub.ExternalIdentifierType;
 import com.InfoExchangeHub.Services.Client.DocumentRegistry_ServiceStub.ExtrinsicObjectType;

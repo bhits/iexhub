@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.InfoExchangeHub.Connectors;
+package org.iexhub.Connectors;
 
 import static org.junit.Assert.*;
 
@@ -21,7 +21,7 @@ public class PDQQueryManagerTest
 	private static final String PDQManagerTLSEndpointURI = null;
 
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
+	 * Test method for {@link org.iexhub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testITI47ConsumerQueryPatientAddress_NoOtherIDsScopingOrganization()
@@ -51,7 +51,7 @@ public class PDQQueryManagerTest
 	}
 
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
+	 * Test method for {@link org.iexhub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testITI47ConsumerQueryPatientNameAddress_NoOtherIDsScopingOrganization_TLS()
@@ -82,7 +82,7 @@ public class PDQQueryManagerTest
 	}
 
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
+	 * Test method for {@link org.iexhub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testITI47ConsumerQueryPatientAddress_OtherIDsScopingOrganization()
@@ -112,7 +112,7 @@ public class PDQQueryManagerTest
 	}
 
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
+	 * Test method for {@link org.iexhub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testITI47ConsumerQueryPatientNameAdministrativeSex_NoOtherIDsScopingOrganization()
@@ -142,7 +142,7 @@ public class PDQQueryManagerTest
 	}
 
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
+	 * Test method for {@link org.iexhub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testITI47ConsumerQueryPatientNameAdministrativeSex_NoOtherIDsScopingOrganization_TLS()
@@ -173,7 +173,7 @@ public class PDQQueryManagerTest
 	}
 
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
+	 * Test method for {@link org.iexhub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testITI47ConsumerQueryPatientNameAdministrativeSex_OtherIDsScopingOrganization()
@@ -203,7 +203,7 @@ public class PDQQueryManagerTest
 	}
 
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
+	 * Test method for {@link org.iexhub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testITI47ConsumerQueryPatientNameDOB_NoOtherIDsScopingOrganization()
@@ -233,7 +233,7 @@ public class PDQQueryManagerTest
 	}
 
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
+	 * Test method for {@link org.iexhub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testITI47ConsumerQueryPatientNameDOB_NoOtherIDsScopingOrganization_TLS()
@@ -264,7 +264,7 @@ public class PDQQueryManagerTest
 	}
 
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
+	 * Test method for {@link org.iexhub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testITI47ConsumerQueryPatientNameDOB_OtherIDsScopingOrganization()
@@ -294,7 +294,7 @@ public class PDQQueryManagerTest
 	}
 
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
+	 * Test method for {@link org.iexhub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testITI47ConsumerQueryPatientPatientId_NoOtherIDsScopingOrganization()
@@ -324,7 +324,7 @@ public class PDQQueryManagerTest
 	}
 
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
+	 * Test method for {@link org.iexhub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testITI47ConsumerQueryPatientPatientId_OtherIDsScopingOrganization()
@@ -354,7 +354,7 @@ public class PDQQueryManagerTest
 	}
 
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
+	 * Test method for {@link org.iexhub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testITI47ConsumerQueryPatientPatientId_OtherIDsScopingOrganization_TLS()
@@ -385,7 +385,7 @@ public class PDQQueryManagerTest
 	}
 
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
+	 * Test method for {@link org.iexhub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testITI47ConsumerQueryContinuationOption()
@@ -429,7 +429,7 @@ public class PDQQueryManagerTest
 	}
 
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
+	 * Test method for {@link org.iexhub.Connectors.PDQQueryManager#queryPatientDemographics(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testITI47ConsumerQueryContinuationOptionTLS()

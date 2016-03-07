@@ -1,4 +1,4 @@
-package com.InfoExchangeHub.Connectors;
+package org.iexhub.Connectors;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -27,6 +27,8 @@ import org.apache.axis2.AxisFault;
 import org.apache.axis2.Constants;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.iexhub.Exceptions.DocumentTypeUnsupportedException;
+import org.iexhub.Exceptions.UnexpectedServerException;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormatter;
@@ -37,9 +39,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
-
-import com.InfoExchangeHub.Exceptions.DocumentTypeUnsupportedException;
-import com.InfoExchangeHub.Exceptions.UnexpectedServerException;
 
 import XdsBDocumentRepository.src.com.InfoExchangeHub.Services.Client.DocumentRepository_ServiceStub;
 import XdsBDocumentRepository.src.ihe.iti.xds_b._2007.ProvideAndRegisterDocumentSetRequestType;
