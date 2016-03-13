@@ -1,8 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>InfoExchangeHub</groupId>
-  <artifactId>InfoExchangeHub</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>Sprint08</version>
   <packaging>war</packaging>
   
   <repositories>
@@ -360,4 +359,12 @@
 	   <version>2.1.0</version>
 	  </dependency>
   </dependencies>
+  <artifactId>iexhub</artifactId>
+  <name>Information Exchange Hub</name>
+  <url>www.iexhub.org</url>
+  <organization>
+  	<name>SAMHSA</name>
+  	<url>www.samhsa.hhs.gov</url>
+  </organization>
+  <description>Information Exchange Hub consists of connectors, services, and transformation compontents intended to allow applications to interoperate with standards-based Health Information Exchange (HIE) organizations.</description>
 </project>
