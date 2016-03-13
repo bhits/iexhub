@@ -2,7 +2,7 @@
 /instance/org.eclipse.wst.server.core/module-start-timeout=300000
 @org.eclipse.debug.ui=3.10.1.v20140822-1408
 @org.eclipse.ui.ide=3.10.1.v20140828-0944
-/instance/org.eclipse.jdt.launching/org.eclipse.jdt.launching.PREF_VM_XML=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?>\r\n<vmSettings defaultVM\="57,org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType13,1456542143921" defaultVMConnector\="">\r\n<vmType id\="org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType">\r\n<vm id\="1456542143921" name\="jre1.8.0_31" path\="C\:\\Program Files\\Java\\jre1.8.0_31"/>\r\n</vmType>\r\n</vmSettings>\r\n
+/instance/org.eclipse.jdt.launching/org.eclipse.jdt.launching.PREF_VM_XML=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?>\r\n<vmSettings defaultVM\="57,org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType13,1456542143921" defaultVMConnector\="">\r\n<vmType id\="org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType">\r\n<vm id\="1456542143921" name\="jre1.8.0_66" path\="C\:\\Program Files\\Java\\jre1.8.0_66"/>\r\n</vmType>\r\n</vmSettings>\r\n
 /instance/org.eclipse.wst.ws.service.policy/org.eclipse.wst.ws.service.policy.ui.servicepols.wsiprofilecomp.wsiap.defaultProtocol=http\://schemas.xmlsoap.org/wsdl/soap/
 /instance/org.eclipse.rse.core/useridperkey=MDMI-PC.Local\=MDMI;
 /instance/org.eclipse.ui.ide/PROBLEMS_FILTERS_MIGRATE=true
@@ -106,4 +106,4 @@ file_export_version=3.0
 @org.eclipse.ui=3.106.0.v20140812-1751
 /instance/org.eclipse.debug.ui/pref_state_memento.org.eclipse.debug.ui.DebugVieworg.eclipse.debug.ui.DebugView=<?xml version\="1.0" encoding\="UTF-8"?>\r\n<DebugViewMemento org.eclipse.debug.ui.BREADCRUMB_DROPDOWN_AUTO_EXPAND\="false"/>
 /instance/org.eclipse.rse.core/activeuserprofiles=MDMI-PC;Team
-/configuration/org.eclipse.ui.ide/SHOW_WORKSPACE_SELECTION_DIALOG=false
+/configuration/org.eclipse.ui.ide/SHOW_WORKSPACE_SELECTION_DIALOG=true
