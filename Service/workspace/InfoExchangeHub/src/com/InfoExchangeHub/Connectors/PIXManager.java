@@ -716,8 +716,27 @@ public class PIXManager
 		
 		if (dateOfBirth != null)
 		{
-			DateTimeFormatter formatter = DateTimeFormat.forPattern("MM/dd/yyyy");
-			DateTime birthDateTime = formatter.parseDateTime(dateOfBirth);
+			// Try several formats for date parsing...
+			DateTimeFormatter formatter = null;
+			DateTime birthDateTime = null;
+			try
+			{
+				formatter = DateTimeFormat.forPattern("MM/dd/yyyy");
+				birthDateTime = formatter.parseDateTime(dateOfBirth);
+			}
+			catch (Exception e)
+			{
+				try
+				{
+					formatter = DateTimeFormat.forPattern("yyyy-MM-dd");
+					birthDateTime = formatter.parseDateTime(dateOfBirth);
+				}
+				catch (Exception e2)
+				{
+					throw e2;
+				}
+			}
+
 			StringBuilder birthDateBuilder = new StringBuilder();
 			birthDateBuilder.append(birthDateTime.getYear());
 			birthDateBuilder.append((birthDateTime.getMonthOfYear() < 10) ? ("0" + birthDateTime.getMonthOfYear())

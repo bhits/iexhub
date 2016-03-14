@@ -11,6 +11,12 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import jersey.repackaged.com.google.common.base.Equivalence;
+import jersey.repackaged.com.google.common.base.Predicate;
+import jersey.repackaged.com.google.common.collect.Collections2;
+import jersey.repackaged.com.google.common.collect.MapDifference;
+import jersey.repackaged.com.google.common.collect.Maps;
+
 import org.openhealthtools.mdht.mdmi.Mdmi;
 import org.openhealthtools.mdht.mdmi.MdmiConfig;
 import org.openhealthtools.mdht.mdmi.MdmiMessage;
@@ -26,11 +32,6 @@ import com.InfoExchangeHub.Exceptions.SourceMapMissingException;
 import com.InfoExchangeHub.Exceptions.SourceMsgMissingException;
 import com.InfoExchangeHub.Exceptions.TargetMapMissingException;
 import com.InfoExchangeHub.Exceptions.UnexpectedServerException;
-import com.google.common.base.Equivalence;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.MapDifference;
-import com.google.common.collect.Maps;
 
 /**
  * @author A. Sute

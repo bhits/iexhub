@@ -10,13 +10,14 @@
     <welcome-file>default.jsp</welcome-file>
   </welcome-file-list>
   <servlet>
-		<servlet-name>InfoExchangeHub REST Services</servlet-name>
-		<servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
-			<init-param>
-		        <param-name>com.sun.jersey.config.property.packages</param-name>
-		        <param-value>com.InfoExchangeHub.Services</param-value>
-    	    </init-param>
-		<load-on-startup>1</load-on-startup>
+    <servlet-name>InfoExchangeHub REST Services</servlet-name>
+    <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+     <!-- Register resources and providers under com.InfoExchangeHub.Services package. -->
+            <init-param>
+                <param-name>jersey.config.server.provider.packages</param-name>
+                <param-value>com.InfoExchangeHub.Services</param-value>
+            </init-param>
+    <load-on-startup>1</load-on-startup>
   </servlet>
   <servlet-mapping>
 		<servlet-name>InfoExchangeHub REST Services</servlet-name>
