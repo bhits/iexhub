@@ -1,4 +1,5 @@
 # Project-specific directories #
+/Servers/
 /IExApp/
 /validationService/
 /Service/workspace/TestValidator/
@@ -12,8 +13,7 @@
 .springBeans
 
 # Generated Artifacts #
-/Service/**/target/*
-!/Service/**/target/generated-sources
+/iexhub/**/target/*
 bin
 *.class
 *.exe
