@@ -13,7 +13,7 @@
 		<url>www.samhsa.hhs.gov</url>
 	</organization>
 	<description>Information Exchange Hub consists of connectors, services, and transformation
-		compontents intended to allow applications to interoperate with standards-based Health
+		components intended to allow applications to interoperate with standards-based Health
 		Information Exchange (HIE) organizations.</description>
 
 	<scm>
@@ -22,10 +22,15 @@
 		<developerConnection>scm:git:https://github.com/FEISystems/iexhub.git</developerConnection>
 	</scm>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<jersey_version>2.22</jersey_version>
-	</properties>
+	
+	<!-- Note: HAPI projects use the "hapi-fhir" POM as their base to provide easy management. You do not need to use this in your own projects, so the "parent" tag and it's contents below may be removed 
+		if you are using this file as a basis for your own project. -->
+	<parent>
+		<groupId>ca.uhn.hapi.fhir</groupId>
+		<artifactId>hapi-fhir</artifactId>
+		<version>1.4</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
 	
 	<repositories>
 		<repository>
@@ -67,27 +72,13 @@
 			</snapshots>
 		</repository>
 	</repositories>
-
-
-
-
-
 	<build>
 	<!--
 		<sourceDirectory>src</sourceDirectory>
 		-->
 		<plugins>
 			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.1</version>
-				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
-				</configuration>
-			</plugin>
-			<plugin>
 				<artifactId>maven-war-plugin</artifactId>
-				<version>2.6</version>
 				<configuration>
 					<warSourceDirectory>WebContent</warSourceDirectory>
 					<failOnMissingWebXml>false</failOnMissingWebXml>
@@ -103,7 +94,6 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>1.10</version>
 				<executions>
 					<execution>
 						<phase>generate-sources</phase>
@@ -121,17 +111,12 @@
 			<plugin>
 				<groupId>org.apache.axis2</groupId>
 				<artifactId>axis2-mar-maven-plugin</artifactId>
-				<version>1.6.2</version>
+				<version>1.6.3</version>
 				<extensions>true</extensions>
 			</plugin>
 		</plugins>
 	</build>
 	<dependencies>
-		<dependency>
-			<groupId>commons-codec</groupId>
-			<artifactId>commons-codec</artifactId>
-			<version>1.7</version>
-		</dependency>
 		<dependency>
 			<groupId>org.antlr</groupId>
 			<artifactId>antlr4</artifactId>
@@ -141,11 +126,6 @@
 			<groupId>org.antlr</groupId>
 			<artifactId>antlr4-runtime</artifactId>
 			<version>4.2</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>16.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mdmi</groupId>
@@ -229,35 +209,14 @@
 			<version>2.7.1</version>
 		</dependency>
 		<dependency>
-			<groupId>gov.samhsa.service</groupId>
-			<artifactId>gov.samhsa.service.validation</artifactId>
-			<version>0.2.0-20150818.143439-2</version>
-		</dependency>
-		<dependency>
 			<groupId>asm</groupId>
 			<artifactId>asm</artifactId>
 			<version>3.3.1</version>
 		</dependency>
 		<dependency>
-			<groupId>com.sun.jersey</groupId>
-			<artifactId>jersey-bundle</artifactId>
-			<version>1.18.1</version>
-		</dependency>
-		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
 			<version>20140107</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.sun.jersey</groupId>
-			<artifactId>jersey-core</artifactId>
-			<version>1.18.1</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<version>2.2</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -284,7 +243,6 @@
 			<artifactId>commons-pool</artifactId>
 			<version>1.6</version>
 		</dependency>
-
 		<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
 			<artifactId>hapi-fhir-jaxrsserver-base</artifactId>
@@ -293,13 +251,11 @@
 		<dependency>
 			<groupId>javax.ws.rs</groupId>
 			<artifactId>javax.ws.rs-api</artifactId>
-			<version>2.0</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>javax.ejb</groupId>
 			<artifactId>ejb-api</artifactId>
-			<version>3.0</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -426,17 +382,11 @@
 		<dependency>
 			<groupId>org.apache.velocity</groupId>
 			<artifactId>velocity</artifactId>
-			<version>1.5</version>
-		</dependency>
+			</dependency>
 		<dependency>
 			<groupId>org.owasp.esapi</groupId>
 			<artifactId>esapi</artifactId>
 			<version>2.1.0</version>
-		</dependency>
-		<dependency>
-			<groupId>ca.uhn.hapi.fhir</groupId>
-			<artifactId>hapi-fhir-base</artifactId>
-			<version>1.4</version>
 		</dependency>
 
 	</dependencies>

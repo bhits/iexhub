@@ -11,11 +11,6 @@ import java.util.Calendar;
 import java.util.Properties;
 import java.util.UUID;
 
-
-
-
-
-
 //import org.apache.log4j.Logger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,12 +20,9 @@ import org.joda.time.DateTimeZone;
 import org.junit.*;
 
 import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.model.api.ExtensionDt;
-import ca.uhn.fhir.model.dstu2.composite.IdentifierDt;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
 import ca.uhn.fhir.model.primitive.DateDt;
-import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.client.IGenericClient;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
@@ -98,7 +90,7 @@ public class PatientResourceTest
 			loggingInterceptor.setLogRequestBody(true);
 			loggingInterceptor.setLogger(logger);
 			
-			String serverBaseUrl = "http://localhost:8080/InfoExchangeHub/InfoExchangeHubServices";
+			String serverBaseUrl = "http://localhost:8080/iexhub/services";
 			IGenericClient client = ctxt.newRestfulGenericClient(serverBaseUrl);
 			client.registerInterceptor(loggingInterceptor);
 			MethodOutcome outcome = client.create().resource(pat).execute();

@@ -16,6 +16,6 @@
   </servlet>
   <servlet-mapping>
 		<servlet-name>iexhub</servlet-name>
-		<url-pattern>/iexhub/*</url-pattern>
+		<url-pattern>/services/*</url-pattern>
   </servlet-mapping>
 </web-app>

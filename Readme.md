@@ -8,4 +8,4 @@
 North American Connectathon
 
 #Overview
-Information Exchange Hub consists of connectors, services, and transformation compontents intended to allow applications to interoperate with standards-based Health Information Exchange (HIE) organizations.
+Information Exchange Hub consists of connectors, services, and transformation components intended to allow applications to interoperate with standards-based Health Information Exchange (HIE) organizations.
