@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>gov.samhsa.iexhub</groupId>
@@ -16,22 +15,23 @@
 		components intended to allow applications to interoperate with standards-based Health
 		Information Exchange (HIE) organizations.</description>
 
-	<scm>
+    <scm>
 		<url>https://github.com/FEISystems/iexhub</url>
 		<connection>scm:git:https://github.com/FEISystems/iexhub.git</connection>
 		<developerConnection>scm:git:https://github.com/FEISystems/iexhub.git</developerConnection>
 	</scm>
 
-	
-	<!-- Note: HAPI projects use the "hapi-fhir" POM as their base to provide easy management. You do not need to use this in your own projects, so the "parent" tag and it's contents below may be removed 
-		if you are using this file as a basis for your own project. -->
+	<!-- Note: HAPI projects use the "hapi-fhir" POM as their base to provide 
+		easy management. You do not need to use this in your own projects, so the 
+		"parent" tag and it's contents below may be removed if you are using this 
+		file as a basis for your own project. -->
 	<parent>
 		<groupId>ca.uhn.hapi.fhir</groupId>
 		<artifactId>hapi-fhir</artifactId>
 		<version>1.4</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
-	
+
 	<repositories>
 		<repository>
 			<id>central</id>
@@ -43,21 +43,22 @@
 			</snapshots>
 		</repository>
 
-		<!--  CDA Tools Release (Third Party) - Contains 3rd party jars not available on other Maven repositories -->
+		<!-- CDA Tools Release (Third Party) - Contains 3rd party jars not available 
+			on other Maven repositories -->
 		<repository>
 			<id>cdatoolsrelease-ext</id>
 			<name>cdatools.com-releases-ext</name>
 			<url>http://www.cdatools.com:8081/artifactory/ext-release-local</url>
 		</repository>
 
-		<!--  CDA Tools Release - Contains release dependencies -->
+		<!-- CDA Tools Release - Contains release dependencies -->
 		<repository>
 			<id>cdatoolsrelease-libs</id>
 			<name>cdatools.com-releases-libs</name>
 			<url>http://www.cdatools.com:8081/artifactory/libs-release-local</url>
 		</repository>
 
-		<!--  CDA Snapshot, Contains the latest stable build of cda plugins (consol,hitsp,etc)-->
+		<!-- CDA Snapshot, Contains the latest stable build of cda plugins (consol,hitsp,etc) -->
 		<repository>
 			<id>cdatoolssnapshot</id>
 			<name>cdatools.com-releases</name>
@@ -73,16 +74,18 @@
 		</repository>
 	</repositories>
 	<build>
-	<!--
-		<sourceDirectory>src</sourceDirectory>
-		-->
+		<!-- <sourceDirectory>src</sourceDirectory> -->
 		<plugins>
 			<plugin>
-				<artifactId>maven-war-plugin</artifactId>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<warSourceDirectory>WebContent</warSourceDirectory>
-					<failOnMissingWebXml>false</failOnMissingWebXml>
+					<source>1.7</source>
+					<target>1.7</target>
 				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-war-plugin</artifactId>
 				<dependencies>
 					<dependency>
 						<groupId>org.apache.axis2</groupId>
@@ -91,23 +94,7 @@
 					</dependency>
 				</dependencies>
 			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>add-source</goal>
-						</goals>
-						<configuration>
-							<sources>
-								<source>${basedir}/target/generated-sources</source>
-							</sources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+
 			<plugin>
 				<groupId>org.apache.axis2</groupId>
 				<artifactId>axis2-mar-maven-plugin</artifactId>
@@ -233,10 +220,11 @@
 			<artifactId>wss4j</artifactId>
 			<version>1.5.5</version>
 		</dependency>
+		<!-- used to be org.codehaus.jackson -->
 		<dependency>
-			<groupId>org.codehaus.jackson</groupId>
-			<artifactId>jackson-mapper-asl</artifactId>
-			<version>1.9.13</version>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.7.3</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-pool</groupId>
@@ -382,7 +370,7 @@
 		<dependency>
 			<groupId>org.apache.velocity</groupId>
 			<artifactId>velocity</artifactId>
-			</dependency>
+		</dependency>
 		<dependency>
 			<groupId>org.owasp.esapi</groupId>
 			<artifactId>esapi</artifactId>
