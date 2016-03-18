@@ -3,14 +3,9 @@
   <display-name>InfoExchangeHub</display-name>
   <welcome-file-list>
     <welcome-file>index.html</welcome-file>
-    <welcome-file>index.htm</welcome-file>
-    <welcome-file>index.jsp</welcome-file>
-    <welcome-file>default.html</welcome-file>
-    <welcome-file>default.htm</welcome-file>
-    <welcome-file>default.jsp</welcome-file>
   </welcome-file-list>
   <servlet>
-    <servlet-name>InfoExchangeHub REST Services</servlet-name>
+    <servlet-name>iexhub</servlet-name>
     <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
      <!-- Register resources and providers under org.iexhub.services package. -->
             <init-param>
@@ -20,7 +15,7 @@
     <load-on-startup>1</load-on-startup>
   </servlet>
   <servlet-mapping>
-		<servlet-name>Information Exchange Hub REST Services</servlet-name>
+		<servlet-name>iexhub</servlet-name>
 		<url-pattern>/iexhub/*</url-pattern>
   </servlet-mapping>
 </web-app>
