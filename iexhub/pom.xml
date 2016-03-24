@@ -21,6 +21,27 @@
 		<developerConnection>scm:git:https://github.com/FEISystems/iexhub.git</developerConnection>
 	</scm>
 
+	<ciManagement>
+		<system>Jenkins</system>
+		<url>http://BhitsBuild03/</url>
+	</ciManagement>
+
+	<distributionManagement>
+		<repository>
+			<id>deployment</id>
+			<name>Internal Releases</name>
+			<url>http://${maven.nexus.servername}/nexus/content/repositories/releases/</url>
+		</repository>
+		<snapshotRepository>
+			<id>deployment</id>
+			<name>Internal Releases</name>
+			<url>http://${maven.nexus.servername}/nexus/content/repositories/snapshots/</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+	<properties>
+		<maven.nexus.servername>BHITSMVNREP01</maven.nexus.servername>
+	</properties>
 	<!-- Note: HAPI projects use the "hapi-fhir" POM as their base to provide 
 		easy management. You do not need to use this in your own projects, so the 
 		"parent" tag and it's contents below may be removed if you are using this 
