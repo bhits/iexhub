@@ -161,7 +161,7 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 
 		try
 		{
-			// ITI-44-Source-Feed message
+			// ITI-44-Source-Feed message, performing FHIR gender translation...
 			try
 			{					
 				MCCIIN000002UV01 pixRegistrationResponse = pixManager.registerPatient((patient.getName() != null) ? patient.getName().get(0).getGivenAsSingleString()
