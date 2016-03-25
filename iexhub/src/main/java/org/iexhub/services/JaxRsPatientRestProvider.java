@@ -208,12 +208,129 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 	}
 
 	@Read
-	public Patient find(@IdParam final IdDt theId) {
-		if (patients.containsKey(theId.getIdPart())) {
-			return getLast(patients.get(theId.getIdPart()));
-		} else {
-			throw new ResourceNotFoundException(theId);
+	public Patient find(@IdParam final IdDt theId)
+			log.info("Entered FHIR Patient find (by ID) service");
+	{
+		if (id == null)
+		{
+			throw new PatientIdParamMissingException("Patient ID parameter missing");
 		}
+		
+		if (props == null)
+		{
+			if (props == null)
+			{
+				loadProperties();
+			}
+		}
+
+		Patient result = null;
+		
+		// First try PDQ ITI-47 retrieval if PDQ endpoint is specified...
+		if ((pdqManagerEndpointUri != null) &&
+			(pdqManagerEndpointUri.length() > 0))
+		{
+			try
+			{
+				if (pdqQueryManager == null)
+				{
+					log.info("Instantiating PDQQueryManager connector...");
+					pdqQueryManager = new PDQQueryManager(null,
+							false);
+					log.info("PDQQueryManager connector successfully started");
+				}
+			}
+			catch (Exception e)
+			{
+				log.error("Error encountered instantiating PDQQueryManager connector, "
+						+ e.getMessage());
+				throw new UnexpectedServerException("Error - " + e.getMessage());
+			}
+
+			try
+			{
+				/////////////////////////////////////////////////////////////////////////////////////
+				// Create PatientPerson...
+//				PDQSupplier.src.org.hl7.v3.ObjectFactory objectFactory = new PDQSupplier.src.org.hl7.v3.ObjectFactory();
+//				PRPAMT201310UV02Person patientPersonTest = new PRPAMT201310UV02Person();
+//				PRPAMT201306UV02LivingSubjectName livingSubjectName = new PRPAMT201306UV02LivingSubjectName();
+//				
+//				PDQSupplier.src.org.hl7.v3.EnFamily enFamily = new PDQSupplier.src.org.hl7.v3.EnFamily();
+//				enFamily.getContent().add("Alpha");
+//				PDQSupplier.src.org.hl7.v3.EnGiven enGiven = new PDQSupplier.src.org.hl7.v3.EnGiven();
+//				enGiven.getContent().add("Alan");
+//				
+//				PN patientName = new PN();
+//				patientName.getContent().add(objectFactory.createENFamily(enFamily));
+//				
+//				if (enGiven != null)
+//				{
+//					patientName.getContent().add(objectFactory.createENGiven(enGiven));
+//				}
+//				
+//				patientPersonTest.getName().add(patientName);
+//				for (PN name : patientPersonTest.getName())
+//				{
+//					String family = null;
+//					String given = null;
+//
+//					for (Serializable nameComponent : name.getContent())
+//					{
+//						JAXBElement<?> testNameComponent = (JAXBElement<?>) nameComponent;
+//						if (testNameComponent.getValue().getClass() == PDQSupplier.src.org.hl7.v3.EnFamily.class)
+//						{
+//							family = new String();
+//							ST test = (ST) ((EnFamily)testNameComponent.getValue()).getContent().get(0);
+//							family = family.concat(test.toString());
+//						}
+//						else
+//						if (testNameComponent.getValue().getClass() == PDQSupplier.src.org.hl7.v3.EnGiven.class)
+//						{
+//							int test = 0;
+//						}
+//					}
+//				}
+
+				// ITI-47-Consumer-Query-Patient-PatientId message
+				PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.queryPatientDemographics(null,
+						null,
+						null,
+						null,
+						null,
+						null,
+						null,
+						null,
+						null,
+						null,
+						id.getIdPart().toString(),
+						null,
+						null);
+				
+				// Determine if demographics data is present.
+				if ((pdqQueryResponse != null) &&
+					(pdqQueryResponse.getAcknowledgement() != null) &&
+					(pdqQueryResponse.getAcknowledgement().get(0).getTypeCode().getCode().equalsIgnoreCase("AA")) &&
+					(pdqQueryResponse.getControlActProcess() != null) &&
+					(pdqQueryResponse.getControlActProcess().getSubject() != null) &&
+					(!pdqQueryResponse.getControlActProcess().getSubject().isEmpty()))
+				{
+					result = populatePatientObject(pdqQueryResponse);
+				}
+				else
+				{
+					throw new ResourceNotFoundException(id);
+				}
+			}
+			catch (Exception e)
+			{
+				log.error("Error encountered, "
+						+ e.getMessage());
+				throw e;
+			}
+		}
+			
+		log.info("Exiting FHIR Patient find (by ID) service");
+		return result;
 	}
 
 	@Read(version = true)
