@@ -31,6 +31,7 @@ import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.resource.Condition;
 import ca.uhn.fhir.model.dstu2.resource.Parameters;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
+import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.StringDt;
 import ca.uhn.fhir.rest.annotation.ConditionalUrlParam;
@@ -170,7 +171,9 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 						null,
 						(patient.getBirthDate() != null) ? patient.getBirthDateElement().getValueAsString()
 								: null,
-						patient.getGender(),
+						(patient.getGender().compareToIgnoreCase(AdministrativeGenderEnum.MALE.getCode()) == 0) ? "M"
+								: ((patient.getGender().compareToIgnoreCase(AdministrativeGenderEnum.FEMALE.getCode()) == 0) ? "F"
+										: "UN"),
 						(patient.getIdentifier() != null) ? patient.getIdentifier().get(0).getValue()
 								: null);
 				
