@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.UUID;
@@ -16,7 +17,6 @@ import org.apache.axiom.om.OMElement;
 import org.apache.axiom.soap.SOAPFactory;
 import org.apache.axis2.AxisFault;
 import org.apache.axis2.Constants;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.iexhub.exceptions.UnexpectedServerException;
@@ -41,6 +41,7 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.productivity.java.syslog4j.Syslog;
 import org.productivity.java.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig;
+
 
 /**
  * @author A. Sute
@@ -71,10 +72,10 @@ public class XdsB
 
 	private static final SOAPFactory soapFactory = OMAbstractFactory.getSOAP12Factory();
 
-	private static boolean debugSSL = false;
+	private static boolean debugSsl = false;
 
-	private static String registryEndpointURI = null;
-	private static String repositoryEndpointURI = null;
+	private static String registryEndpointUri = null;
+	private static String repositoryEndpointUri = null;
 	private static boolean testMode = false;
 
 	private static SSLTCPNetSyslogConfig sysLogConfig = null;
@@ -84,7 +85,7 @@ public class XdsB
 		if (registryStub != null)
 		{
 			registryStub._getServiceClient().getOptions().setTo(new org.apache.axis2.addressing.EndpointReference(registryEndpointURI));
-			XdsB.registryEndpointURI = registryEndpointURI;
+			XdsB.registryEndpointUri = registryEndpointURI;
 		}
 	}
 	
@@ -93,7 +94,7 @@ public class XdsB
 		if (repositoryStub != null)
 		{
 			repositoryStub._getServiceClient().getOptions().setTo(new org.apache.axis2.addressing.EndpointReference(repositoryEndpointURI));
-			XdsB.repositoryEndpointURI = repositoryEndpointURI;
+			XdsB.repositoryEndpointUri = repositoryEndpointURI;
 		}
 	}
 
@@ -120,7 +121,7 @@ public class XdsB
 					: props.getProperty("LogOutputPath");
 			XdsB.logXdsBRequestMessages = (props.getProperty("LogXdsBRequestMessages") == null) ? XdsB.logXdsBRequestMessages
 					: Boolean.parseBoolean(props.getProperty("LogXdsBRequestMessages"));
-			XdsB.debugSSL = (props.getProperty("DebugSSL") == null) ? XdsB.debugSSL
+			XdsB.debugSsl = (props.getProperty("DebugSSL") == null) ? XdsB.debugSsl
 					: Boolean.parseBoolean(props.getProperty("DebugSSL"));
 			XdsB.testMode  = (props.getProperty("TestMode") == null) ? XdsB.testMode
 					: Boolean.parseBoolean(props.getProperty("TestMode"));
@@ -144,8 +145,8 @@ public class XdsB
 				repositoryEndpointURI = props.getProperty("XdsBRepositoryEndpointURI");
 			}
 
-			XdsB.registryEndpointURI = registryEndpointURI;
-			XdsB.repositoryEndpointURI = repositoryEndpointURI;
+			XdsB.registryEndpointUri = registryEndpointURI;
+			XdsB.repositoryEndpointUri = repositoryEndpointURI;
 
 			// If Syslog server host is specified, then configure...
 			iti18AuditMsgTemplate = props.getProperty("Iti18AuditMsgTemplate");
@@ -180,7 +181,7 @@ public class XdsB
 				System.setProperty("https.protocols",
 						httpsProtocols);
 				
-				if (debugSSL)
+				if (debugSsl)
 				{
 					System.setProperty("javax.net.debug",
 							"ssl");
@@ -276,7 +277,7 @@ public class XdsB
 					System.setProperty("https.protocols",
 							httpsProtocols);
 					
-					if (debugSSL)
+					if (debugSsl)
 					{
 						System.setProperty("javax.net.debug",
 								"ssl");
@@ -308,7 +309,7 @@ public class XdsB
 					System.setProperty("https.protocols",
 							httpsProtocols);
 					
-					if (debugSSL)
+					if (debugSsl)
 					{
 						System.setProperty("javax.net.debug",
 								"ssl");
@@ -399,14 +400,14 @@ public class XdsB
 				"http://" + InetAddress.getLocalHost().getCanonicalHostName());
 		
 		logMsg = logMsg.replace("$DestinationIpAddress$",
-				XdsB.registryEndpointURI);
+				XdsB.registryEndpointUri);
 		
 		logMsg = logMsg.replace("$DestinationUserId$",
 				"IExHub");
 		
 		// Query text must be Base64 encoded...
 		logMsg = logMsg.replace("$RegistryQueryMtom$",
-				Base64.encodeBase64String(queryText.getBytes()));
+				Base64.getEncoder().encodeToString(queryText.getBytes()));
 		
 		logMsg = logMsg.replace("$PatientId$",
 				patientId);
@@ -455,14 +456,14 @@ public class XdsB
 				"http://" + InetAddress.getLocalHost().getCanonicalHostName());
 		
 		logMsg = logMsg.replace("$DestinationIpAddress$",
-				XdsB.registryEndpointURI);
+				XdsB.registryEndpointUri);
 		
 		logMsg = logMsg.replace("$DestinationUserId$",
 				"IExHub");
 		
 		// Repository ID text must be Base64 encoded...
 		logMsg = logMsg.replace("$RepositoryIdMtom$",
-				Base64.encodeBase64String(repositoryUniqueId.getBytes()));
+				Base64.getEncoder().encodeToString(repositoryUniqueId.getBytes()));
 		
 		logMsg = logMsg.replace("$PatientId$",
 				patientId);

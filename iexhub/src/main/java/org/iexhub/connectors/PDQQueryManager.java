@@ -7,12 +7,12 @@ import java.math.BigInteger;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.Properties;
 import java.util.UUID;
 
 import org.apache.axiom.om.OMElement;
 import org.apache.axis2.AxisFault;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.iexhub.exceptions.UnexpectedServerException;
@@ -39,7 +39,7 @@ public class PDQQueryManager
 	private static String keyStorePwd = "IEXhub";
 	private static String cipherSuites = "TLS_RSA_WITH_AES_128_CBC_SHA";
 	private static String httpsProtocols = "TLSv1";
-	private static boolean debugSSL = false;
+	private static boolean debugSsl = false;
 
 	private static boolean logPdqRequestMessages = false;
 	private static boolean logPdqResponseMessages = false;
@@ -53,19 +53,19 @@ public class PDQQueryManager
 	/** Logger */
     public static Logger log = Logger.getLogger(PDQQueryManager.class);
 
-    private final static ObjectFactory factory = new ObjectFactory();
+    public final static ObjectFactory factory = new ObjectFactory();
 
     private static String receiverApplicationName = "2.16.840.1.113883.3.72.6.5.100.556";
 	private static String receiverTelecomValue = "http://servicelocation/PDQuery";
-	private static String queryIdOID = "1.2.840.114350.1.13.28.1.18.5.999";
-	private static String otherIDsScopingOrganizationOID = "2.16.840.1.113883.3.72.5.9.1";
+	private static String queryIdOid = "1.2.840.114350.1.13.28.1.18.5.999";
+	private static String otherIDsScopingOrganizationOid = "2.16.840.1.113883.3.72.5.9.1";
 	private static String receiverApplicationRepresentedOrganization = "2.16.840.1.113883.3.72.6.1";
-	private static String iExHubDomainOID = "2.16.840.1.113883.3.72.5.9.1";
-	private static String iExHubSenderDeviceID = "1.3.6.1.4.1.21367.13.10.215";
+	private static String iExHubDomainOid = "2.16.840.1.113883.3.72.5.9.1";
+	private static String iExHubSenderDeviceId = "1.3.6.1.4.1.21367.13.10.215";
 
 	private static PDQSupplier_ServiceStub pdqSupplierStub = null;
-	private static String endpointURI = null;
-	
+	private static String endpointUri = null;
+		
 	public PDQQueryManager(String endpointURI) throws AxisFault, Exception
 	{
 		this(endpointURI,
@@ -82,7 +82,7 @@ public class PDQQueryManager
 			
 			PDQQueryManager.logSyslogAuditMsgsLocally = (props.getProperty("LogSyslogAuditMsgsLocally") == null) ? PDQQueryManager.logSyslogAuditMsgsLocally
 					: Boolean.parseBoolean(props.getProperty("LogSyslogAuditMsgsLocally"));
-			PDQQueryManager.iExHubSenderDeviceID = (props.getProperty("IExHubSenderDeviceID") == null) ? PDQQueryManager.iExHubSenderDeviceID
+			PDQQueryManager.iExHubSenderDeviceId = (props.getProperty("IExHubSenderDeviceID") == null) ? PDQQueryManager.iExHubSenderDeviceId
 					: props.getProperty("IExHubSenderDeviceID");
 			PDQQueryManager.logOutputPath = (props.getProperty("LogOutputPath") == null) ? PDQQueryManager.logOutputPath
 					: props.getProperty("LogOutputPath");
@@ -98,19 +98,19 @@ public class PDQQueryManager
 					: props.getProperty("PDQCipherSuites");
 			PDQQueryManager.httpsProtocols = (props.getProperty("PDQHttpsProtocols") == null) ? PDQQueryManager.httpsProtocols
 					: props.getProperty("PDQHttpsProtocols");
-			PDQQueryManager.debugSSL = (props.getProperty("DebugSSL") == null) ? PDQQueryManager.debugSSL
+			PDQQueryManager.debugSsl = (props.getProperty("DebugSSL") == null) ? PDQQueryManager.debugSsl
 					: Boolean.parseBoolean(props.getProperty("DebugSSL"));
 			PDQQueryManager.receiverApplicationName = (props.getProperty("PDQReceiverApplicationName") == null) ? PDQQueryManager.receiverApplicationName
 					: props.getProperty("PDQReceiverApplicationName");
 			PDQQueryManager.receiverTelecomValue = (props.getProperty("PDQReceiverTelecomValue") == null) ? PDQQueryManager.receiverTelecomValue
 					: props.getProperty("PDQReceiverTelecomValue");
-			PDQQueryManager.queryIdOID = (props.getProperty("PDQQueryIdOID") == null) ? PDQQueryManager.queryIdOID
+			PDQQueryManager.queryIdOid = (props.getProperty("PDQQueryIdOID") == null) ? PDQQueryManager.queryIdOid
 					: props.getProperty("PDQQueryIdOID");
-			PDQQueryManager.otherIDsScopingOrganizationOID = (props.getProperty("PDQOtherIDsScopingOrganizationOID") == null) ? PDQQueryManager.otherIDsScopingOrganizationOID
+			PDQQueryManager.otherIDsScopingOrganizationOid = (props.getProperty("PDQOtherIDsScopingOrganizationOID") == null) ? PDQQueryManager.otherIDsScopingOrganizationOid
 					: props.getProperty("PDQOtherIDsScopingOrganizationOID");
 			PDQQueryManager.receiverApplicationRepresentedOrganization = (props.getProperty("PDQReceiverApplicationRepresentedOrganization") == null) ? PDQQueryManager.receiverApplicationRepresentedOrganization
 					: props.getProperty("PDQReceiverApplicationRepresentedOrganization");
-			PDQQueryManager.iExHubDomainOID = (props.getProperty("IExHubDomainOID") == null) ? PDQQueryManager.iExHubDomainOID
+			PDQQueryManager.iExHubDomainOid = (props.getProperty("IExHubDomainOID") == null) ? PDQQueryManager.iExHubDomainOid
 					: props.getProperty("IExHubDomainOID");
 
 			// If endpoint URI's are null, then set to the values in the properties file...
@@ -119,7 +119,7 @@ public class PDQQueryManager
 				endpointURI = props.getProperty("PDQManagerEndpointURI");
 			}
 			
-			PDQQueryManager.endpointURI = endpointURI;
+			PDQQueryManager.endpointUri = endpointURI;
 
 			// If Syslog server host is specified, then configure...
 			iti47AuditMsgTemplate = props.getProperty("Iti47AuditMsgTemplate");
@@ -152,7 +152,7 @@ public class PDQQueryManager
 				System.setProperty("https.protocols",
 						httpsProtocols);
 				
-				if (debugSSL)
+				if (debugSsl)
 				{
 					System.setProperty("javax.net.debug",
 							"ssl");
@@ -190,7 +190,7 @@ public class PDQQueryManager
 				System.setProperty("https.protocols",
 						httpsProtocols);
 				
-				if (debugSSL)
+				if (debugSsl)
 				{
 					System.setProperty("javax.net.debug",
 							"ssl");
@@ -234,16 +234,16 @@ public class PDQQueryManager
 				"http://" + InetAddress.getLocalHost().getCanonicalHostName());
 		
 		logMsg = logMsg.replace("$DestinationIpAddress$",
-				PDQQueryManager.endpointURI );
+				PDQQueryManager.endpointUri );
 		
 		logMsg = logMsg.replace("$DestinationUserId$",
 				"IExHub");
 		
 		logMsg = logMsg.replace("$PatientIdMtom$",
-				Base64.encodeBase64String(patientId.getBytes()));
+				Base64.getEncoder().encodeToString(patientId.getBytes()));
 
 		logMsg = logMsg.replace("$QueryByParameterMtom$",
-				Base64.encodeBase64String(queryText.getBytes()));
+				Base64.getEncoder().encodeToString(queryText.getBytes()));
 
 		logMsg = logMsg.replace("$PatientId$",
 				patientId);
@@ -305,7 +305,8 @@ public class PDQQueryManager
 		
 		// ID...
 		II messageId = new II();
-		messageId.setRoot(UUID.randomUUID().toString());
+		messageId.setRoot(iExHubDomainOid);
+		messageId.setExtension(UUID.randomUUID().toString());
 		qUQIIN000003UV01.setId(messageId);
 		
 		// Creation time...
@@ -360,7 +361,7 @@ public class PDQQueryManager
 		// Create queryContinuation section...
 		QUQIMT000001UV01QueryContinuation queryContinuation = new QUQIMT000001UV01QueryContinuation();
 		II queryId = new II();
-		queryId.setRoot(queryIdOID);
+		queryId.setRoot(queryIdOid);
 		queryId.setExtension(((existingQueryId != null) && (existingQueryId.length() > 0)) ? existingQueryId
 				: "NIST_CONTINUATION");
 		queryContinuation.setQueryId(queryId);
@@ -423,7 +424,8 @@ public class PDQQueryManager
 		
 		// ID...
 		II messageId = new II();
-		messageId.setRoot(UUID.randomUUID().toString());
+		messageId.setRoot(iExHubDomainOid);
+		messageId.setExtension(UUID.randomUUID().toString());
 		qUQIIN000003UV01.setId(messageId);
 		
 		// Creation time...
@@ -478,7 +480,7 @@ public class PDQQueryManager
 		// Create queryContinuation section...
 		QUQIMT000001UV01QueryContinuation queryContinuation = new QUQIMT000001UV01QueryContinuation();
 		II queryId = new II();
-		queryId.setRoot(queryIdOID);
+		queryId.setRoot(queryIdOid);
 		queryId.setExtension(((existingQueryId != null) && (existingQueryId.length() > 0)) ? existingQueryId
 				: "NIST_CONTINUATION");
 		queryContinuation.setQueryId(queryId);
@@ -593,7 +595,8 @@ public class PDQQueryManager
 		
 		// ID...
 		II messageId = new II();
-		messageId.setRoot(UUID.randomUUID().toString());
+		messageId.setRoot(iExHubDomainOid);
+		messageId.setExtension(UUID.randomUUID().toString());
 		pRPA_IN201305UV02.setId(messageId);
 		
 		// Creation time...
@@ -632,7 +635,7 @@ public class PDQQueryManager
 		// Create QueryByParameter...
 		PRPAMT201306UV02QueryByParameter queryByParam = new PRPAMT201306UV02QueryByParameter();
 		II queryId = new II();
-		queryId.setRoot(queryIdOID);
+		queryId.setRoot(queryIdOid);
 		queryId.setExtension((resultSetSize > 0) ? existingQueryId
 				: guid);
 		queryByParam.setQueryId(queryId);
@@ -857,7 +860,7 @@ public class PDQQueryManager
 		senderDevice.setClassCode(EntityClassDevice.DEV);
 		senderDevice.setDeterminerCode("INSTANCE");
 		II senderDeviceId = new II();
-		senderDeviceId.setRoot(iExHubSenderDeviceID);
+		senderDeviceId.setRoot(iExHubSenderDeviceId);
 		senderDevice.getId().add(senderDeviceId);
 		sender.setDevice(senderDevice);
 		qUQIIN000003UV01.setSender(sender);		
@@ -871,7 +874,7 @@ public class PDQQueryManager
 		senderDevice.setClassCode(EntityClassDevice.DEV);
 		senderDevice.setDeterminerCode("INSTANCE");
 		II senderDeviceId = new II();
-		senderDeviceId.setRoot(iExHubSenderDeviceID);
+		senderDeviceId.setRoot(iExHubSenderDeviceId);
 		senderDevice.getId().add(senderDeviceId);
 		MCCIMT000100UV01Agent senderAsAgent = new MCCIMT000100UV01Agent();
 		senderAsAgent.getClassCode().add("AGNT");
@@ -879,7 +882,7 @@ public class PDQQueryManager
 		senderRepresentedOrganization.setDeterminerCode("INSTANCE");
 		senderRepresentedOrganization.setClassCode("ORG");
 		II senderRepresentedOrganizationId = new II();
-		senderRepresentedOrganizationId.setRoot(iExHubDomainOID);
+		senderRepresentedOrganizationId.setRoot(iExHubDomainOid);
 		senderRepresentedOrganization.getId().add(senderRepresentedOrganizationId);
 		senderAsAgent.setRepresentedOrganization(factory.createMCCIMT000100UV01AgentRepresentedOrganization(senderRepresentedOrganization));
 		senderDevice.setAsAgent(factory.createMCCIMT000100UV01DeviceAsAgent(senderAsAgent));
@@ -953,7 +956,7 @@ public class PDQQueryManager
 			String otherIDsScopingOrganizationString)
 	{
 		II scopingOrganizationId = new II();
-		scopingOrganizationId.setRoot((otherIDsScopingOrganizationString == null) ? otherIDsScopingOrganizationOID
+		scopingOrganizationId.setRoot((otherIDsScopingOrganizationString == null) ? otherIDsScopingOrganizationOid
 				: otherIDsScopingOrganizationString);
 		otherIDsScopingOrganization.getValue().add(scopingOrganizationId);
 		ST otherIDsScopingOrganizationSemanticsText = new ST();
@@ -1038,7 +1041,8 @@ public class PDQQueryManager
 			String patientIdDomain)
 	{
 		II livingSubjectIdII = new II();
-		livingSubjectIdII.setRoot(patientIdDomain);
+		livingSubjectIdII.setRoot((patientIdDomain == null) ? iExHubDomainOid
+				: patientIdDomain);
 		livingSubjectIdII.setExtension(patientId);
 		livingSubjectId.getValue().add(livingSubjectIdII);
 		ST livingSubjectIdSemanticsText = new ST();

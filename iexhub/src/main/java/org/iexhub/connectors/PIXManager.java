@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -13,7 +14,6 @@ import javax.xml.bind.JAXBElement;
 
 import org.apache.axiom.om.OMElement;
 import org.apache.axis2.AxisFault;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.iexhub.exceptions.*;
@@ -29,6 +29,7 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.productivity.java.syslog4j.Syslog;
 import org.productivity.java.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig;
 
+
 /**
  * @author A. Sute
  *
@@ -40,7 +41,7 @@ public class PIXManager
 	private static String keyStorePwd = "IEXhub";
 	private static String cipherSuites = "TLS_RSA_WITH_AES_128_CBC_SHA";
 	private static String httpsProtocols = "TLSv1";
-	private static boolean debugSSL = false;
+	private static boolean debugSsl = false;
 	
 	private static boolean logPixRequestMessages = false;
 	private static boolean logPixResponseMessages = false;
@@ -55,17 +56,17 @@ public class PIXManager
     /** Logger */
     public static Logger log = Logger.getLogger(PIXManager.class);
 
-	private static String endpointURI = null;
+	private static String endpointUri = null;
     private static String receiverApplicationName = "2.16.840.1.113883.3.72.6.5.100.556";
     private static String receiverApplicationRepresentedOrganization = "2.16.840.1.113883.3.72.6.1";
 	private static String providerOrganizationName = "HIE Portal";
 	private static String providerOrganizationContactTelecom = "555-555-5555";
-	private static String providerOrganizationOID = "1.2.840.114350.1.13.99998.8734";
-	private static String queryIdOID = "1.2.840.114350.1.13.28.1.18.5.999";
-	private static String dataSourceOID = "2.16.840.1.113883.3.72.5.9.3";
+	private static String providerOrganizationOid = "1.2.840.114350.1.13.99998.8734";
+	private static String queryIdOid = "1.2.840.114350.1.13.28.1.18.5.999";
+	private static String dataSourceOid = "2.16.840.1.113883.3.72.5.9.3";
 	private static String iExHubDomainOid = "2.16.840.1.113883.3.72.5.9.1";
 	private static String iExHubAssigningAuthority = "ISO";
-	private static String iExHubSenderDeviceID = "1.3.6.1.4.1.21367.13.10.215";
+	private static String iExHubSenderDeviceId = "1.3.6.1.4.1.21367.13.10.215";
 	private static String patientIdAssigningAuthority = "1.3.6.1.4.1.21367.13.20.200";
 
 	private static PIXManager_ServiceStub pixManagerStub = null;
@@ -87,7 +88,7 @@ public class PIXManager
 			
 			PIXManager.logSyslogAuditMsgsLocally = (props.getProperty("LogSyslogAuditMsgsLocally") == null) ? PIXManager.logSyslogAuditMsgsLocally
 					: Boolean.parseBoolean(props.getProperty("LogSyslogAuditMsgsLocally"));
-			PIXManager.iExHubSenderDeviceID = (props.getProperty("IExHubSenderDeviceID") == null) ? PIXManager.iExHubSenderDeviceID
+			PIXManager.iExHubSenderDeviceId = (props.getProperty("IExHubSenderDeviceID") == null) ? PIXManager.iExHubSenderDeviceId
 					: props.getProperty("IExHubSenderDeviceID");
 			PIXManager.patientIdAssigningAuthority = (props.getProperty("PatientIDAssigningAuthority") == null) ? PIXManager.patientIdAssigningAuthority
 					: props.getProperty("PatientIDAssigningAuthority");
@@ -105,7 +106,7 @@ public class PIXManager
 					: props.getProperty("PIXCipherSuites");
 			PIXManager.httpsProtocols = (props.getProperty("PIXHttpsProtocols") == null) ? PIXManager.httpsProtocols
 					: props.getProperty("PIXHttpsProtocols");
-			PIXManager.debugSSL = (props.getProperty("DebugSSL") == null) ? PIXManager.debugSSL
+			PIXManager.debugSsl = (props.getProperty("DebugSSL") == null) ? PIXManager.debugSsl
 					: Boolean.parseBoolean(props.getProperty("DebugSSL"));
 			PIXManager.receiverApplicationName = (props.getProperty("PIXReceiverApplicationName") == null) ? PIXManager.receiverApplicationName
 					: props.getProperty("PIXReceiverApplicationName");
@@ -115,11 +116,11 @@ public class PIXManager
 					: props.getProperty("PIXProviderOrganizationName");
 			PIXManager.providerOrganizationContactTelecom = (props.getProperty("PIXProviderOrganizationContactTelecom") == null) ? PIXManager.providerOrganizationContactTelecom
 					: props.getProperty("PIXProviderOrganizationContactTelecom");
-			PIXManager.providerOrganizationOID = (props.getProperty("PIXProviderOrganizationOID") == null) ? PIXManager.providerOrganizationOID
+			PIXManager.providerOrganizationOid = (props.getProperty("PIXProviderOrganizationOID") == null) ? PIXManager.providerOrganizationOid
 					: props.getProperty("PIXProviderOrganizationOID");
-			PIXManager.queryIdOID = (props.getProperty("PIXQueryIdOID") == null) ? PIXManager.queryIdOID
+			PIXManager.queryIdOid = (props.getProperty("PIXQueryIdOID") == null) ? PIXManager.queryIdOid
 					: props.getProperty("PIXQueryIdOID");
-			PIXManager.dataSourceOID = (props.getProperty("PIXDataSourceOID") == null) ? PIXManager.dataSourceOID
+			PIXManager.dataSourceOid = (props.getProperty("PIXDataSourceOID") == null) ? PIXManager.dataSourceOid
 					: props.getProperty("PIXDataSourceOID");
 			PIXManager.iExHubDomainOid = (props.getProperty("IExHubDomainOID") == null) ? PIXManager.iExHubDomainOid
 					: props.getProperty("IExHubDomainOID");
@@ -132,7 +133,7 @@ public class PIXManager
 				endpointURI = props.getProperty("PIXManagerEndpointURI");
 			}
 			
-			PIXManager.endpointURI = endpointURI;
+			PIXManager.endpointUri = endpointURI;
 
 			// If Syslog server host is specified, then configure...
 			iti44AuditMsgTemplate = props.getProperty("Iti44AuditMsgTemplate");
@@ -167,7 +168,7 @@ public class PIXManager
 				System.setProperty("https.protocols",
 						httpsProtocols);
 				
-				if (debugSSL)
+				if (debugSsl)
 				{
 					System.setProperty("javax.net.debug",
 							"ssl");
@@ -219,7 +220,7 @@ public class PIXManager
 				System.setProperty("https.protocols",
 						httpsProtocols);
 				
-				if (debugSSL)
+				if (debugSsl)
 				{
 					System.setProperty("javax.net.debug",
 							"ssl");
@@ -262,13 +263,13 @@ public class PIXManager
 				"http://" + InetAddress.getLocalHost().getCanonicalHostName());
 		
 		logMsg = logMsg.replace("$DestinationIpAddress$",
-				PIXManager.endpointURI);
+				PIXManager.endpointUri);
 		
 		logMsg = logMsg.replace("$DestinationUserId$",
 				"IExHub");
 		
 		logMsg = logMsg.replace("$PatientIdMtom$",
-				Base64.encodeBase64String(patientId.getBytes()));
+				Base64.getEncoder().encodeToString(patientId.getBytes()));
 		
 		logMsg = logMsg.replace("$PatientId$",
 				patientId);
@@ -315,17 +316,17 @@ public class PIXManager
 				"http://" + InetAddress.getLocalHost().getCanonicalHostName());
 		
 		logMsg = logMsg.replace("$DestinationIpAddress$",
-				PIXManager.endpointURI);
+				PIXManager.endpointUri);
 		
 		logMsg = logMsg.replace("$DestinationUserId$",
 				"IExHub");
 		
 		// Query text must be Base64 encoded...
 		logMsg = logMsg.replace("$PixQueryMtom$",
-				Base64.encodeBase64String(queryText.getBytes()));
+				Base64.getEncoder().encodeToString(queryText.getBytes()));
 		
 		logMsg = logMsg.replace("$PatientIdMtom$",
-				Base64.encodeBase64String(patientId.getBytes()));
+				Base64.getEncoder().encodeToString(patientId.getBytes()));
 		
 		logMsg = logMsg.replace("$PatientId$",
 				patientId);
@@ -363,7 +364,8 @@ public class PIXManager
 		
 		// ID...
 		II messageId = new II();
-		messageId.setRoot(UUID.randomUUID().toString());
+		messageId.setRoot(iExHubDomainOid);
+		messageId.setExtension(UUID.randomUUID().toString());
 		pRPA_IN201309UV02.setId(messageId);
 		
 		// Creation time...
@@ -424,7 +426,7 @@ public class PIXManager
 		senderDevice.setClassCode(EntityClassDevice.DEV);
 		senderDevice.setDeterminerCode("INSTANCE");
 		II senderDeviceId = new II();
-		senderDeviceId.setRoot(PIXManager.iExHubSenderDeviceID);
+		senderDeviceId.setRoot(PIXManager.iExHubSenderDeviceId);
 		senderDevice.getId().add(senderDeviceId);
 		sender.setDevice(senderDevice);
 		pRPA_IN201309UV02.setSender(sender);
@@ -443,7 +445,7 @@ public class PIXManager
 		// Create QueryByParameter...
 		PRPAMT201307UV02QueryByParameter queryByParam = new PRPAMT201307UV02QueryByParameter();
 		II queryId = new II();
-		queryId.setRoot(queryIdOID);
+		queryId.setRoot(queryIdOid);
 		queryId.setExtension(UUID.randomUUID().toString());
 		queryByParam.setQueryId(queryId);
 		CS responsePriorityCode = new CS();
@@ -461,7 +463,7 @@ public class PIXManager
 			// Create DataSource...
 			PRPAMT201307UV02DataSource dataSource = new PRPAMT201307UV02DataSource();
 			II dataSourceId = new II();
-			dataSourceId.setRoot(dataSourceOID);
+			dataSourceId.setRoot(dataSourceOid);
 			dataSource.getValue().add(dataSourceId);
 			ST dataSourceSemanticsText = new ST();
 			dataSourceSemanticsText.getContent().add("DataSource.id");
@@ -547,7 +549,8 @@ public class PIXManager
 		
 		// ID...
 		II messageId = new II();
-		messageId.setRoot(UUID.randomUUID().toString());
+		messageId.setRoot(iExHubDomainOid);
+		messageId.setExtension(UUID.randomUUID().toString());
 		pRPA_IN201301UV02.setId(messageId);
 		
 		// Creation time...
@@ -618,7 +621,7 @@ public class PIXManager
 		senderDevice.setClassCode(EntityClassDevice.DEV);
 		senderDevice.setDeterminerCode("INSTANCE");
 		II senderDeviceId = new II();
-		senderDeviceId.setRoot(PIXManager.iExHubSenderDeviceID);
+		senderDeviceId.setRoot(PIXManager.iExHubSenderDeviceId);
 		senderDevice.getId().add(senderDeviceId);
 		MCCIMT000100UV01Agent senderAsAgent = new MCCIMT000100UV01Agent();
 		senderAsAgent.getClassCode().add("AGNT");
@@ -754,7 +757,7 @@ public class PIXManager
 		providerOrganization.setDeterminerCode("INSTANCE");
 		providerOrganization.setClassCode("ORG");
 		II providerId = new II();
-		providerId.setRoot(providerOrganizationOID);
+		providerId.setRoot(providerOrganizationOid);
 		providerOrganization.getId().add(providerId);
 		ON providerName = new ON();
 		providerName.getContent().add(providerOrganizationName);

@@ -56,6 +56,7 @@ import XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rim._3.ValueListTy
 import XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rs._3.RegistryResponseType;
 import XdsBDocumentRepository.org.iexhub.services.client.DocumentRepository_ServiceStub;
 
+
 /**
  * @author A. Sute
  *
@@ -87,9 +88,9 @@ public class XdsBRepositoryManager
 
 	private static DocumentRepository_ServiceStub repositoryStub = null;
 
-	private static boolean debugSSL = false;
+	private static boolean debugSsl = false;
 
-	private static String repositoryEndpointURI = null;
+	private static String repositoryEndpointUri = null;
 	private static String iExHubDomainOid = "1.3.6.1.4.1.21367.13.60.232";
 
 	private static String documentAuthorClassificationScheme = "urn:uuid:93606bcf-9494-43ec-9b4e-a7748d1a838d";
@@ -133,7 +134,7 @@ public class XdsBRepositoryManager
 		if (repositoryStub != null)
 		{
 			repositoryStub._getServiceClient().getOptions().setTo(new org.apache.axis2.addressing.EndpointReference(repositoryEndpointURI));
-			XdsBRepositoryManager.repositoryEndpointURI = repositoryEndpointURI;
+			XdsBRepositoryManager.repositoryEndpointUri = repositoryEndpointURI;
 		}
 	}
 
@@ -160,7 +161,7 @@ public class XdsBRepositoryManager
 					: props.getProperty("LogOutputPath");
 			XdsBRepositoryManager.logXdsBRequestMessages = (props.getProperty("LogXdsBRequestMessages") == null) ? XdsBRepositoryManager.logXdsBRequestMessages
 					: Boolean.parseBoolean(props.getProperty("LogXdsBRequestMessages"));
-			XdsBRepositoryManager.debugSSL = (props.getProperty("DebugSSL") == null) ? XdsBRepositoryManager.debugSSL
+			XdsBRepositoryManager.debugSsl = (props.getProperty("DebugSSL") == null) ? XdsBRepositoryManager.debugSsl
 					: Boolean.parseBoolean(props.getProperty("DebugSSL"));
 			XdsBRepositoryManager.testMode = (props.getProperty("TestMode") == null) ? XdsBRepositoryManager.testMode
 					: Boolean.parseBoolean(props.getProperty("TestMode"));
@@ -251,7 +252,7 @@ public class XdsBRepositoryManager
 				repositoryEndpointURI = props.getProperty("XdsBRepositoryEndpointURI");
 			}
 			
-			XdsBRepositoryManager.repositoryEndpointURI = repositoryEndpointURI;
+			XdsBRepositoryManager.repositoryEndpointUri = repositoryEndpointURI;
 
 			// If Syslog server host is specified, then configure...
 			iti41AuditMsgTemplate = props.getProperty("Iti41AuditMsgTemplate");
@@ -284,7 +285,7 @@ public class XdsBRepositoryManager
 				System.setProperty("https.protocols",
 						httpsProtocols);
 				
-				if (debugSSL)
+				if (debugSsl)
 				{
 					System.setProperty("javax.net.debug",
 							"ssl");
@@ -340,7 +341,7 @@ public class XdsBRepositoryManager
 					System.setProperty("https.protocols",
 							httpsProtocols);
 					
-					if (debugSSL)
+					if (debugSsl)
 					{
 						System.setProperty("javax.net.debug",
 								"ssl");
@@ -387,7 +388,7 @@ public class XdsBRepositoryManager
 				"http://" + InetAddress.getLocalHost().getCanonicalHostName());
 		
 		logMsg = logMsg.replace("$DestinationIpAddress$",
-				XdsBRepositoryManager.repositoryEndpointURI);
+				XdsBRepositoryManager.repositoryEndpointUri);
 		
 		logMsg = logMsg.replace("$DestinationUserId$",
 				"IExHub");

@@ -4,6 +4,7 @@ import static org.junit.Assert.fail;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -20,21 +21,37 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
+import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.iexhub.connectors.PDQQueryManager;
 import org.iexhub.connectors.PIXManager;
 import org.iexhub.exceptions.PatientIdParamMissingException;
 import org.iexhub.exceptions.UnexpectedServerException;
 
+import PDQSupplier.org.hl7.v3.EnFamily;
+import PDQSupplier.org.hl7.v3.ObjectFactory;
+import PDQSupplier.org.hl7.v3.PN;
+import PDQSupplier.org.hl7.v3.PRPAIN201306UV02;
+import PDQSupplier.org.hl7.v3.PRPAIN201306UV02MFMIMT700711UV01Subject1;
+import PDQSupplier.org.hl7.v3.PRPAMT201306UV02LivingSubjectName;
+import PDQSupplier.org.hl7.v3.PRPAMT201310UV02Person;
+import PDQSupplier.org.hl7.v3.ST;
 import PIXManager.org.hl7.v3.MCCIIN000002UV01;
+import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.jaxrs.server.AbstractJaxRsResourceProvider;
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
 import ca.uhn.fhir.model.dstu2.resource.Condition;
 import ca.uhn.fhir.model.dstu2.resource.Parameters;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.StringDt;
+import ca.uhn.fhir.parser.IParser;
 import ca.uhn.fhir.rest.annotation.ConditionalUrlParam;
 import ca.uhn.fhir.rest.annotation.Create;
 import ca.uhn.fhir.rest.annotation.Delete;
@@ -72,14 +89,16 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
     public static Logger log = Logger.getLogger(JaxRsPatientRestProvider.class);
 
 	private static PIXManager pixManager = null;
+	private static PDQQueryManager pdqQueryManager = null;
 
 	private static Properties props = null;
 	private static boolean testMode = false;
 	private static String propertiesFile = "/temp/IExHub.properties";
-	private static String repositoryUniqueId = "1.19.6.24.109.42.1.5";
 	private static String cdaToJsonTransformXslt = null;
 	private static String iExHubDomainOid = "2.16.840.1.113883.3.72.5.9.1";
 	private static String iExHubAssigningAuthority = "ISO";
+	private static String pdqManagerEndpointUri = null;
+	private static String pixManagerEndpointUri = null;
 	
 	/**
 	 * The HAPI paging provider for this server
@@ -105,41 +124,48 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 		super(JaxRsPatientRestProvider.class);
 	}
 
+	private void loadProperties()
+	{
+		try
+		{
+			props = new Properties();
+			props.load(new FileInputStream(propertiesFile));
+			JaxRsPatientRestProvider.testMode = (props.getProperty("TestMode") == null) ? JaxRsPatientRestProvider.testMode
+					: Boolean.parseBoolean(props.getProperty("TestMode"));
+			JaxRsPatientRestProvider.cdaToJsonTransformXslt = (props.getProperty("CDAToJSONTransformXSLT") == null) ? JaxRsPatientRestProvider.cdaToJsonTransformXslt
+					: props.getProperty("CDAToJSONTransformXSLT");
+			JaxRsPatientRestProvider.iExHubDomainOid = (props.getProperty("IExHubDomainOID") == null) ? JaxRsPatientRestProvider.iExHubDomainOid
+					: props.getProperty("IExHubDomainOID");
+			JaxRsPatientRestProvider.iExHubAssigningAuthority = (props.getProperty("IExHubAssigningAuthority") == null) ? JaxRsPatientRestProvider.iExHubAssigningAuthority
+					: props.getProperty("IExHubAssigningAuthority");
+			JaxRsPatientRestProvider.pixManagerEndpointUri = (props.getProperty("PIXManagerEndpointURI") == null) ? JaxRsPatientRestProvider.pixManagerEndpointUri
+					: props.getProperty("PIXManagerEndpointURI");
+			JaxRsPatientRestProvider.pdqManagerEndpointUri = (props.getProperty("PDQManagerEndpointURI") == null) ? JaxRsPatientRestProvider.pdqManagerEndpointUri
+					: props.getProperty("PDQManagerEndpointURI");
+		}
+		catch (IOException e)
+		{
+			log.error("Error encountered loading properties file, "
+					+ propertiesFile
+					+ ", "
+					+ e.getMessage());
+			throw new UnexpectedServerException("Error encountered loading properties file, "
+					+ propertiesFile
+					+ ", "
+					+ e.getMessage());
+		}
+	}
+	
 	@Create
 	public MethodOutcome create(@ResourceParam final Patient patient, @ConditionalUrlParam String theConditional) throws Exception
 	{
-		log.info("Entered FHIR create service");
+		log.info("Entered FHIR Patient create service");
 		
 		if (props == null)
 		{
-			try
-			{
-				props = new Properties();
-				props.load(new FileInputStream(propertiesFile));
-				JaxRsPatientRestProvider.testMode = (props.getProperty("TestMode") == null) ? JaxRsPatientRestProvider.testMode
-						: Boolean.parseBoolean(props.getProperty("TestMode"));
-				JaxRsPatientRestProvider.cdaToJsonTransformXslt = (props.getProperty("CDAToJSONTransformXSLT") == null) ? JaxRsPatientRestProvider.cdaToJsonTransformXslt
-						: props.getProperty("CDAToJSONTransformXSLT");
-				JaxRsPatientRestProvider.iExHubDomainOid = (props.getProperty("IExHubDomainOID") == null) ? JaxRsPatientRestProvider.iExHubDomainOid
-						: props.getProperty("IExHubDomainOID");
-				JaxRsPatientRestProvider.iExHubAssigningAuthority = (props.getProperty("IExHubAssigningAuthority") == null) ? JaxRsPatientRestProvider.iExHubAssigningAuthority
-						: props.getProperty("IExHubAssigningAuthority");
-			}
-			catch (IOException e)
-			{
-				log.error("Error encountered loading properties file, "
-						+ propertiesFile
-						+ ", "
-						+ e.getMessage());
-				throw new UnexpectedServerException("Error encountered loading properties file, "
-						+ propertiesFile
-						+ ", "
-						+ e.getMessage());
-			}
+			loadProperties();
 		}
 
-		// Extract patient name and make ITI-44 transaction...
-		String retVal = "";
 		MethodOutcome result = new MethodOutcome().setCreated(false);
 		result.setResource(patient);
 		
@@ -162,31 +188,24 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 
 		try
 		{
-			// ITI-44-Source-Feed message, performing FHIR gender translation...
-			try
-			{					
-				MCCIIN000002UV01 pixRegistrationResponse = pixManager.registerPatient((patient.getName() != null) ? patient.getName().get(0).getGivenAsSingleString()
-								: null,
-						(patient.getName() != null) ? patient.getName().get(0).getFamilyAsSingleString()
-								: null,
-						null,
-						(patient.getBirthDate() != null) ? patient.getBirthDateElement().getValueAsString()
-								: null,
-						(patient.getGender().compareToIgnoreCase(AdministrativeGenderEnum.MALE.getCode()) == 0) ? "M"
-								: ((patient.getGender().compareToIgnoreCase(AdministrativeGenderEnum.FEMALE.getCode()) == 0) ? "F"
-										: "UN"),
-						(patient.getIdentifier() != null) ? patient.getIdentifier().get(0).getValue()
-								: null);
-				
-				if ((pixRegistrationResponse.getAcceptAckCode().getCode() == "CA") ||
-					(pixRegistrationResponse.getAcceptAckCode().getCode() == "AA"))
-				{
-					result = new MethodOutcome().setCreated(true);
-				}
-			}
-			catch (Exception e)
+			// ITI-44-Source-Feed message
+			MCCIIN000002UV01 pixRegistrationResponse = pixManager.registerPatient((patient.getName() != null) ? patient.getName().get(0).getGivenAsSingleString()
+							: null,
+					(patient.getName() != null) ? patient.getName().get(0).getFamilyAsSingleString()
+							: null,
+					null,
+					(patient.getBirthDate() != null) ? patient.getBirthDateElement().getValueAsString()
+							: null,
+					(patient.getGender().compareToIgnoreCase(AdministrativeGenderEnum.MALE.getCode()) == 0) ? "M"
+							: ((patient.getGender().compareToIgnoreCase(AdministrativeGenderEnum.FEMALE.getCode()) == 0) ? "F"
+									: "UN"),
+					(patient.getIdentifier() != null) ? patient.getIdentifier().get(0).getValue()
+							: null);
+			
+			if ((pixRegistrationResponse.getAcceptAckCode().getCode() == "CA") ||
+				(pixRegistrationResponse.getAcceptAckCode().getCode() == "AA"))
 			{
-				fail("Error - " + e.getMessage());
+				result = new MethodOutcome().setCreated(true);
 			}
 		}
 		catch (Exception e)
@@ -196,11 +215,12 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 			throw new UnexpectedServerException("Error - " + e.getMessage());
 		}
 
+		log.info("Exiting FHIR Patient create service");
 		return result;
 	}
 
 	@Delete
-	public MethodOutcome delete(@IdParam final IdDt theId) {
+	public MethodOutcome delete(@IdParam final IdDt theId) throws Exception {
 		final Patient deletedPatient = find(theId);
 		patients.remove(deletedPatient.getId().getIdPart());
 		final MethodOutcome result = new MethodOutcome().setCreated(true);
@@ -208,131 +228,168 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 		return result;
 	}
 
-	@Read
-	public Patient find(@IdParam final IdDt id)
+	private Patient populatePatientObject(PRPAIN201306UV02 queryResponse)
 	{
-//		log.info("Entered FHIR Patient find (by ID) service");
-//		if (id == null)
-//		{
-//			throw new PatientIdParamMissingException("Patient ID parameter missing");
-//		}
-//		
-//		if (props == null)
-//		{
-//			if (props == null)
-//			{
-//				loadProperties();
-//			}
-//		}
-//
-//		Patient result = null;
-//		
-//		// First try PDQ ITI-47 retrieval if PDQ endpoint is specified...
-//		if ((pdqManagerEndpointUri != null) &&
-//			(pdqManagerEndpointUri.length() > 0))
-//		{
-//			try
-//			{
-//				if (pdqQueryManager == null)
-//				{
-//					log.info("Instantiating PDQQueryManager connector...");
-//					pdqQueryManager = new PDQQueryManager(null,
-//							false);
-//					log.info("PDQQueryManager connector successfully started");
-//				}
-//			}
-//			catch (Exception e)
-//			{
-//				log.error("Error encountered instantiating PDQQueryManager connector, "
-//						+ e.getMessage());
-//				throw new UnexpectedServerException("Error - " + e.getMessage());
-//			}
-//
-//			try
-//			{
-//				/////////////////////////////////////////////////////////////////////////////////////
-//				// Create PatientPerson...
-////				PDQSupplier.src.org.hl7.v3.ObjectFactory objectFactory = new PDQSupplier.src.org.hl7.v3.ObjectFactory();
-////				PRPAMT201310UV02Person patientPersonTest = new PRPAMT201310UV02Person();
-////				PRPAMT201306UV02LivingSubjectName livingSubjectName = new PRPAMT201306UV02LivingSubjectName();
-////				
-////				PDQSupplier.src.org.hl7.v3.EnFamily enFamily = new PDQSupplier.src.org.hl7.v3.EnFamily();
-////				enFamily.getContent().add("Alpha");
-////				PDQSupplier.src.org.hl7.v3.EnGiven enGiven = new PDQSupplier.src.org.hl7.v3.EnGiven();
-////				enGiven.getContent().add("Alan");
-////				
-////				PN patientName = new PN();
-////				patientName.getContent().add(objectFactory.createENFamily(enFamily));
-////				
-////				if (enGiven != null)
-////				{
-////					patientName.getContent().add(objectFactory.createENGiven(enGiven));
-////				}
-////				
-////				patientPersonTest.getName().add(patientName);
-////				for (PN name : patientPersonTest.getName())
-////				{
-////					String family = null;
-////					String given = null;
-////
-////					for (Serializable nameComponent : name.getContent())
-////					{
-////						JAXBElement<?> testNameComponent = (JAXBElement<?>) nameComponent;
-////						if (testNameComponent.getValue().getClass() == PDQSupplier.src.org.hl7.v3.EnFamily.class)
-////						{
-////							family = new String();
-////							ST test = (ST) ((EnFamily)testNameComponent.getValue()).getContent().get(0);
-////							family = family.concat(test.toString());
-////						}
-////						else
-////						if (testNameComponent.getValue().getClass() == PDQSupplier.src.org.hl7.v3.EnGiven.class)
-////						{
-////							int test = 0;
-////						}
-////					}
-////				}
-//
-//				// ITI-47-Consumer-Query-Patient-PatientId message
-//				PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.queryPatientDemographics(null,
-//						null,
-//						null,
-//						null,
-//						null,
-//						null,
-//						null,
-//						null,
-//						null,
-//						null,
-//						id.getIdPart().toString(),
-//						null,
-//						null);
+		Patient retVal = new Patient();
+		boolean nameFound = false;
+		boolean addressFound = false;
+		boolean providerFound = false;
+		boolean genderFound = false;
+		boolean birthDateFound = false;
+		
+		// Iterate through each Subject and extract demographic info
+		for (PRPAIN201306UV02MFMIMT700711UV01Subject1 subject : queryResponse.getControlActProcess().getSubject())
+		{
+			if ((subject.getRegistrationEvent() != null) &&
+				(subject.getRegistrationEvent().getSubject1() != null) &&
+				(subject.getRegistrationEvent().getSubject1().getPatient() != null) &&
+				(subject.getRegistrationEvent().getSubject1().getPatient().getPatientPerson() != null))
+			{
+				PRPAMT201310UV02Person patientPerson = subject.getRegistrationEvent().getSubject1().getPatient().getPatientPerson().getValue(); 
+
+				// Extract name if present
+				if (patientPerson.getName() != null)
+				{
+					HumanNameDt fhirName = new HumanNameDt();
+//					fhirName.addFamily()
+					
+//					String test = null;
+//					FhirContext ctxt = new FhirContext();
+//					IParser jsonParser = ctxt.newJsonParser();
+//					Patient resource = jsonParser.parseResource(Patient.class,
+//							test);
+//					fhirName.addFamily(patientPerson.getName().get(0).getContent().get(0).
+				}
+			}
+		}
+		return retVal;
+	}
+	
+	@Read
+	public Patient find(@IdParam final IdDt id) throws Exception
+	{
+		log.info("Entered FHIR Patient find (by ID) service");
+		
+		if (id == null)
+		{
+			throw new PatientIdParamMissingException("Patient ID parameter missing");
+		}
+		
+		if (props == null)
+		{
+			if (props == null)
+			{
+				loadProperties();
+			}
+		}
+
+		Patient result = null;
+		
+		// First try PDQ ITI-47 retrieval if PDQ endpoint is specified...
+		if ((pdqManagerEndpointUri != null) &&
+			(pdqManagerEndpointUri.length() > 0))
+		{
+			try
+			{
+				if (pdqQueryManager == null)
+				{
+					log.info("Instantiating PDQQueryManager connector...");
+					pdqQueryManager = new PDQQueryManager(null,
+							false);
+					log.info("PDQQueryManager connector successfully started");
+				}
+			}
+			catch (Exception e)
+			{
+				log.error("Error encountered instantiating PDQQueryManager connector, "
+						+ e.getMessage());
+				throw new UnexpectedServerException("Error - " + e.getMessage());
+			}
+
+			try
+			{
+				/////////////////////////////////////////////////////////////////////////////////////
+				// Create PatientPerson...
+//				ObjectFactory objectFactory = new PDQSupplier.org.hl7.v3.ObjectFactory();
+//				PRPAMT201310UV02Person patientPersonTest = new PRPAMT201310UV02Person();
+//				PRPAMT201306UV02LivingSubjectName livingSubjectName = new PRPAMT201306UV02LivingSubjectName();
 //				
-//				// Determine if demographics data is present.
-//				if ((pdqQueryResponse != null) &&
-//					(pdqQueryResponse.getAcknowledgement() != null) &&
-//					(pdqQueryResponse.getAcknowledgement().get(0).getTypeCode().getCode().equalsIgnoreCase("AA")) &&
-//					(pdqQueryResponse.getControlActProcess() != null) &&
-//					(pdqQueryResponse.getControlActProcess().getSubject() != null) &&
-//					(!pdqQueryResponse.getControlActProcess().getSubject().isEmpty()))
+//				PDQSupplier.org.hl7.v3.EnFamily enFamily = new PDQSupplier.org.hl7.v3.EnFamily();
+//				enFamily.getContent().add("Alpha");
+//				PDQSupplier.org.hl7.v3.EnGiven enGiven = new PDQSupplier.org.hl7.v3.EnGiven();
+//				enGiven.getContent().add("Alan");
+//				
+//				PN patientName = new PN();
+//				patientName.getContent().add(objectFactory.createENFamily(enFamily));
+//				
+//				if (enGiven != null)
 //				{
-//					result = populatePatientObject(pdqQueryResponse);
+//					patientName.getContent().add(objectFactory.createENGiven(enGiven));
 //				}
-//				else
+//				
+//				patientPersonTest.getName().add(patientName);
+//				for (PN name : patientPersonTest.getName())
 //				{
-//					throw new ResourceNotFoundException(id);
+//					String family = null;
+//					String given = null;
+//
+//					for (Serializable nameComponent : name.getContent())
+//					{
+//						JAXBElement<?> testNameComponent = (JAXBElement<?>) nameComponent;
+//						if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.EnFamily.class)
+//						{
+//							family = new String();
+//							ST test = (ST) ((EnFamily)testNameComponent.getValue()).getContent().get(0);
+//							family = family.concat(test.toString());
+//						}
+//						else
+//						if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.EnGiven.class)
+//						{
+//							int test = 0;
+//						}
+//					}
 //				}
-//			}
-//			catch (Exception e)
-//			{
-//				log.error("Error encountered, "
-//						+ e.getMessage());
-//				throw e;
-//			}
-//		}
-//			
-//		log.info("Exiting FHIR Patient find (by ID) service");
-//		return result;
-		return null;
+
+				// ITI-47-Consumer-Query-Patient-PatientId message
+				PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.queryPatientDemographics(null,
+						null,
+						null,
+						null,
+						null,
+						null,
+						null,
+						null,
+						null,
+						null,
+						id.getIdPart().toString(),
+						null,
+						null);
+				
+				// Determine if demographics data is present.
+				if ((pdqQueryResponse != null) &&
+					(pdqQueryResponse.getAcknowledgement() != null) &&
+					(pdqQueryResponse.getAcknowledgement().get(0).getTypeCode().getCode().equalsIgnoreCase("AA")) &&
+					(pdqQueryResponse.getControlActProcess() != null) &&
+					(pdqQueryResponse.getControlActProcess().getSubject() != null) &&
+					(!pdqQueryResponse.getControlActProcess().getSubject().isEmpty()))
+				{
+					result = populatePatientObject(pdqQueryResponse);
+				}
+				else
+				{
+					throw new ResourceNotFoundException(id);
+				}
+			}
+			catch (Exception e)
+			{
+				log.error("Error encountered, "
+						+ e.getMessage());
+				throw e;
+			}
+		}
+			
+		log.info("Exiting FHIR Patient find (by ID) service");
+		return result;
 	}
 
 	@Read(version = true)
@@ -349,7 +406,7 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 	}
 
 	@Operation(name = "firstVersion", idempotent = true, returnParameters = { @OperationParam(name = "return", type = StringDt.class) })
-	public Parameters firstVersion(@IdParam final IdDt theId, @OperationParam(name = "dummy") StringDt dummyInput) {
+	public Parameters firstVersion(@IdParam final IdDt theId, @OperationParam(name = "dummy") StringDt dummyInput) throws Exception {
 		Parameters parameters = new Parameters();
 		Patient patient = find(new IdDt(theId.getResourceType(), theId.getIdPart(), "0"));
 		parameters.addParameter().setName("return").setResource(patient).setValue(new StringDt((1) + "" + "inputVariable [ " + dummyInput.getValue() + "]"));
