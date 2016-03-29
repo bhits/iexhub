@@ -32,7 +32,11 @@ import org.iexhub.connectors.PIXManager;
 import org.iexhub.exceptions.PatientIdParamMissingException;
 import org.iexhub.exceptions.UnexpectedServerException;
 
+import PDQSupplier.org.hl7.v3.AD;
+import PDQSupplier.org.hl7.v3.COCTMT150003UV03ContactParty;
+import PDQSupplier.org.hl7.v3.COCTMT150003UV03Organization;
 import PDQSupplier.org.hl7.v3.EnFamily;
+import PDQSupplier.org.hl7.v3.ON;
 import PDQSupplier.org.hl7.v3.ObjectFactory;
 import PDQSupplier.org.hl7.v3.PN;
 import PDQSupplier.org.hl7.v3.PRPAIN201306UV02;
@@ -44,11 +48,16 @@ import PIXManager.org.hl7.v3.MCCIIN000002UV01;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.jaxrs.server.AbstractJaxRsResourceProvider;
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.dstu2.composite.AddressDt;
 import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
+import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Condition;
+import ca.uhn.fhir.model.dstu2.resource.Organization;
 import ca.uhn.fhir.model.dstu2.resource.Parameters;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
+import ca.uhn.fhir.model.dstu2.resource.Practitioner;
 import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
+import ca.uhn.fhir.model.primitive.DateDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.StringDt;
 import ca.uhn.fhir.parser.IParser;
@@ -196,9 +205,11 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 					null,
 					(patient.getBirthDate() != null) ? patient.getBirthDateElement().getValueAsString()
 							: null,
-					(patient.getGender().compareToIgnoreCase(AdministrativeGenderEnum.MALE.getCode()) == 0) ? "M"
-							: ((patient.getGender().compareToIgnoreCase(AdministrativeGenderEnum.FEMALE.getCode()) == 0) ? "F"
-									: "UN"),
+					(patient.getGender() == null) ? ""
+							: (patient.getGender().compareToIgnoreCase(AdministrativeGenderEnum.MALE.getCode()) == 0) ? "M"
+									: ((patient.getGender().compareToIgnoreCase(AdministrativeGenderEnum.FEMALE.getCode()) == 0) ? "F"
+											: ((patient.getGender().compareToIgnoreCase(AdministrativeGenderEnum.OTHER.getCode()) == 0) ? "UN"
+													: "")),
 					(patient.getIdentifier() != null) ? patient.getIdentifier().get(0).getValue()
 							: null);
 			
@@ -228,6 +239,50 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 		return result;
 	}
 
+	private AddressDt populateFhirAddress(PRPAMT201310UV02Person patientPerson)
+	{
+		AddressDt fhirAddr = new AddressDt();
+
+		for (AD addr : patientPerson.getAddr())
+		{
+			for (Serializable nameComponent : addr.getContent())
+			{
+				JAXBElement<?> testNameComponent = (JAXBElement<?>) nameComponent;
+				if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.AdxpCity.class)
+				{
+					ST test = (ST) ((PDQSupplier.org.hl7.v3.AdxpCity)testNameComponent.getValue()).getContent().get(0);
+					fhirAddr.setCity(test.toString());
+				}
+				else
+				if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.AdxpState.class)
+				{
+					ST test = (ST) ((PDQSupplier.org.hl7.v3.AdxpState)testNameComponent.getValue()).getContent().get(0);
+					fhirAddr.setState(test.toString());
+				}
+				else
+				if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.AdxpPostalCode.class)
+				{
+					ST test = (ST) ((PDQSupplier.org.hl7.v3.AdxpPostalCode)testNameComponent.getValue()).getContent().get(0);
+					fhirAddr.setPostalCode(test.toString());
+				}
+				else
+				if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.AdxpCountry.class)
+				{
+					ST test = (ST) ((PDQSupplier.org.hl7.v3.AdxpCountry)testNameComponent.getValue()).getContent().get(0);
+					fhirAddr.setCountry(test.toString());
+				}
+				else
+				if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.AdxpStreetAddressLine.class)
+				{
+					ST test = (ST) ((PDQSupplier.org.hl7.v3.AdxpStreetAddressLine)testNameComponent.getValue()).getContent().get(0);
+					fhirAddr.addLine(test.toString());
+				}
+			}
+		}
+		
+		return fhirAddr;
+	}
+	
 	private Patient populatePatientObject(PRPAIN201306UV02 queryResponse)
 	{
 		Patient retVal = new Patient();
@@ -237,6 +292,47 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 		boolean genderFound = false;
 		boolean birthDateFound = false;
 		
+		/////////////////////////////////////////////////////////////////////////////////////
+		// Create PatientPerson...
+		ObjectFactory objectFactory = new PDQSupplier.org.hl7.v3.ObjectFactory();
+		PRPAMT201310UV02Person patientPersonTest = new PRPAMT201310UV02Person();
+		
+		PDQSupplier.org.hl7.v3.EnFamily enFamily = new PDQSupplier.org.hl7.v3.EnFamily();
+		enFamily.getContent().add("Alpha");
+		PDQSupplier.org.hl7.v3.EnGiven enGiven = new PDQSupplier.org.hl7.v3.EnGiven();
+		enGiven.getContent().add("Alan");
+		
+		PN patientName = new PN();
+		patientName.getContent().add(objectFactory.createENFamily(enFamily));
+		
+		if (enGiven != null)
+		{
+			patientName.getContent().add(objectFactory.createENGiven(enGiven));
+		}
+		
+		patientPersonTest.getName().add(patientName);
+//		for (PN name : patientPersonTest.getName())
+//		{
+//			String family = null;
+//			String given = null;
+//
+//			for (Serializable nameComponent : name.getContent())
+//			{
+//				JAXBElement<?> testNameComponent = (JAXBElement<?>) nameComponent;
+//				if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.EnFamily.class)
+//				{
+//					family = new String();
+//					ST test = (ST) ((EnFamily)testNameComponent.getValue()).getContent().get(0);
+//					family = family.concat(test.toString());
+//				}
+//				else
+//				if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.EnGiven.class)
+//				{
+//					int test = 0;
+//				}
+//			}
+//		}
+
 		// Iterate through each Subject and extract demographic info
 		for (PRPAIN201306UV02MFMIMT700711UV01Subject1 subject : queryResponse.getControlActProcess().getSubject())
 		{
@@ -247,19 +343,104 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 			{
 				PRPAMT201310UV02Person patientPerson = subject.getRegistrationEvent().getSubject1().getPatient().getPatientPerson().getValue(); 
 
-				// Extract name if present
+				// Extract name if present...
 				if (patientPerson.getName() != null)
 				{
-					HumanNameDt fhirName = new HumanNameDt();
-//					fhirName.addFamily()
-					
-//					String test = null;
-//					FhirContext ctxt = new FhirContext();
-//					IParser jsonParser = ctxt.newJsonParser();
-//					Patient resource = jsonParser.parseResource(Patient.class,
-//							test);
-//					fhirName.addFamily(patientPerson.getName().get(0).getContent().get(0).
+					for (PN name : patientPerson.getName())
+					{
+						HumanNameDt fhirName = new HumanNameDt();
+
+						for (Serializable nameComponent : name.getContent())
+						{
+							JAXBElement<?> testNameComponent = (JAXBElement<?>) nameComponent;
+							if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.EnFamily.class)
+							{
+								ST test = (ST) ((PDQSupplier.org.hl7.v3.EnFamily)testNameComponent.getValue()).getContent().get(0);
+								fhirName.addFamily(test.toString());
+							}
+							else
+							if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.EnGiven.class)
+							{
+								ST test = (ST) ((PDQSupplier.org.hl7.v3.EnGiven)testNameComponent.getValue()).getContent().get(0);
+								fhirName.addGiven(test.toString());
+							}
+							
+							nameFound = true;
+						}
+						
+						retVal.addName(fhirName);
+					}
 				}
+				
+				// Extract gender if present...
+				if (patientPerson.getAdministrativeGenderCode() != null)
+				{
+					retVal.setGender((patientPerson.getAdministrativeGenderCode().getCode().compareToIgnoreCase("M") == 0) ? AdministrativeGenderEnum.MALE
+							: (patientPerson.getAdministrativeGenderCode().getCode().compareToIgnoreCase("F") == 0) ? AdministrativeGenderEnum.FEMALE
+									: AdministrativeGenderEnum.UNKNOWN);
+					genderFound = true;
+				}
+				
+				// Extract birth date if present...
+				if (patientPerson.getBirthTime() != null)
+				{
+					DateDt birthDate = new DateDt();
+					birthDate.setValueAsString(patientPerson.getBirthTime().getValue());
+					retVal.setBirthDate(birthDate);
+					birthDateFound = true;
+				}
+				
+				// Extract address if present...
+				if (patientPerson.getAddr() != null)
+				{
+					retVal.addAddress(populateFhirAddress(patientPerson));
+				}
+			}
+			
+			if ((subject.getRegistrationEvent() != null) &&
+				(subject.getRegistrationEvent().getSubject1() != null) &&
+				(subject.getRegistrationEvent().getSubject1().getPatient() != null) &&
+				(subject.getRegistrationEvent().getSubject1().getPatient().getProviderOrganization() != null))
+			{
+				COCTMT150003UV03Organization provider = subject.getRegistrationEvent().getSubject1().getPatient().getProviderOrganization().getValue(); 
+				String providerName = null;
+				String providerTelecom = null;
+				
+				// Create Organization FHIR resource...
+//				Organization organization = new Organization();
+//				organization.setId(arg0);
+//				organization.setIdentifier(theValue)
+
+				// Extract name if present...
+				if (provider.getName() != null)
+				{
+					for (ON name : provider.getName())
+					{
+						for (Serializable nameComponent : name.getContent())
+						{
+							JAXBElement<?> testNameComponent = (JAXBElement<?>) nameComponent;
+							if (testNameComponent.getValue().getClass() == String.class)
+							{
+								providerName = testNameComponent.getValue().toString();
+								break;
+							}
+						}
+					}
+				}
+					
+//				if (provider.getContactParty() != null)
+//				{
+//					for (COCTMT150003UV03ContactParty contact : provider.getContactParty())
+//					{
+//						if (contact.getAddr() != null)
+//						{
+//							retVal.addAddress(populateFhirAddress(patientPerson));
+//						}
+//					}
+//				}
+
+					retVal.addCareProvider().setDisplay(providerName);
+			
 			}
 		}
 		return retVal;
@@ -308,48 +489,11 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 
 			try
 			{
-				/////////////////////////////////////////////////////////////////////////////////////
-				// Create PatientPerson...
-//				ObjectFactory objectFactory = new PDQSupplier.org.hl7.v3.ObjectFactory();
-//				PRPAMT201310UV02Person patientPersonTest = new PRPAMT201310UV02Person();
-//				PRPAMT201306UV02LivingSubjectName livingSubjectName = new PRPAMT201306UV02LivingSubjectName();
-//				
-//				PDQSupplier.org.hl7.v3.EnFamily enFamily = new PDQSupplier.org.hl7.v3.EnFamily();
-//				enFamily.getContent().add("Alpha");
-//				PDQSupplier.org.hl7.v3.EnGiven enGiven = new PDQSupplier.org.hl7.v3.EnGiven();
-//				enGiven.getContent().add("Alan");
-//				
-//				PN patientName = new PN();
-//				patientName.getContent().add(objectFactory.createENFamily(enFamily));
-//				
-//				if (enGiven != null)
-//				{
-//					patientName.getContent().add(objectFactory.createENGiven(enGiven));
-//				}
-//				
-//				patientPersonTest.getName().add(patientName);
-//				for (PN name : patientPersonTest.getName())
-//				{
-//					String family = null;
-//					String given = null;
-//
-//					for (Serializable nameComponent : name.getContent())
-//					{
-//						JAXBElement<?> testNameComponent = (JAXBElement<?>) nameComponent;
-//						if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.EnFamily.class)
-//						{
-//							family = new String();
-//							ST test = (ST) ((EnFamily)testNameComponent.getValue()).getContent().get(0);
-//							family = family.concat(test.toString());
-//						}
-//						else
-//						if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.EnGiven.class)
-//						{
-//							int test = 0;
-//						}
-//					}
-//				}
-
+				// TESTING ONLY ///////////////////////////////////////////////////////////////
+				populatePatientObject(null);
+				///////////////////////////////////////////////////////////////////////////////
+				
+				
 				// ITI-47-Consumer-Query-Patient-PatientId message
 				PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.queryPatientDemographics(null,
 						null,
