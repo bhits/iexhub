@@ -711,6 +711,13 @@ public class PIXManager
 			adminGenderCode.setCodeSystem("2.16.840.1.113883.5.1");
 			patientPerson.setAdministrativeGenderCode(adminGenderCode);
 		}
+		else
+		{
+			CE adminGenderCode = new CE();
+			adminGenderCode.getNullFlavor().add("UNK");
+			adminGenderCode.setCodeSystem("2.16.840.1.113883.5.1");
+			patientPerson.setAdministrativeGenderCode(adminGenderCode);
+		}
 
 		patientPerson.getClassCode().add("PSN");
 		patientPerson.setDeterminerCode("INSTANCE");
