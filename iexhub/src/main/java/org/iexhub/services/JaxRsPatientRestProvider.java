@@ -1,7 +1,5 @@
 package org.iexhub.services;
 
-import static org.junit.Assert.fail;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
@@ -21,52 +19,41 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Unmarshaller;
-
 import org.apache.log4j.Logger;
-import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.iexhub.connectors.PDQQueryManager;
 import org.iexhub.connectors.PIXManager;
 import org.iexhub.exceptions.PatientIdParamMissingException;
 import org.iexhub.exceptions.UnexpectedServerException;
 
 import PDQSupplier.org.hl7.v3.AD;
-import PDQSupplier.org.hl7.v3.COCTMT150003UV03ContactParty;
 import PDQSupplier.org.hl7.v3.COCTMT150003UV03Organization;
-import PDQSupplier.org.hl7.v3.EnFamily;
 import PDQSupplier.org.hl7.v3.ON;
 import PDQSupplier.org.hl7.v3.ObjectFactory;
 import PDQSupplier.org.hl7.v3.PN;
 import PDQSupplier.org.hl7.v3.PRPAIN201306UV02;
 import PDQSupplier.org.hl7.v3.PRPAIN201306UV02MFMIMT700711UV01Subject1;
-import PDQSupplier.org.hl7.v3.PRPAMT201306UV02LivingSubjectName;
 import PDQSupplier.org.hl7.v3.PRPAMT201310UV02Person;
 import PDQSupplier.org.hl7.v3.ST;
 import PIXManager.org.hl7.v3.MCCIIN000002UV01;
-import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.jaxrs.server.AbstractJaxRsResourceProvider;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.AddressDt;
 import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
-import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Condition;
-import ca.uhn.fhir.model.dstu2.resource.Organization;
 import ca.uhn.fhir.model.dstu2.resource.Parameters;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
-import ca.uhn.fhir.model.dstu2.resource.Practitioner;
 import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
 import ca.uhn.fhir.model.primitive.DateDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.StringDt;
-import ca.uhn.fhir.parser.IParser;
 import ca.uhn.fhir.rest.annotation.ConditionalUrlParam;
 import ca.uhn.fhir.rest.annotation.Create;
 import ca.uhn.fhir.rest.annotation.Delete;
 import ca.uhn.fhir.rest.annotation.IdParam;
 import ca.uhn.fhir.rest.annotation.Operation;
 import ca.uhn.fhir.rest.annotation.OperationParam;
+import ca.uhn.fhir.rest.annotation.OptionalParam;
 import ca.uhn.fhir.rest.annotation.Read;
 import ca.uhn.fhir.rest.annotation.RequiredParam;
 import ca.uhn.fhir.rest.annotation.ResourceParam;
@@ -616,19 +603,18 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 	}
 
 	@Search
-	public List<Patient> search(@RequiredParam(name = Patient.SP_NAME) final StringParam name) {
+	public List<Patient> search(@RequiredParam(name = Patient.SP_FAMILY) final StringParam familyName,
+			@RequiredParam(name = Patient.SP_GIVEN) final StringParam givenName,
+			@OptionalParam(name = Patient.SP_GENDER) final StringParam gender,
+			@OptionalParam(name = Patient.SP_BIRTHDATE) final StringParam birthDate,
+			@OptionalParam(name = Patient.SP_ADDRESS) final StringParam addressLine,
+			@OptionalParam(name = Patient.SP_ADDRESS_CITY) final StringParam addressCity,
+			@OptionalParam(name = Patient.SP_ADDRESS_STATE) final StringParam addressState,
+			@OptionalParam(name = Patient.SP_ADDRESS_POSTALCODE) final StringParam addressPostalCode)
+	{
+		// TBD
+		
 		final List<Patient> result = new LinkedList<Patient>();
-		for (final List<Patient> patientIterator : patients.values()) {
-			Patient single = null;
-			for (Patient patient : patientIterator) {
-				if (name == null || patient.getNameFirstRep().getFamilyFirstRep().getValueNotNull().equals(name.getValueNotNull())) {
-					single = patient;
-				}
-			}
-			if (single != null) {
-				result.add(single);
-			}
-		}
 		return result;
 	}
 

@@ -36,10 +36,10 @@ public class PDQQueryManagerTest
 					null,
 					null,
 					null,
-					"1905 Romrog Way",
-					"ROCK SPRINGS",
-					"WY",
-					"82901",
+					"2183 Radio Park Drive",
+					"ATLANTA",
+					"GA",
+					"30303",
 					null,
 					null,
 					null);
@@ -62,12 +62,12 @@ public class PDQQueryManagerTest
 			pdqQueryManager = new PDQQueryManager(null,
 					true);
 			PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.queryPatientDemographics(null,
-					"MOORE",
+					"HINOJOXS",
 					null,
 					null,
 					null,
 					null,
-					"10 PINETREE",
+					"2183 Radio Park Drive",
 					null,
 					null,
 					null,
@@ -121,11 +121,11 @@ public class PDQQueryManagerTest
 		try
 		{
 			pdqQueryManager = new PDQQueryManager(/*PDQManagerEndpointURI*/ null);
-			PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.queryPatientDemographics("CHIP",
-					"MOORE",
+			PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.queryPatientDemographics(null,
+					"HINOJOXS",
 					null,
 					null,
-					null,
+					"F",
 					null,
 					null,
 					null,
@@ -213,9 +213,9 @@ public class PDQQueryManagerTest
 		{
 			pdqQueryManager = new PDQQueryManager(PDQManagerEndpointURI);
 			PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.queryPatientDemographics(null,
-					"GREGORYX",
+					"HINOJOXS",
 					null,
-					"10/15/1929",
+					"12/14/1967",
 					null,
 					null,
 					null,
