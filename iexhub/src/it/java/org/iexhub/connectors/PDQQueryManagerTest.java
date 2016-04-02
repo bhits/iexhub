@@ -42,6 +42,7 @@ public class PDQQueryManagerTest
 					"30303",
 					null,
 					null,
+					null,
 					null);
 		}
 		catch (Exception e)
@@ -68,6 +69,7 @@ public class PDQQueryManagerTest
 					null,
 					null,
 					"2183 Radio Park Drive",
+					null,
 					null,
 					null,
 					null,
@@ -103,7 +105,8 @@ public class PDQQueryManagerTest
 					"82901",
 					null,
 					null,
-					"2.16.840.1.113883.3.72.5.9.1");
+					"2.16.840.1.113883.3.72.5.9.1",
+					null);
 		}
 		catch (Exception e)
 		{
@@ -133,6 +136,7 @@ public class PDQQueryManagerTest
 					null,
 					null,
 					null,
+					null,
 					null);
 		}
 		catch (Exception e)
@@ -154,6 +158,7 @@ public class PDQQueryManagerTest
 					true);
 			PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.queryPatientDemographics("SALLY",
 					"SHARE",
+					null,
 					null,
 					null,
 					null,
@@ -194,7 +199,8 @@ public class PDQQueryManagerTest
 					null,
 					null,
 					null,
-					"2.16.840.1.113883.3.72.5.9.1");
+					"2.16.840.1.113883.3.72.5.9.1",
+					null);
 		}
 		catch (Exception e)
 		{
@@ -216,6 +222,7 @@ public class PDQQueryManagerTest
 					"HINOJOXS",
 					null,
 					"12/14/1967",
+					null,
 					null,
 					null,
 					null,
@@ -255,6 +262,7 @@ public class PDQQueryManagerTest
 					null,
 					null,
 					null,
+					null,
 					null);
 		}
 		catch (Exception e)
@@ -285,7 +293,8 @@ public class PDQQueryManagerTest
 					null,
 					null,
 					"2.16.840.1.113883.3.72.5.9.1",
-					"2.16.840.1.113883.3.72.5.9.1");
+					"2.16.840.1.113883.3.72.5.9.1",
+					null);
 		}
 		catch (Exception e)
 		{
@@ -315,6 +324,7 @@ public class PDQQueryManagerTest
 					null,
 					"HJ-361",
 					"2.16.840.1.113883.3.72.5.9.1",
+					null,
 					null);
 		}
 		catch (Exception e)
@@ -345,7 +355,8 @@ public class PDQQueryManagerTest
 					null,
 					"HJ-361",
 					"2.16.840.1.113883.3.72.5.9.1",
-					"2.16.840.1.113883.3.72.5.9.1");
+					"2.16.840.1.113883.3.72.5.9.1",
+					null);
 		}
 		catch (Exception e)
 		{
@@ -376,7 +387,8 @@ public class PDQQueryManagerTest
 					null,
 					"IHERED-993^^^&1.3.6.1.4.1.21367.13.20.1000&ISO",
 					null,
-					"1.3.6.1.4.1.21367.13.20.1000");
+					"1.3.6.1.4.1.21367.13.20.1000",
+					null);
 		}
 		catch (Exception e)
 		{
@@ -399,6 +411,7 @@ public class PDQQueryManagerTest
 			String queryId = UUID.randomUUID().toString();
 			PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.queryPatientDemographics(null,
 					"WILXLIS",
+					null,
 					null,
 					null,
 					null,
@@ -445,6 +458,7 @@ public class PDQQueryManagerTest
 					null,
 					null,
 					"M",
+					null,
 					null,
 					null,
 					null,
