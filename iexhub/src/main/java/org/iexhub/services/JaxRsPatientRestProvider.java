@@ -3,6 +3,8 @@ package org.iexhub.services;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -35,12 +37,15 @@ import PDQSupplier.org.hl7.v3.ObjectFactory;
 import PDQSupplier.org.hl7.v3.PN;
 import PDQSupplier.org.hl7.v3.PRPAIN201306UV02;
 import PDQSupplier.org.hl7.v3.PRPAIN201306UV02MFMIMT700711UV01Subject1;
+import PDQSupplier.org.hl7.v3.PRPAMT201310UV02OtherIDs;
 import PDQSupplier.org.hl7.v3.PRPAMT201310UV02Person;
 import PDQSupplier.org.hl7.v3.ST;
+import PDQSupplier.org.hl7.v3.TEL;
 import PIXManager.org.hl7.v3.MCCIIN000002UV01;
 import ca.uhn.fhir.jaxrs.server.AbstractJaxRsResourceProvider;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.AddressDt;
+import ca.uhn.fhir.model.dstu2.composite.ContactPointDt;
 import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
 import ca.uhn.fhir.model.dstu2.resource.Condition;
 import ca.uhn.fhir.model.dstu2.resource.Parameters;
@@ -241,32 +246,27 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 				JAXBElement<?> testNameComponent = (JAXBElement<?>) nameComponent;
 				if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.AdxpCity.class)
 				{
-					ST test = (ST) ((PDQSupplier.org.hl7.v3.AdxpCity)testNameComponent.getValue()).getContent().get(0);
-					fhirAddr.setCity(test.toString());
+					fhirAddr.setCity(((PDQSupplier.org.hl7.v3.AdxpCity)testNameComponent.getValue()).getContent().get(0).toString());
 				}
 				else
 				if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.AdxpState.class)
 				{
-					ST test = (ST) ((PDQSupplier.org.hl7.v3.AdxpState)testNameComponent.getValue()).getContent().get(0);
-					fhirAddr.setState(test.toString());
+					fhirAddr.setState(((PDQSupplier.org.hl7.v3.AdxpState)testNameComponent.getValue()).getContent().get(0).toString());
 				}
 				else
 				if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.AdxpPostalCode.class)
 				{
-					ST test = (ST) ((PDQSupplier.org.hl7.v3.AdxpPostalCode)testNameComponent.getValue()).getContent().get(0);
-					fhirAddr.setPostalCode(test.toString());
+					fhirAddr.setPostalCode(((PDQSupplier.org.hl7.v3.AdxpPostalCode)testNameComponent.getValue()).getContent().get(0).toString());
 				}
 				else
 				if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.AdxpCountry.class)
 				{
-					ST test = (ST) ((PDQSupplier.org.hl7.v3.AdxpCountry)testNameComponent.getValue()).getContent().get(0);
-					fhirAddr.setCountry(test.toString());
+					fhirAddr.setCountry(((PDQSupplier.org.hl7.v3.AdxpCountry)testNameComponent.getValue()).getContent().get(0).toString());
 				}
 				else
 				if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.AdxpStreetAddressLine.class)
 				{
-					ST test = (ST) ((PDQSupplier.org.hl7.v3.AdxpStreetAddressLine)testNameComponent.getValue()).getContent().get(0);
-					fhirAddr.addLine(test.toString());
+					fhirAddr.addLine(((PDQSupplier.org.hl7.v3.AdxpStreetAddressLine)testNameComponent.getValue()).getContent().get(0).toString());
 				}
 			}
 		}
@@ -274,14 +274,9 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 		return fhirAddr;
 	}
 	
-	private ArrayList<Patient> populatePatientObject(PRPAIN201306UV02 queryResponse)
+	private ArrayList<Patient> populatePatientObject(PRPAIN201306UV02 queryResponse) throws ParseException
 	{
-		ArrayList<Patient> retVal = new ArrayList<Patient>();
-		boolean nameFound = false;
-		boolean addressFound = false;
-		boolean providerFound = false;
-		boolean genderFound = false;
-		boolean birthDateFound = false;
+		ArrayList<Patient> result = new ArrayList<Patient>();
 		
 		/////////////////////////////////////////////////////////////////////////////////////
 		// Create PatientPerson...
@@ -324,18 +319,30 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 //			}
 //		}
 
-		Patient patient = new Patient();
-		
 		// Iterate through each Subject and extract demographic info
 		for (PRPAIN201306UV02MFMIMT700711UV01Subject1 subject : queryResponse.getControlActProcess().getSubject())
 		{
+			Patient patient = new Patient();
+			
 			if ((subject.getRegistrationEvent() != null) &&
 				(subject.getRegistrationEvent().getSubject1() != null) &&
 				(subject.getRegistrationEvent().getSubject1().getPatient() != null) &&
 				(subject.getRegistrationEvent().getSubject1().getPatient().getPatientPerson() != null))
 			{
+				// FHIR resource ID is in format "<root OID>^<extension>"
+				patient.setId(new StringBuilder()
+						.append(subject.getRegistrationEvent().getSubject1().getPatient().getId().get(0).getRoot())
+						.append("^")
+						.append(subject.getRegistrationEvent().getSubject1().getPatient().getId().get(0).getExtension()).toString());
+				
 				PRPAMT201310UV02Person patientPerson = subject.getRegistrationEvent().getSubject1().getPatient().getPatientPerson().getValue(); 
 
+				// Extract other identifiers...
+				for (PRPAMT201310UV02OtherIDs otherId : patientPerson.getAsOtherIDs())
+				{
+					patient.addIdentifier().setSystem(otherId.getId().get(0).getRoot()).setValue(otherId.getId().get(0).getExtension());
+				}
+				
 				// Extract name if present...
 				if (patientPerson.getName() != null)
 				{
@@ -348,17 +355,13 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 							JAXBElement<?> testNameComponent = (JAXBElement<?>) nameComponent;
 							if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.EnFamily.class)
 							{
-//								ST test = (ST) ((PDQSupplier.org.hl7.v3.EnFamily)testNameComponent.getValue()).getContent().get(0);
 								fhirName.addFamily(((PDQSupplier.org.hl7.v3.EnFamily)testNameComponent.getValue()).getContent().get(0).toString());
 							}
 							else
 							if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.EnGiven.class)
 							{
-								ST test = (ST) ((PDQSupplier.org.hl7.v3.EnGiven)testNameComponent.getValue()).getContent().get(0);
-								fhirName.addGiven(test.toString());
+								fhirName.addGiven(((PDQSupplier.org.hl7.v3.EnGiven)testNameComponent.getValue()).getContent().get(0).toString());
 							}
-							
-							nameFound = true;
 						}
 						
 						patient.addName(fhirName);
@@ -371,16 +374,31 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 					patient.setGender((patientPerson.getAdministrativeGenderCode().getCode().compareToIgnoreCase("M") == 0) ? AdministrativeGenderEnum.MALE
 							: (patientPerson.getAdministrativeGenderCode().getCode().compareToIgnoreCase("F") == 0) ? AdministrativeGenderEnum.FEMALE
 									: AdministrativeGenderEnum.UNKNOWN);
-					genderFound = true;
+				}
+				
+				// Extract telecom if present...
+				if (patientPerson.getTelecom() != null)
+				{
+					for (TEL telecom : patientPerson.getTelecom())
+					{
+						patient.addTelecom().setValue(telecom.getValue());
+					}
 				}
 				
 				// Extract birth date if present...
 				if (patientPerson.getBirthTime() != null)
 				{
+					Calendar birthDateCalendar = Calendar.getInstance();
+					SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
+					birthDateCalendar.setTime(formatter.parse(patientPerson.getBirthTime().getValue()));
 					DateDt birthDate = new DateDt();
-					birthDate.setValueAsString(patientPerson.getBirthTime().getValue());
+					birthDate.setValueAsString(new StringBuilder()
+							.append(birthDateCalendar.get(Calendar.YEAR))
+							.append("-")
+							.append(String.format("%02d", (birthDateCalendar.get(Calendar.MONTH) + 1)))
+							.append("-")
+							.append(String.format("%02d", birthDateCalendar.get(Calendar.DAY_OF_MONTH))).toString());
 					patient.setBirthDate(birthDate);
-					birthDateFound = true;
 				}
 				
 				// Extract address if present...
@@ -390,55 +408,55 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 				}
 			}
 			
-			if ((subject.getRegistrationEvent() != null) &&
-				(subject.getRegistrationEvent().getSubject1() != null) &&
-				(subject.getRegistrationEvent().getSubject1().getPatient() != null) &&
-				(subject.getRegistrationEvent().getSubject1().getPatient().getProviderOrganization() != null))
-			{
-				COCTMT150003UV03Organization provider = subject.getRegistrationEvent().getSubject1().getPatient().getProviderOrganization().getValue(); 
-				String providerName = null;
-				String providerTelecom = null;
-				
-				// Create Organization FHIR resource...
-//				Organization organization = new Organization();
-//				organization.setId(arg0);
-//				organization.setIdentifier(theValue)
-
-				// Extract name if present...
-				if (provider.getName() != null)
-				{
-					for (ON name : provider.getName())
-					{
-						for (Serializable nameComponent : name.getContent())
-						{
-							JAXBElement<?> testNameComponent = (JAXBElement<?>) nameComponent;
-							if (testNameComponent.getValue().getClass() == String.class)
-							{
-								providerName = testNameComponent.getValue().toString();
-								break;
-							}
-						}
-					}
-				}
-					
-//				if (provider.getContactParty() != null)
+//			if ((subject.getRegistrationEvent() != null) &&
+//				(subject.getRegistrationEvent().getSubject1() != null) &&
+//				(subject.getRegistrationEvent().getSubject1().getPatient() != null) &&
+//				(subject.getRegistrationEvent().getSubject1().getPatient().getProviderOrganization() != null))
+//			{
+//				COCTMT150003UV03Organization provider = subject.getRegistrationEvent().getSubject1().getPatient().getProviderOrganization().getValue(); 
+//				String providerName = null;
+//				String providerTelecom = null;
+//				
+//				// Create Organization FHIR resource...
+////				Organization organization = new Organization();
+////				organization.setId(arg0);
+////				organization.setIdentifier(theValue)
+//
+//				// Extract name if present...
+//				if (provider.getName() != null)
 //				{
-//					for (COCTMT150003UV03ContactParty contact : provider.getContactParty())
+//					for (ON name : provider.getName())
 //					{
-//						if (contact.getAddr() != null)
+//						for (Serializable nameComponent : name.getContent())
 //						{
-//							retVal.addAddress(populateFhirAddress(patientPerson));
+//							JAXBElement<?> testNameComponent = (JAXBElement<?>) nameComponent;
+//							if (testNameComponent.getValue().getClass() == String.class)
+//							{
+//								providerName = testNameComponent.getValue().toString();
+//								break;
+//							}
 //						}
 //					}
 //				}
-
-					patient.addCareProvider().setDisplay(providerName);
+//					
+////				if (provider.getContactParty() != null)
+////				{
+////					for (COCTMT150003UV03ContactParty contact : provider.getContactParty())
+////					{
+////						if (contact.getAddr() != null)
+////						{
+////							retVal.addAddress(populateFhirAddress(patientPerson));
+////						}
+////					}
+////				}
+//
+//					patient.addCareProvider().setDisplay(providerName);
+//			}
 			
-			}
+			result.add(patient);
 		}
 		
-		retVal.add(patient);
-		return retVal;
+		return result;
 	}
 	
 	@Read
@@ -713,7 +731,15 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 				}
 				else
 				{
-//					throw new ResourceNotFoundException(id);
+					throw new ResourceNotFoundException(String.format("Patient not found, familyName=%s, givenName=%s, gender=%s, birthDate=%s, addressLine=%s, addressCity=%s, addressState=%s, addressPostalCode=%s",
+									(familyName == null) ? "" : familyName,
+									(givenName == null) ? "" : givenName,
+									(gender == null) ? "" : gender,
+									(birthDate == null) ? "" : birthDate,
+									(addressLine == null) ? "" : addressLine,
+									(addressCity == null) ? "" : addressCity,
+									(addressState == null) ? "" : addressState,
+									(addressPostalCode == null) ? "" : addressPostalCode));
 				}
 			}
 			catch (Exception e)
