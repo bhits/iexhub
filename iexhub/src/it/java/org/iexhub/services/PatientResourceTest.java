@@ -186,10 +186,10 @@ public class PatientResourceTest
 		try
 		{
 			Patient pat = new Patient();
-			pat.addName().addFamily("ALPHA").addGiven("BOBBIE");
-			pat.addIdentifier().setSystem(PatientResourceTest.iExHubDomainOid).setValue(UUID.randomUUID().toString());
-//			pat.addIdentifier().setValue("PIX");
-			pat.setGender(AdministrativeGenderEnum.FEMALE);
+			pat.addName().addFamily("ALPHA").addGiven("ALAN");
+//			pat.addIdentifier().setSystem(PatientResourceTest.iExHubDomainOid).setValue(UUID.randomUUID().toString());
+			pat.addIdentifier().setValue("PIX");
+			pat.setGender(AdministrativeGenderEnum.MALE);
 			Calendar dobCalendar = Calendar.getInstance();
 			dobCalendar.set(1978,
 					11,

@@ -204,8 +204,8 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 					(patient.getIdentifier() != null) ? patient.getIdentifier().get(0).getValue()
 							: null);
 			
-			if ((pixRegistrationResponse.getAcceptAckCode().getCode() == "CA") ||
-				(pixRegistrationResponse.getAcceptAckCode().getCode() == "AA"))
+			if ((pixRegistrationResponse.getAcknowledgement().get(0).getTypeCode().getCode().compareToIgnoreCase("CA") == 0) ||
+				(pixRegistrationResponse.getAcknowledgement().get(0).getTypeCode().getCode().compareToIgnoreCase("AA") == 0))
 			{
 				result = new MethodOutcome().setCreated(true);
 			}
@@ -274,9 +274,9 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 		return fhirAddr;
 	}
 	
-	private Patient populatePatientObject(PRPAIN201306UV02 queryResponse)
+	private ArrayList<Patient> populatePatientObject(PRPAIN201306UV02 queryResponse)
 	{
-		Patient retVal = new Patient();
+		ArrayList<Patient> retVal = new ArrayList<Patient>();
 		boolean nameFound = false;
 		boolean addressFound = false;
 		boolean providerFound = false;
@@ -285,23 +285,23 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 		
 		/////////////////////////////////////////////////////////////////////////////////////
 		// Create PatientPerson...
-		ObjectFactory objectFactory = new PDQSupplier.org.hl7.v3.ObjectFactory();
-		PRPAMT201310UV02Person patientPersonTest = new PRPAMT201310UV02Person();
-		
-		PDQSupplier.org.hl7.v3.EnFamily enFamily = new PDQSupplier.org.hl7.v3.EnFamily();
-		enFamily.getContent().add("Alpha");
-		PDQSupplier.org.hl7.v3.EnGiven enGiven = new PDQSupplier.org.hl7.v3.EnGiven();
-		enGiven.getContent().add("Alan");
-		
-		PN patientName = new PN();
-		patientName.getContent().add(objectFactory.createENFamily(enFamily));
-		
-		if (enGiven != null)
-		{
-			patientName.getContent().add(objectFactory.createENGiven(enGiven));
-		}
-		
-		patientPersonTest.getName().add(patientName);
+//		ObjectFactory objectFactory = new PDQSupplier.org.hl7.v3.ObjectFactory();
+//		PRPAMT201310UV02Person patientPersonTest = new PRPAMT201310UV02Person();
+//		
+//		PDQSupplier.org.hl7.v3.EnFamily enFamily = new PDQSupplier.org.hl7.v3.EnFamily();
+//		enFamily.getContent().add("Alpha");
+//		PDQSupplier.org.hl7.v3.EnGiven enGiven = new PDQSupplier.org.hl7.v3.EnGiven();
+//		enGiven.getContent().add("Alan");
+//		
+//		PN patientName = new PN();
+//		patientName.getContent().add(objectFactory.createENFamily(enFamily));
+//		
+//		if (enGiven != null)
+//		{
+//			patientName.getContent().add(objectFactory.createENGiven(enGiven));
+//		}
+//		
+//		patientPersonTest.getName().add(patientName);
 //		for (PN name : patientPersonTest.getName())
 //		{
 //			String family = null;
@@ -324,6 +324,8 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 //			}
 //		}
 
+		Patient patient = new Patient();
+		
 		// Iterate through each Subject and extract demographic info
 		for (PRPAIN201306UV02MFMIMT700711UV01Subject1 subject : queryResponse.getControlActProcess().getSubject())
 		{
@@ -346,8 +348,8 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 							JAXBElement<?> testNameComponent = (JAXBElement<?>) nameComponent;
 							if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.EnFamily.class)
 							{
-								ST test = (ST) ((PDQSupplier.org.hl7.v3.EnFamily)testNameComponent.getValue()).getContent().get(0);
-								fhirName.addFamily(test.toString());
+//								ST test = (ST) ((PDQSupplier.org.hl7.v3.EnFamily)testNameComponent.getValue()).getContent().get(0);
+								fhirName.addFamily(((PDQSupplier.org.hl7.v3.EnFamily)testNameComponent.getValue()).getContent().get(0).toString());
 							}
 							else
 							if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.EnGiven.class)
@@ -359,14 +361,14 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 							nameFound = true;
 						}
 						
-						retVal.addName(fhirName);
+						patient.addName(fhirName);
 					}
 				}
 				
 				// Extract gender if present...
 				if (patientPerson.getAdministrativeGenderCode() != null)
 				{
-					retVal.setGender((patientPerson.getAdministrativeGenderCode().getCode().compareToIgnoreCase("M") == 0) ? AdministrativeGenderEnum.MALE
+					patient.setGender((patientPerson.getAdministrativeGenderCode().getCode().compareToIgnoreCase("M") == 0) ? AdministrativeGenderEnum.MALE
 							: (patientPerson.getAdministrativeGenderCode().getCode().compareToIgnoreCase("F") == 0) ? AdministrativeGenderEnum.FEMALE
 									: AdministrativeGenderEnum.UNKNOWN);
 					genderFound = true;
@@ -377,14 +379,14 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 				{
 					DateDt birthDate = new DateDt();
 					birthDate.setValueAsString(patientPerson.getBirthTime().getValue());
-					retVal.setBirthDate(birthDate);
+					patient.setBirthDate(birthDate);
 					birthDateFound = true;
 				}
 				
 				// Extract address if present...
 				if (patientPerson.getAddr() != null)
 				{
-					retVal.addAddress(populateFhirAddress(patientPerson));
+					patient.addAddress(populateFhirAddress(patientPerson));
 				}
 			}
 			
@@ -430,10 +432,12 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 //					}
 //				}
 
-					retVal.addCareProvider().setDisplay(providerName);
+					patient.addCareProvider().setDisplay(providerName);
 			
 			}
 		}
+		
+		retVal.add(patient);
 		return retVal;
 	}
 	
@@ -506,7 +510,7 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 					(pdqQueryResponse.getControlActProcess().getSubject() != null) &&
 					(!pdqQueryResponse.getControlActProcess().getSubject().isEmpty()))
 				{
-					result = populatePatientObject(pdqQueryResponse);
+					result = populatePatientObject(pdqQueryResponse).get(0);
 				}
 				else
 				{
@@ -705,7 +709,7 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 					(pdqQueryResponse.getControlActProcess().getSubject() != null) &&
 					(!pdqQueryResponse.getControlActProcess().getSubject().isEmpty()))
 				{
-//					result = populatePatientObject(pdqQueryResponse);
+					result = populatePatientObject(pdqQueryResponse);
 				}
 				else
 				{
