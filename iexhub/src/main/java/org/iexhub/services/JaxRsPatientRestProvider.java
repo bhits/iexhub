@@ -722,7 +722,8 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 				// Determine if demographics data is present.
 				if ((pdqQueryResponse != null) &&
 					(pdqQueryResponse.getAcknowledgement() != null) &&
-					(pdqQueryResponse.getAcknowledgement().get(0).getTypeCode().getCode().equalsIgnoreCase("AA")) &&
+					((pdqQueryResponse.getAcknowledgement().get(0).getTypeCode().getCode().equalsIgnoreCase("AA")) ||
+					 (pdqQueryResponse.getAcknowledgement().get(0).getTypeCode().getCode().equalsIgnoreCase("CA"))) &&
 					(pdqQueryResponse.getControlActProcess() != null) &&
 					(pdqQueryResponse.getControlActProcess().getSubject() != null) &&
 					(!pdqQueryResponse.getControlActProcess().getSubject().isEmpty()))
