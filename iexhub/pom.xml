@@ -41,6 +41,7 @@
 
 	<properties>
 		<maven.nexus.servername>BHITSMVNREP01</maven.nexus.servername>
+			<docker.maven.version>0.4.3</docker.maven.version>
 	</properties>
 	<!-- Note: HAPI projects use the "hapi-fhir" POM as their base to provide 
 		easy management. You do not need to use this in your own projects, so the 
@@ -121,6 +122,25 @@
 				<artifactId>axis2-mar-maven-plugin</artifactId>
 				<version>1.6.3</version>
 				<extensions>true</extensions>
+			</plugin>
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>${docker.maven.version}</version>
+				<configuration>
+					<imageName>${project.artifactId}</imageName>
+					<dockerDirectory>src/main/docker</dockerDirectory>
+					<buildArgs>
+						<finalName>${project.build.finalName}.war</finalName>
+					</buildArgs>
+					<resources>
+						<resource>
+							<targetPath>/</targetPath>
+							<directory>${project.build.directory}</directory>
+							<include>${project.build.finalName}.war</include>
+						</resource>
+					</resources>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
