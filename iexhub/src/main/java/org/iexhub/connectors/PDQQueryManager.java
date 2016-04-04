@@ -269,21 +269,22 @@ public class PDQQueryManager
 			String middleName,
 			String dateOfBirth,
 			String gender,
-			String motherMaidenName,
+			String mothersMaidenName,
 			String addressStreet,
 			String addressCity,
 			String addressState,
 			String addressPostalCode,
 			String patientId,
 			String patientIdDomain,
-			String otherIDsScopingOrganization) throws IOException
+			String otherIDsScopingOrganization,
+			String telecom) throws IOException
 	{
 		return queryPatientDemographics(givenName,
 			familyName,
 			middleName,
 			dateOfBirth,
 			gender,
-			motherMaidenName,
+			mothersMaidenName,
 			addressStreet,
 			addressCity,
 			addressState,
@@ -291,6 +292,7 @@ public class PDQQueryManager
 			patientId,
 			patientIdDomain,
 			otherIDsScopingOrganization,
+			telecom,
 			-1,
 			null);
 	}
@@ -533,7 +535,7 @@ public class PDQQueryManager
 			String middleName,
 			String dateOfBirth,
 			String gender,
-			String motherMaidenName,
+			String mothersMaidenName,
 			String addressStreet,
 			String addressCity,
 			String addressState,
@@ -541,6 +543,7 @@ public class PDQQueryManager
 			String patientId,
 			String patientIdDomain,
 			String otherIDsScopingOrganization,
+			String telecom,
 			int resultSetSize) throws IOException
 	{
 		return queryPatientDemographics(givenName,
@@ -548,7 +551,7 @@ public class PDQQueryManager
 			middleName,
 			dateOfBirth,
 			gender,
-			motherMaidenName,
+			mothersMaidenName,
 			addressStreet,
 			addressCity,
 			addressState,
@@ -556,6 +559,7 @@ public class PDQQueryManager
 			patientId,
 			patientIdDomain,
 			otherIDsScopingOrganization,
+			telecom,
 			resultSetSize,
 			null);
 	}
@@ -565,7 +569,7 @@ public class PDQQueryManager
 			String middleName,
 			String dateOfBirth,
 			String gender,
-			String motherMaidenName,
+			String mothersMaidenName,
 			String addressStreet,
 			String addressCity,
 			String addressState,
@@ -573,6 +577,7 @@ public class PDQQueryManager
 			String patientId,
 			String patientIdDomain,
 			String otherIDsScopingOrganization,
+			String telecom,
 			int resultSetSize,
 			String existingQueryId) throws IOException
 	{
@@ -680,6 +685,24 @@ public class PDQQueryManager
 					dateOfBirth));
 		}
 
+		// Create PatientTelecom if present...
+		if ((telecom != null) &&
+			(telecom.length() > 0))
+		{
+			PRPAMT201306UV02PatientTelecom patientTelecom = new PRPAMT201306UV02PatientTelecom();
+			paramList.getPatientTelecom().add(setPatientTelecom(patientTelecom,
+					telecom));
+		}
+
+		// Create MothersMaidenName if present...
+		if ((mothersMaidenName != null) &&
+			(mothersMaidenName.length() > 0))
+		{
+			PRPAMT201306UV02MothersMaidenName mothersMaidenNameObj = new PRPAMT201306UV02MothersMaidenName();
+			paramList.getMothersMaidenName().add(setMothersMaidenName(mothersMaidenNameObj,
+					mothersMaidenName));
+		}
+
 		// Create LivingSubjectName...
 		if (((familyName != null) &&
 			 (familyName.length() > 0)) ||
@@ -771,6 +794,36 @@ public class PDQQueryManager
 		return response;
 	}
 	
+	private PRPAMT201306UV02MothersMaidenName setMothersMaidenName(PRPAMT201306UV02MothersMaidenName mothersMaidenNameObj,
+			String mothersMaidenName)
+	{
+		EnFamily enFamily = null;
+		if ((mothersMaidenName != null) &&
+			(mothersMaidenName.length() > 0))
+		{
+			enFamily = new EnFamily();
+			enFamily.getContent().add(mothersMaidenName);
+		}
+		
+		PN patientName = new PN();
+		patientName.getContent().add(factory.createENFamily(enFamily));
+		mothersMaidenNameObj.getValue().add(patientName);
+
+		ST semanticsText = new ST();
+		semanticsText.getContent().add("Person.MothersMaidenName");
+		mothersMaidenNameObj.setSemanticsText(semanticsText);
+		return mothersMaidenNameObj;
+	}
+
+	private PRPAMT201306UV02PatientTelecom setPatientTelecom(PRPAMT201306UV02PatientTelecom patientTelecom,
+			String telecom)
+	{
+		TEL telecomValue = new TEL();
+		telecomValue.setValue(telecom);
+		patientTelecom.getValue().add(telecomValue);
+		return patientTelecom;
+	}
+
 	private void setCreationTime(QUQIIN000003UV01Type qUQIIN000003UV01)
 	{
 		DateTime dt = new DateTime(DateTimeZone.UTC);
@@ -1030,7 +1083,7 @@ public class PDQQueryManager
 		livingSubjectBirthTime.getValue().add(date);
 		
 		ST birthTimeSemanticsText = new ST();
-		birthTimeSemanticsText.getContent().add("LivingSubject.administrativeGender");
+		birthTimeSemanticsText.getContent().add("LivingSubject.birthTime");
 		livingSubjectBirthTime.setSemanticsText(birthTimeSemanticsText);
 		
 		return livingSubjectBirthTime;

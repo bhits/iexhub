@@ -9,6 +9,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Properties;
+import java.util.UUID;
+
 //import org.apache.log4j.Logger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -135,10 +137,14 @@ public class PatientResourceTest
 			//			Patient.ADDRESS_CITY
 			//			Patient.ADDRESS_STATE
 			//			Patient.ADDRESS_POSTALCODE
+			//			Patient.IDENTIFIER
+			//			Patient.TELECOM
 			ca.uhn.fhir.model.dstu2.resource.Bundle response = client.search()
 				      .forResource(Patient.class)
 				      .where(Patient.FAMILY.matches().values("HINOJOXS"))
 				      .and(Patient.GIVEN.matches().values("JOYCE"))
+				      .and(Patient.BIRTHDATE.exactly().day("1967-12-14"))					// MUST specify as YYYY-MM-DD
+//				      .and(Patient.TELECOM.exactly().identifier("tel:706-750-4736"))		// MUST specify as "tel:XXX-XXX-XXXX" if phone number
 				      .returnBundle(ca.uhn.fhir.model.dstu2.resource.Bundle.class)
 				      .execute();
 			assertTrue("Error - unexpected return value for testFindPatient",
