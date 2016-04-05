@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -20,6 +22,7 @@ import org.iexhub.exceptions.*;
 
 import PIXManager.org.hl7.v3.*;
 import PIXManager.org.iexhub.services.client.PIXManager_ServiceStub;
+import ca.uhn.fhir.model.dstu2.composite.IdentifierDt;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -534,7 +537,8 @@ public class PIXManager
 			String middleName,
 			String dateOfBirth,
 			String gender,
-			String patientId) throws IOException
+			String patientId,
+			List<IdentifierDt> fhirIdentifiers) throws IOException
 	{
 		if ((familyName == null) ||
 			(familyName.length() == 0))
@@ -656,17 +660,43 @@ public class PIXManager
 		// Create Patient...
 		PRPAMT201301UV02Patient patient = new PRPAMT201301UV02Patient();
 		patient.getClassCode().add("PAT");
+		
 		II constructedPatientId = new II();
 		constructedPatientId.setRoot(PIXManager.patientIdAssigningAuthority);
+		constructedPatientId.setExtension(UUID.randomUUID().toString());
 		constructedPatientId.setAssigningAuthorityName(PIXManager.iExHubAssigningAuthority);
-		constructedPatientId.setExtension(patientId);
 		patient.getId().add(constructedPatientId);
+		
 		CS patientStatusCode = new CS();
 		patientStatusCode.setCode("active");
 		patient.setStatusCode(patientStatusCode);
 		
 		// Create PatientPerson...
 		PRPAMT201301UV02Person patientPerson = new PRPAMT201301UV02Person();
+		
+		// Other ID's specified...
+		if (fhirIdentifiers != null)
+		{
+			for (IdentifierDt fhirId : fhirIdentifiers)
+			{
+				PRPAMT201301UV02OtherIDs asOtherId = new PRPAMT201301UV02OtherIDs();
+				asOtherId.getClassCode().add("SD");
+				II otherId = new II();
+				otherId.setRoot(fhirId.getSystemElement().getValueAsString());
+				otherId.setExtension(fhirId.getValue());
+				asOtherId.getId().add(otherId);
+				
+				COCTMT150002UV01Organization scopingOrg = new COCTMT150002UV01Organization();
+				scopingOrg.setClassCode("ORG");
+				scopingOrg.setDeterminerCode("INSTANCE");
+				II scopingOrgId = new II();
+				scopingOrgId.setRoot(fhirId.getSystemElement().getValueAsString());
+				scopingOrg.getId().add(scopingOrgId);
+				asOtherId.setScopingOrganization(scopingOrg);
+				
+				patientPerson.getAsOtherIDs().add(asOtherId);
+			}
+		}
 		
 		EnFamily enFamily = null;
 		if ((familyName != null) &&

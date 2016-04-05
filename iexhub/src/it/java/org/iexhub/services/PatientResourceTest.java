@@ -9,8 +9,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Properties;
-import java.util.UUID;
-
 //import org.apache.log4j.Logger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -186,9 +184,12 @@ public class PatientResourceTest
 		try
 		{
 			Patient pat = new Patient();
-			pat.addName().addFamily("ALPHA").addGiven("ALAN");
-//			pat.addIdentifier().setSystem(PatientResourceTest.iExHubDomainOid).setValue(UUID.randomUUID().toString());
-			pat.addIdentifier().setValue("PIX");
+//			pat.addName().addFamily("HINOJOXS").addGiven("JOYCE");
+			pat.addName().addFamily("SMITH").addGiven("ROBERT");
+			
+			// SSN
+			pat.addIdentifier().setSystem("2.16.840.1.113883.4.1").setValue("123-45-6789");
+			
 			pat.setGender(AdministrativeGenderEnum.MALE);
 			Calendar dobCalendar = Calendar.getInstance();
 			dobCalendar.set(1978,
