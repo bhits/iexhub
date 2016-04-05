@@ -206,7 +206,9 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 									: ((patient.getGender().compareToIgnoreCase(AdministrativeGenderEnum.FEMALE.getCode()) == 0) ? "F"
 											: ((patient.getGender().compareToIgnoreCase(AdministrativeGenderEnum.OTHER.getCode()) == 0) ? "UN"
 													: "")),
-					(patient.getIdentifier() != null) ? patient.getIdentifier().get(0).getValue()
+					(patient.getId() != null) ? patient.getId().getValueAsString()
+							: null,
+					(patient.getIdentifier() != null) ? patient.getIdentifier()
 							: null);
 			
 			if ((pixRegistrationResponse.getAcknowledgement().get(0).getTypeCode().getCode().compareToIgnoreCase("CA") == 0) ||
