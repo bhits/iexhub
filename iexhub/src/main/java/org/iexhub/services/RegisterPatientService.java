@@ -70,8 +70,7 @@ public class RegisterPatientService
 						middleName,
 						dateOfBirth,
 						gender,
-						enterpriseMRN,
-						null);
+						enterpriseMRN);
 			}
 			catch (Exception e)
 			{

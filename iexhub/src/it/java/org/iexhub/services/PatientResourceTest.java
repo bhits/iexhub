@@ -7,7 +7,9 @@ import static org.junit.Assert.*;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Properties;
 //import org.apache.log4j.Logger;
 import org.slf4j.Logger;
@@ -17,9 +19,13 @@ import org.junit.*;
 
 
 import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
+import ca.uhn.fhir.model.dstu2.resource.Organization;
+import ca.uhn.fhir.model.dstu2.resource.Organization.Contact;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
 import ca.uhn.fhir.model.primitive.DateDt;
+import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.client.IGenericClient;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
@@ -139,13 +145,15 @@ public class PatientResourceTest
 			//			Patient.TELECOM
 			ca.uhn.fhir.model.dstu2.resource.Bundle response = client.search()
 				      .forResource(Patient.class)
-				      .where(Patient.FAMILY.matches().values("HINOJOXS"))
-				      .and(Patient.GIVEN.matches().values("JOYCE"))
-				      .and(Patient.BIRTHDATE.exactly().day("1967-12-14"))					// MUST specify as YYYY-MM-DD
+//				      .where(Patient.FAMILY.matches().values("HINOJOXS"))
+//				      .and(Patient.GIVEN.matches().values("JOYCE"))
+				      .where(Patient.FAMILY.matches().values("SMITH"))
+				      .and(Patient.GIVEN.matches().values("ANDREW"))
+//				      .and(Patient.BIRTHDATE.exactly().day("1967-12-14"))					// MUST specify as YYYY-MM-DD
 //				      .and(Patient.TELECOM.exactly().identifier("tel:706-750-4736"))		// MUST specify as "tel:XXX-XXX-XXXX" if phone number
 				      .returnBundle(ca.uhn.fhir.model.dstu2.resource.Bundle.class)
 				      .execute();
-			assertTrue("Error - unexpected return value for testFindPatient",
+			assertTrue("Error - unexpected return value for testSearchPatient",
 					response != null);
 		}
 		catch (Exception e)
@@ -185,7 +193,7 @@ public class PatientResourceTest
 		{
 			Patient pat = new Patient();
 //			pat.addName().addFamily("HINOJOXS").addGiven("JOYCE");
-			pat.addName().addFamily("SMITH").addGiven("ROBERT");
+			pat.addName().addFamily("SMITH").addGiven("ANDREW");
 			
 			// SSN
 			pat.addIdentifier().setSystem("2.16.840.1.113883.4.1").setValue("123-45-6789");
@@ -199,6 +207,25 @@ public class PatientResourceTest
 			dob.setValue(dobCalendar.getTime());
 			pat.setBirthDate(dob);
 
+			// Provider organization...
+			Organization organization = new Organization();
+			IdDt orgId = new IdDt();
+			orgId.setValue("urn:oid:2.16.840.1.113883.6.1");
+			organization.setId(orgId);
+			organization.setName("Provider Organization");
+			organization.addAddress().addLine("1 Main Street").setCity("Cupertino").setState("CA").setPostalCode("95014");
+			Contact organizationContact = new Contact();
+			organizationContact.addTelecom().setValue("tel:408-555-1212");
+			HumanNameDt contactName = new HumanNameDt();
+			contactName.addFamily().setValue("JONES");
+			contactName.addGiven().setValue("MARTHA");
+			organizationContact.setName(contactName);
+			List<Contact> contacts = new ArrayList<Contact>();
+			contacts.add(organizationContact);
+			organization.setContact(contacts);
+			pat.addCareProvider().setReference("#urn:oid:2.16.840.1.113883.6.1");
+			pat.getContained().getContainedResources().add(organization);
+			
 			Logger logger = LoggerFactory.getLogger(PatientResourceTest.class);
 			FhirContext ctxt = new FhirContext();
 			ctxt.getRestfulClientFactory().setSocketTimeout(PatientResourceTest.fhirClientSocketTimeout);

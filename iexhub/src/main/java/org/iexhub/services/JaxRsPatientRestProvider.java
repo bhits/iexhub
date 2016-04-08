@@ -31,23 +31,23 @@ import org.iexhub.exceptions.PatientIdParamMissingException;
 import org.iexhub.exceptions.UnexpectedServerException;
 
 import PDQSupplier.org.hl7.v3.AD;
+import PDQSupplier.org.hl7.v3.COCTMT150003UV03ContactParty;
 import PDQSupplier.org.hl7.v3.COCTMT150003UV03Organization;
 import PDQSupplier.org.hl7.v3.ON;
-import PDQSupplier.org.hl7.v3.ObjectFactory;
 import PDQSupplier.org.hl7.v3.PN;
 import PDQSupplier.org.hl7.v3.PRPAIN201306UV02;
 import PDQSupplier.org.hl7.v3.PRPAIN201306UV02MFMIMT700711UV01Subject1;
 import PDQSupplier.org.hl7.v3.PRPAMT201310UV02OtherIDs;
 import PDQSupplier.org.hl7.v3.PRPAMT201310UV02Person;
-import PDQSupplier.org.hl7.v3.ST;
 import PDQSupplier.org.hl7.v3.TEL;
 import PIXManager.org.hl7.v3.MCCIIN000002UV01;
 import ca.uhn.fhir.jaxrs.server.AbstractJaxRsResourceProvider;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.AddressDt;
-import ca.uhn.fhir.model.dstu2.composite.ContactPointDt;
 import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
 import ca.uhn.fhir.model.dstu2.resource.Condition;
+import ca.uhn.fhir.model.dstu2.resource.Organization;
+import ca.uhn.fhir.model.dstu2.resource.Organization.Contact;
 import ca.uhn.fhir.model.dstu2.resource.Parameters;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
@@ -194,22 +194,7 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 		try
 		{
 			// ITI-44-Source-Feed message
-			MCCIIN000002UV01 pixRegistrationResponse = pixManager.registerPatient((patient.getName() != null) ? patient.getName().get(0).getGivenAsSingleString()
-							: null,
-					(patient.getName() != null) ? patient.getName().get(0).getFamilyAsSingleString()
-							: null,
-					null,
-					(patient.getBirthDate() != null) ? patient.getBirthDateElement().getValueAsString()
-							: null,
-					(patient.getGender() == null) ? ""
-							: (patient.getGender().compareToIgnoreCase(AdministrativeGenderEnum.MALE.getCode()) == 0) ? "M"
-									: ((patient.getGender().compareToIgnoreCase(AdministrativeGenderEnum.FEMALE.getCode()) == 0) ? "F"
-											: ((patient.getGender().compareToIgnoreCase(AdministrativeGenderEnum.OTHER.getCode()) == 0) ? "UN"
-													: "")),
-					(patient.getId() != null) ? patient.getId().getValueAsString()
-							: null,
-					(patient.getIdentifier() != null) ? patient.getIdentifier()
-							: null);
+			MCCIIN000002UV01 pixRegistrationResponse = pixManager.registerPatient(patient);
 			
 			if ((pixRegistrationResponse.getAcknowledgement().get(0).getTypeCode().getCode().compareToIgnoreCase("CA") == 0) ||
 				(pixRegistrationResponse.getAcknowledgement().get(0).getTypeCode().getCode().compareToIgnoreCase("AA") == 0))
@@ -275,7 +260,46 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 		
 		return fhirAddr;
 	}
-	
+
+	private AddressDt populateFhirAddress(COCTMT150003UV03ContactParty contact)
+	{
+		AddressDt fhirAddr = new AddressDt();
+
+		for (AD addr : contact.getAddr())
+		{
+			for (Serializable nameComponent : addr.getContent())
+			{
+				JAXBElement<?> testNameComponent = (JAXBElement<?>) nameComponent;
+				if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.AdxpCity.class)
+				{
+					fhirAddr.setCity(((PDQSupplier.org.hl7.v3.AdxpCity)testNameComponent.getValue()).getContent().get(0).toString());
+				}
+				else
+				if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.AdxpState.class)
+				{
+					fhirAddr.setState(((PDQSupplier.org.hl7.v3.AdxpState)testNameComponent.getValue()).getContent().get(0).toString());
+				}
+				else
+				if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.AdxpPostalCode.class)
+				{
+					fhirAddr.setPostalCode(((PDQSupplier.org.hl7.v3.AdxpPostalCode)testNameComponent.getValue()).getContent().get(0).toString());
+				}
+				else
+				if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.AdxpCountry.class)
+				{
+					fhirAddr.setCountry(((PDQSupplier.org.hl7.v3.AdxpCountry)testNameComponent.getValue()).getContent().get(0).toString());
+				}
+				else
+				if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.AdxpStreetAddressLine.class)
+				{
+					fhirAddr.addLine(((PDQSupplier.org.hl7.v3.AdxpStreetAddressLine)testNameComponent.getValue()).getContent().get(0).toString());
+				}
+			}
+		}
+		
+		return fhirAddr;
+	}
+
 	private ArrayList<Patient> populatePatientObject(PRPAIN201306UV02 queryResponse) throws ParseException
 	{
 		ArrayList<Patient> result = new ArrayList<Patient>();
@@ -410,50 +434,62 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 				}
 			}
 			
-//			if ((subject.getRegistrationEvent() != null) &&
-//				(subject.getRegistrationEvent().getSubject1() != null) &&
-//				(subject.getRegistrationEvent().getSubject1().getPatient() != null) &&
-//				(subject.getRegistrationEvent().getSubject1().getPatient().getProviderOrganization() != null))
-//			{
-//				COCTMT150003UV03Organization provider = subject.getRegistrationEvent().getSubject1().getPatient().getProviderOrganization().getValue(); 
-//				String providerName = null;
-//				String providerTelecom = null;
-//				
-//				// Create Organization FHIR resource...
-////				Organization organization = new Organization();
-////				organization.setId(arg0);
-////				organization.setIdentifier(theValue)
-//
-//				// Extract name if present...
-//				if (provider.getName() != null)
-//				{
-//					for (ON name : provider.getName())
-//					{
-//						for (Serializable nameComponent : name.getContent())
-//						{
-//							JAXBElement<?> testNameComponent = (JAXBElement<?>) nameComponent;
-//							if (testNameComponent.getValue().getClass() == String.class)
-//							{
-//								providerName = testNameComponent.getValue().toString();
-//								break;
-//							}
-//						}
-//					}
-//				}
-//					
-////				if (provider.getContactParty() != null)
-////				{
-////					for (COCTMT150003UV03ContactParty contact : provider.getContactParty())
-////					{
-////						if (contact.getAddr() != null)
-////						{
-////							retVal.addAddress(populateFhirAddress(patientPerson));
-////						}
-////					}
-////				}
-//
-//					patient.addCareProvider().setDisplay(providerName);
-//			}
+			if ((subject.getRegistrationEvent() != null) &&
+				(subject.getRegistrationEvent().getSubject1() != null) &&
+				(subject.getRegistrationEvent().getSubject1().getPatient() != null) &&
+				(subject.getRegistrationEvent().getSubject1().getPatient().getProviderOrganization() != null))
+			{
+				COCTMT150003UV03Organization provider = subject.getRegistrationEvent().getSubject1().getPatient().getProviderOrganization().getValue(); 
+				
+				// Create Organization FHIR resource and set its ID...
+				Organization organization = new Organization();
+				organization.getId().setValue(provider.getId().get(0).getRoot());
+
+				// Extract name if present...
+				if (provider.getName() != null)
+				{
+					for (ON name : provider.getName())
+					{
+						for (Serializable nameComponent : name.getContent())
+						{
+							JAXBElement<?> testNameComponent = (JAXBElement<?>) nameComponent;
+							if (testNameComponent.getValue().getClass() == String.class)
+							{
+								organization.setName(testNameComponent.getValue().toString());
+								break;
+							}
+						}
+					}
+				}
+					
+				if (provider.getContactParty() != null)
+				{
+					for (COCTMT150003UV03ContactParty contact : provider.getContactParty())
+					{
+						Contact organizationContact = new Contact();
+						
+						if (contact.getTelecom() != null)
+						{
+							for (TEL telecom : contact.getTelecom())
+							{
+								organizationContact.addTelecom().setValue(telecom.getValue());
+							}
+						}
+						
+						if (contact.getAddr() != null)
+						{
+							//  While the PDQ ITI-47 response can contain multiple providerOrganization contact addresses, FHIR only allows one contact address to be specified...
+							organizationContact.setAddress(populateFhirAddress(contact));
+						}
+						
+						organization.getContact().add(organizationContact);
+					}
+				}
+
+				patient.addCareProvider().setReference("#"
+						+ organization.getId().getValue());
+				patient.getContained().getContainedResources().add(organization);
+			}
 			
 			result.add(patient);
 		}
@@ -693,7 +729,11 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 			{
 				// ITI-47-Consumer-Query-Patient-PatientId message
 				Calendar birthDateCalendar = Calendar.getInstance();
-				birthDateCalendar.setTime(birthDate.getValue());
+				if (birthDate != null)
+				{
+					birthDateCalendar.setTime(birthDate.getValue());
+				}
+				
 				PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.queryPatientDemographics(givenName.getValue(),
 						familyName.getValue(),
 						null,

@@ -127,8 +127,7 @@ public class PIXManagerTest
 					null,
 					"12/8/1978",
 					"M",
-					"PIX",
-					null);
+					"PIX");
 	
 //			assertTrue("Error - unexpected return value for RegisterPatient message",
 //					pixRegistrationResponse.toString());
@@ -158,8 +157,7 @@ public class PIXManagerTest
 					null,
 					"5/1/1977",
 					"F",
-					String.valueOf(oidTimeValue.getMillis()),
-					null);
+					String.valueOf(oidTimeValue.getMillis()));
 
 //			MCCIIN000002UV01 pixRegistrationResponse = pixManager.registerPatient("ALICE",
 //					"MAIDEN",
