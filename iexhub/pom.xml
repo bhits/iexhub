@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>gov.samhsa.iexhub</groupId>
-	<version>0.1.0-SNAPSHOT</version>
+	<version>0.2.0-SNAPSHOT</version>
 	<packaging>war</packaging>
 	<artifactId>iexhub</artifactId>
 	<name>iexhub</name>
@@ -11,9 +11,7 @@
 		<name>SAMHSA</name>
 		<url>www.samhsa.hhs.gov</url>
 	</organization>
-	<description>Information Exchange Hub consists of connectors, services, and transformation
-		components intended to allow applications to interoperate with standards-based Health
-		Information Exchange (HIE) organizations.</description>
+	<description>Information Exchange Hub consists of connectors, services, and ransformation components intended to allow applications to interoperate with standards-based Health Information Exchange (HIE) organizations.</description>
 
     <scm>
 		<url>https://github.com/FEISystems/iexhub</url>
