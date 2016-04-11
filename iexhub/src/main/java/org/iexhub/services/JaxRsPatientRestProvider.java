@@ -117,14 +117,6 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 		PAGE_PROVIDER = new FifoMemoryPagingProvider(10);
 	}
 
-//	static {
-//		patients.put(String.valueOf(counter), createPatient("Van Houte"));
-//		patients.put(String.valueOf(counter), createPatient("Agnew"));
-//		for (int i = 0; i < 20; i++) {
-//			patients.put(String.valueOf(counter), createPatient("Random Patient " + counter));
-//		}
-//	}
-
 	public JaxRsPatientRestProvider() {
 		super(JaxRsPatientRestProvider.class);
 	}
@@ -553,8 +545,10 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 						null,
 						null,
 						null,
-						id.getIdPart().toString(),
-						null,
+						(id.getIdPart().contains("^")) ? id.getIdPart().split("\\^")[0]
+								: id.getIdPart(),
+						(id.getIdPart().contains("^")) ? id.getIdPart().split("\\^")[1]
+								: null,
 						null,
 						null);
 				

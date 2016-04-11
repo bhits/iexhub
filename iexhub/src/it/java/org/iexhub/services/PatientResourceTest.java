@@ -83,7 +83,7 @@ public class PatientResourceTest
 			IGenericClient client = ctxt.newRestfulGenericClient(serverBaseUrl);
 			client.registerInterceptor(loggingInterceptor);							// Required only for logging
 			Patient retVal = client.read(Patient.class,
-					"HJ-361");
+					"d80383d0-f561-11e5-83b6-00155dc95705%5E2.16.840.1.113883.4.357");
 			assertTrue("Error - unexpected return value for testFindPatient",
 					retVal != null);
 		}
