@@ -1,3 +1,18 @@
+/*******************************************************************************
+ * Copyright (c) 2016 Substance Abuse and Mental Health Services Administration (SAMHSA)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Contributors:
+ *     Eversolve, LLC - initial IExHub implementation
+ *******************************************************************************/
 /**
  * 
  */
@@ -11,6 +26,8 @@ import org.junit.Test;
 import org.apache.log4j.Logger;
 
 /**
+ * XdsBRepositoryManagerTest
+ * 
  * @author A. Sute
  *
  */
@@ -25,16 +42,14 @@ public class XdsBRepositoryManagerTest
 //	private static final String xdsBRepositoryTLSEndpointURI = "https://nist1:9085/tf6/services/xdsrepositoryb";
 //	private static final String xdsBRegistryTLSEndpointURI = "https://philips50:8443/philips/services/xdsregistry";
 //	private static final String xdsBRepositoryTLSEndpointURI = "https://philips50:8443/philips/services/xdsrepository";
-//	private static final String xdsBRegistryTLSEndpointURI = "https://nist1:9085/tf6/services/xdsregistryb";
-//	private static final String xdsBRepositoryTLSEndpointURI = "https://nist1:9085/tf6/services/xdsrepositoryb";
+	private static final String xdsBRegistryTLSEndpointURI = "https://nist1:9085/tf6/services/xdsregistryb";
+	private static final String xdsBRepositoryTLSEndpointURI = "https://nist1:9085/tf6/services/xdsrepositoryb";
 //	private static final String xdsBRegistryTLSEndpointURI = "https://cerner14:9070/ihe/services/xdsregistryb";
 //	private static final String xdsBRepositoryTLSEndpointURI = "https://tiani---cisco72:8443/XDS3/rep";
 //	private static final String xdsBRegistryTLSEndpointURI = "https://ith-icoserve12:1243/Registry/services/RegistryService";
 //	private static final String xdsBRegistryTLSEndpointURI = "https://merge11:443/iti18";
 //	private static final String xdsBRepositoryTLSEndpointURI = "https://10.242.43.13:5000/repository";
-	private static final String xdsBRegistryTLSEndpointURI = "https://demohie.thinkengage.com/XDS3/reg";
-	private static final String xdsBRepositoryTLSEndpointURI = "https://demohie.thinkengage.com/SpiritProxy/repository";
-
+	
 	private static XdsBRepositoryManager XdsBRepository = null;
 	/**
 	 * Test method for {@link org.iexhub.connectors.XdsBRepositoryManager#ProvideAndRegisterDocumentSet(java.lang.String, java.util.List)}.

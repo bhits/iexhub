@@ -1,3 +1,18 @@
+/*******************************************************************************
+ * Copyright (c) 2016 Substance Abuse and Mental Health Services Administration (SAMHSA)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Contributors:
+ *     Eversolve, LLC - initial IExHub implementation
+ *******************************************************************************/
 package org.iexhub.services;
 
 import java.io.FileInputStream;
@@ -82,7 +97,8 @@ import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
 import ca.uhn.fhir.rest.server.interceptor.IServerInterceptor;
 
 /**
- * @author 
+ * FHIR Patient Implementation supports: find, search, and create.
+ * @author A. Sute
  */
 @Local
 @Path(JaxRsPatientRestProvider.PATH)
@@ -153,6 +169,13 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 		}
 	}
 	
+	/**
+	 * Patient create
+	 * @param patient
+	 * @param theConditional
+	 * @return
+	 * @throws Exception
+	 */
 	@Create
 	public MethodOutcome create(@ResourceParam final Patient patient, @ConditionalUrlParam String theConditional) throws Exception
 	{
@@ -205,15 +228,20 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 		return result;
 	}
 
-	@Delete
-	public MethodOutcome delete(@IdParam final IdDt theId) throws Exception {
-		final Patient deletedPatient = find(theId);
-		patients.remove(deletedPatient.getId().getIdPart());
-		final MethodOutcome result = new MethodOutcome().setCreated(true);
-		result.setResource(deletedPatient);
-		return result;
-	}
+//	@Delete
+//	public MethodOutcome delete(@IdParam final IdDt theId) throws Exception {
+//		final Patient deletedPatient = find(theId);
+//		patients.remove(deletedPatient.getId().getIdPart());
+//		final MethodOutcome result = new MethodOutcome().setCreated(true);
+//		result.setResource(deletedPatient);
+//		return result;
+//	}
 
+	/**
+	 * Parses the patient address from V3 Patient
+	 * @param patientPerson
+	 * @return patient address as FHIR Address datatype
+	 */
 	private AddressDt populateFhirAddress(PRPAMT201310UV02Person patientPerson)
 	{
 		AddressDt fhirAddr = new AddressDt();
@@ -253,6 +281,11 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 		return fhirAddr;
 	}
 
+	/**
+	 * Parses the contact address from V3 Contact
+	 * @param contact
+	 * @return FHIR Address datatype
+	 */
 	private AddressDt populateFhirAddress(COCTMT150003UV03ContactParty contact)
 	{
 		AddressDt fhirAddr = new AddressDt();
@@ -292,6 +325,12 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 		return fhirAddr;
 	}
 
+	/**
+	 * Parses the V3 Patient structure returned by PDQV Query
+	 * @param queryResponse Query response message containing matching patient records
+	 * @return ArrayList<Patient> containing FHIR Patient object 
+	 * @throws ParseException
+	 */
 	private ArrayList<Patient> populatePatientObject(PRPAIN201306UV02 queryResponse) throws ParseException
 	{
 		ArrayList<Patient> result = new ArrayList<Patient>();
@@ -489,6 +528,12 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 		return result;
 	}
 	
+	/**
+	 * Patient find
+	 * @param id
+	 * @return matching patient
+	 * @throws Exception
+	 */
 	@Read
 	public Patient find(@IdParam final IdDt id) throws Exception
 	{
@@ -579,26 +624,26 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 		return result;
 	}
 
-	@Read(version = true)
-	public Patient findHistory(@IdParam final IdDt theId) {
-		if (patients.containsKey(theId.getIdPart())) {
-			final List<Patient> list = patients.get(theId.getIdPart());
-			for (final Patient patient : list) {
-				if (patient.getId().getVersionIdPartAsLong().equals(theId.getVersionIdPartAsLong())) {
-					return patient;
-				}
-			}
-		}
-		throw new ResourceNotFoundException(theId);
-	}
-
-	@Operation(name = "firstVersion", idempotent = true, returnParameters = { @OperationParam(name = "return", type = StringDt.class) })
-	public Parameters firstVersion(@IdParam final IdDt theId, @OperationParam(name = "dummy") StringDt dummyInput) throws Exception {
-		Parameters parameters = new Parameters();
-		Patient patient = find(new IdDt(theId.getResourceType(), theId.getIdPart(), "0"));
-		parameters.addParameter().setName("return").setResource(patient).setValue(new StringDt((1) + "" + "inputVariable [ " + dummyInput.getValue() + "]"));
-		return parameters;
-	}
+//	@Read(version = true)
+//	public Patient findHistory(@IdParam final IdDt theId) {
+//		if (patients.containsKey(theId.getIdPart())) {
+//			final List<Patient> list = patients.get(theId.getIdPart());
+//			for (final Patient patient : list) {
+//				if (patient.getId().getVersionIdPartAsLong().equals(theId.getVersionIdPartAsLong())) {
+//					return patient;
+//				}
+//			}
+//		}
+//		throw new ResourceNotFoundException(theId);
+//	}
+//
+//	@Operation(name = "firstVersion", idempotent = true, returnParameters = { @OperationParam(name = "return", type = StringDt.class) })
+//	public Parameters firstVersion(@IdParam final IdDt theId, @OperationParam(name = "dummy") StringDt dummyInput) throws Exception {
+//		Parameters parameters = new Parameters();
+//		Patient patient = find(new IdDt(theId.getResourceType(), theId.getIdPart(), "0"));
+//		parameters.addParameter().setName("return").setResource(patient).setValue(new StringDt((1) + "" + "inputVariable [ " + dummyInput.getValue() + "]"));
+//		return parameters;
+//	}
 
 	@Override
 	public AddProfileTagEnum getAddProfileTag() {
@@ -645,18 +690,19 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 	public boolean isUseBrowserFriendlyContentTypes() {
 		return true;
 	}
-
-	@GET
-	@Path("/{id}/$firstVersion")
-	public Response operationFirstVersionUsingGet(@PathParam("id") String id) throws IOException {
-		return customOperation(null, RequestTypeEnum.GET, id, "$firstVersion", RestOperationTypeEnum.EXTENDED_OPERATION_INSTANCE);
-	}
-
-	@POST
-	@Path("/{id}/$firstVersion")
-	public Response operationFirstVersionUsingGet(@PathParam("id") String id, final String resource) throws Exception {
-		return customOperation(resource, RequestTypeEnum.POST, id, "$firstVersion", RestOperationTypeEnum.EXTENDED_OPERATION_INSTANCE);
-	}
+	
+//
+//	@GET
+//	@Path("/{id}/$firstVersion")
+//	public Response operationFirstVersionUsingGet(@PathParam("id") String id) throws IOException {
+//		return customOperation(null, RequestTypeEnum.GET, id, "$firstVersion", RestOperationTypeEnum.EXTENDED_OPERATION_INSTANCE);
+//	}
+//
+//	@POST
+//	@Path("/{id}/$firstVersion")
+//	public Response operationFirstVersionUsingGet(@PathParam("id") String id, final String resource) throws Exception {
+//		return customOperation(resource, RequestTypeEnum.POST, id, "$firstVersion", RestOperationTypeEnum.EXTENDED_OPERATION_INSTANCE);
+//	}
 
 	@Search
 	public List<Patient> search(@RequiredParam(name = Patient.SP_FAMILY) final StringParam familyName,
@@ -791,47 +837,47 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 		return result;
 	}
 
-	@Search(compartmentName = "Condition")
-	public List<IResource> searchCompartment(@IdParam IdDt thePatientId) {
-		List<IResource> retVal = new ArrayList<IResource>();
-		Condition condition = new Condition();
-		condition.setId(new IdDt("665577"));
-		retVal.add(condition);
-		return retVal;
-	}
-
-	@Update
-	public MethodOutcome update(@IdParam final IdDt theId, @ResourceParam final Patient patient) {
-		final String idPart = theId.getIdPart();
-		if (patients.containsKey(idPart)) {
-			final List<Patient> patientList = patients.get(idPart);
-			final Patient lastPatient = getLast(patientList);
-			patient.setId(createId(theId.getIdPartAsLong(), lastPatient.getId().getVersionIdPartAsLong() + 1));
-			patientList.add(patient);
-			final MethodOutcome result = new MethodOutcome().setCreated(false);
-			result.setResource(patient);
-			result.setId(patient.getId());
-			return result;
-		} else {
-			throw new ResourceNotFoundException(theId);
-		}
-	}
-
-	private static IdDt createId(final Long id, final Long theVersionId) {
-		return new IdDt("Patient", "" + id, "" + theVersionId);
-	}
-
-	private static List<Patient> createPatient(final Patient patient) {
-		patient.setId(createId(1L, 1L));
-		final LinkedList<Patient> list = new LinkedList<Patient>();
-		list.add(patient);
-		return list;
-	}
-
-	private static List<Patient> createPatient(final String name) {
-		final Patient patient = new Patient();
-		patient.getNameFirstRep().addFamily(name);
-		return createPatient(patient);
-	}
+//	@Search(compartmentName = "Condition")
+//	public List<IResource> searchCompartment(@IdParam IdDt thePatientId) {
+//		List<IResource> retVal = new ArrayList<IResource>();
+//		Condition condition = new Condition();
+//		condition.setId(new IdDt("665577"));
+//		retVal.add(condition);
+//		return retVal;
+//	}
+//
+//	@Update
+//	public MethodOutcome update(@IdParam final IdDt theId, @ResourceParam final Patient patient) {
+//		final String idPart = theId.getIdPart();
+//		if (patients.containsKey(idPart)) {
+//			final List<Patient> patientList = patients.get(idPart);
+//			final Patient lastPatient = getLast(patientList);
+//			patient.setId(createId(theId.getIdPartAsLong(), lastPatient.getId().getVersionIdPartAsLong() + 1));
+//			patientList.add(patient);
+//			final MethodOutcome result = new MethodOutcome().setCreated(false);
+//			result.setResource(patient);
+//			result.setId(patient.getId());
+//			return result;
+//		} else {
+//			throw new ResourceNotFoundException(theId);
+//		}
+//	}
+//
+//	private static IdDt createId(final Long id, final Long theVersionId) {
+//		return new IdDt("Patient", "" + id, "" + theVersionId);
+//	}
+//
+//	private static List<Patient> createPatient(final Patient patient) {
+//		patient.setId(createId(1L, 1L));
+//		final LinkedList<Patient> list = new LinkedList<Patient>();
+//		list.add(patient);
+//		return list;
+//	}
+//
+//	private static List<Patient> createPatient(final String name) {
+//		final Patient patient = new Patient();
+//		patient.getNameFirstRep().addFamily(name);
+//		return createPatient(patient);
+//	}
 
 }

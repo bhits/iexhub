@@ -1,3 +1,18 @@
+/*******************************************************************************
+ * Copyright (c) 2016 Substance Abuse and Mental Health Services Administration (SAMHSA)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Contributors:
+ *     Eversolve, LLC - initial IExHub implementation
+ *******************************************************************************/
 package org.iexhub.connectors;
 
 import java.io.BufferedReader;
@@ -58,6 +73,8 @@ import XdsBDocumentRepository.org.iexhub.services.client.DocumentRepository_Serv
 
 
 /**
+ * XdsBRepositoryManager Connector
+ * ITI-41  Provide and Register Document
  * @author A. Sute
  *
  */
@@ -129,6 +146,9 @@ public class XdsBRepositoryManager
 	private static String externalIdentifierSubmissionSetPatientIdName = "XDSSubmissionSet.patientId";
 
 	
+	/**
+	 * @param repositoryEndpointURI
+	 */
 	public static void setRepositoryEndpointURI(String repositoryEndpointURI)
 	{
 		if (repositoryStub != null)
@@ -138,6 +158,12 @@ public class XdsBRepositoryManager
 		}
 	}
 
+	/**
+	 * @param registryEndpointURI
+	 * @param repositoryEndpointURI
+	 * @throws AxisFault
+	 * @throws Exception
+	 */
 	public XdsBRepositoryManager(String registryEndpointURI,
 			String repositoryEndpointURI) throws AxisFault, Exception
 	{
@@ -146,6 +172,13 @@ public class XdsBRepositoryManager
 				false);
 	}
 	
+	/**
+	 * @param registryEndpointURI
+	 * @param repositoryEndpointURI
+	 * @param enableTLS
+	 * @throws AxisFault
+	 * @throws Exception
+	 */
 	public XdsBRepositoryManager(String registryEndpointURI,
 			String repositoryEndpointURI,
 			boolean enableTLS) throws AxisFault, Exception
@@ -362,6 +395,11 @@ public class XdsBRepositoryManager
 		}
 	}	
 
+	/**
+	 * @param submissionSetId
+	 * @param patientId
+	 * @throws IOException
+	 */
 	private void logIti41AuditMsg(String submissionSetId,
 			String patientId) throws IOException
 	{		
@@ -415,6 +453,12 @@ public class XdsBRepositoryManager
 		Syslog.getInstance("sslTcp").flush();
 	}
 
+	/**
+	 * @param cdaDocument
+	 * @param mimeType
+	 * @return
+	 * @throws Exception
+	 */
 	public RegistryResponseType provideAndRegisterDocumentSet(byte[] cdaDocument,
 			String mimeType) throws Exception
 	{
