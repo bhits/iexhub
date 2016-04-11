@@ -1,3 +1,18 @@
+/*******************************************************************************
+ * Copyright (c) 2016 Substance Abuse and Mental Health Services Administration (SAMHSA)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Contributors:
+ *     Eversolve, LLC - initial IExHub implementation
+ *******************************************************************************/
 package org.iexhub.connectors;
 
 import java.io.File;
@@ -41,6 +56,7 @@ import org.productivity.java.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig;
 
 
 /**
+ * PIX Add Manager
  * @author A. Sute
  *
  */
@@ -248,6 +264,10 @@ public class PIXManager
 		}
 	}
 
+	/**
+	 * @param patientId
+	 * @throws IOException
+	 */
 	private void logIti44AuditMsg(String patientId) throws IOException
 	{
 		String logMsg = FileUtils.readFileToString(new File(iti44AuditMsgTemplate));
@@ -300,6 +320,11 @@ public class PIXManager
 		Syslog.getInstance("sslTcp").flush();
 	}
 
+	/**
+	 * @param queryText
+	 * @param patientId
+	 * @throws IOException
+	 */
 	private void logIti45AuditMsg(String queryText,
 			String patientId) throws IOException
 	{
@@ -357,6 +382,13 @@ public class PIXManager
 		Syslog.getInstance("sslTcp").flush();
 	}
 
+	/**
+	 * @param patientId
+	 * @param domainOID
+	 * @param populateDataSource
+	 * @return
+	 * @throws IOException
+	 */
 	public PRPAIN201310UV02 patientRegistryGetIdentifiers(String patientId,
 			String domainOID,
 			boolean populateDataSource) throws IOException
@@ -539,6 +571,10 @@ public class PIXManager
 		return response;
 	}
 	
+	/**
+	 * @param fhirName
+	 * @return
+	 */
 	private PN populatePersonName(HumanNameDt fhirName)
 	{
 		EnFamily enFamily = null;
@@ -568,6 +604,10 @@ public class PIXManager
 		return personName;
 	}
 	
+	/**
+	 * @param fhirAddress
+	 * @return
+	 */
 	private AD populatePatientAddress(AddressDt fhirAddress)
 	{
 		AD address = new AD();
@@ -609,6 +649,11 @@ public class PIXManager
 		return address;
 	}
 
+	/**
+	 * @param fhirPatientResource
+	 * @return
+	 * @throws IOException
+	 */
 	public MCCIIN000002UV01 registerPatient(Patient fhirPatientResource) throws IOException
 	{
 		String dateOfBirth = (fhirPatientResource.getBirthDate() != null) ? fhirPatientResource.getBirthDateElement().getValueAsString()
@@ -991,6 +1036,16 @@ public class PIXManager
 	}
 	
 	// Non-FHIR version of registerPatient()
+	/**
+	 * @param givenName
+	 * @param familyName
+	 * @param middleName
+	 * @param dateOfBirth
+	 * @param gender
+	 * @param patientId
+	 * @return
+	 * @throws IOException
+	 */
 	public MCCIIN000002UV01 registerPatient(String givenName,
 			String familyName,
 			String middleName,

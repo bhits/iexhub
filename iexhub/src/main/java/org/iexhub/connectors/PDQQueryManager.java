@@ -1,3 +1,18 @@
+/*******************************************************************************
+ * Copyright (c) 2016 Substance Abuse and Mental Health Services Administration (SAMHSA)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Contributors:
+ *     Eversolve, LLC - initial IExHub implementation
+ *******************************************************************************/
 package org.iexhub.connectors;
 
 import java.io.File;
@@ -29,6 +44,8 @@ import org.productivity.java.syslog4j.Syslog;
 import org.productivity.java.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig;
 
 /**
+ * PDQV3 Query 
+ * ITI-47 
  * @author A. Sute
  *
  */
@@ -208,6 +225,11 @@ public class PDQQueryManager
 		}
 	}
 
+	/**
+	 * @param queryText
+	 * @param patientId
+	 * @throws IOException
+	 */
 	private void logIti47AuditMsg(String queryText,
 			String patientId) throws IOException
 	{
@@ -264,6 +286,24 @@ public class PDQQueryManager
 		Syslog.getInstance("sslTcp").flush();
 	}
 
+	/**
+	 * @param givenName
+	 * @param familyName
+	 * @param middleName
+	 * @param dateOfBirth
+	 * @param gender
+	 * @param mothersMaidenName
+	 * @param addressStreet
+	 * @param addressCity
+	 * @param addressState
+	 * @param addressPostalCode
+	 * @param patientId
+	 * @param patientIdDomain
+	 * @param otherIDsScopingOrganization
+	 * @param telecom
+	 * @return
+	 * @throws IOException
+	 */
 	public PRPAIN201306UV02 queryPatientDemographics(String givenName,
 			String familyName,
 			String middleName,
@@ -297,6 +337,12 @@ public class PDQQueryManager
 			null);
 	}
 
+	/**
+	 * @param queryResult
+	 * @param existingQueryId
+	 * @return
+	 * @throws IOException
+	 */
 	public MCCIIN000002UV01 queryCancel(PRPAIN201306UV02 queryResult,
 			String existingQueryId) throws IOException
 	{
@@ -408,6 +454,11 @@ public class PDQQueryManager
 		return response;
 	}
 	
+	/**
+	 * @param queryResult
+	 * @return
+	 * @throws IOException
+	 */
 	public PRPAIN201306UV02 queryContinue(PRPAIN201306UV02 queryResult) throws IOException
 	{
 		return queryContinue(queryResult,
@@ -415,6 +466,13 @@ public class PDQQueryManager
 				null);
 	}
 
+	/**
+	 * @param queryResult
+	 * @param resultSetSize
+	 * @param existingQueryId
+	 * @return
+	 * @throws IOException
+	 */
 	public PRPAIN201306UV02 queryContinue(PRPAIN201306UV02 queryResult,
 			int resultSetSize,
 			String existingQueryId) throws IOException
@@ -530,6 +588,25 @@ public class PDQQueryManager
 		return response;
 	}
 	
+	/**
+	 * @param givenName
+	 * @param familyName
+	 * @param middleName
+	 * @param dateOfBirth
+	 * @param gender
+	 * @param mothersMaidenName
+	 * @param addressStreet
+	 * @param addressCity
+	 * @param addressState
+	 * @param addressPostalCode
+	 * @param patientId
+	 * @param patientIdDomain
+	 * @param otherIDsScopingOrganization
+	 * @param telecom
+	 * @param resultSetSize
+	 * @return
+	 * @throws IOException
+	 */
 	public PRPAIN201306UV02 queryPatientDemographics(String givenName,
 			String familyName,
 			String middleName,
@@ -564,6 +641,26 @@ public class PDQQueryManager
 			null);
 	}
 	
+	/**
+	 * @param givenName
+	 * @param familyName
+	 * @param middleName
+	 * @param dateOfBirth
+	 * @param gender
+	 * @param mothersMaidenName
+	 * @param addressStreet
+	 * @param addressCity
+	 * @param addressState
+	 * @param addressPostalCode
+	 * @param patientId
+	 * @param patientIdDomain
+	 * @param otherIDsScopingOrganization
+	 * @param telecom
+	 * @param resultSetSize
+	 * @param existingQueryId
+	 * @return
+	 * @throws IOException
+	 */
 	public PRPAIN201306UV02 queryPatientDemographics(String givenName,
 			String familyName,
 			String middleName,
@@ -794,6 +891,11 @@ public class PDQQueryManager
 		return response;
 	}
 	
+	/**
+	 * @param mothersMaidenNameObj
+	 * @param mothersMaidenName
+	 * @return
+	 */
 	private PRPAMT201306UV02MothersMaidenName setMothersMaidenName(PRPAMT201306UV02MothersMaidenName mothersMaidenNameObj,
 			String mothersMaidenName)
 	{
@@ -815,6 +917,11 @@ public class PDQQueryManager
 		return mothersMaidenNameObj;
 	}
 
+	/**
+	 * @param patientTelecom
+	 * @param telecom
+	 * @return
+	 */
 	private PRPAMT201306UV02PatientTelecom setPatientTelecom(PRPAMT201306UV02PatientTelecom patientTelecom,
 			String telecom)
 	{
@@ -824,6 +931,9 @@ public class PDQQueryManager
 		return patientTelecom;
 	}
 
+	/**
+	 * @param qUQIIN000003UV01
+	 */
 	private void setCreationTime(QUQIIN000003UV01Type qUQIIN000003UV01)
 	{
 		DateTime dt = new DateTime(DateTimeZone.UTC);
@@ -844,6 +954,9 @@ public class PDQQueryManager
 		qUQIIN000003UV01.setCreationTime(creationTime);				
 	}
 	
+	/**
+	 * @param pRPA_IN201305UV02
+	 */
 	private void setCreationTime(PRPAIN201305UV02 pRPA_IN201305UV02)
 	{
 		DateTime dt = new DateTime(DateTimeZone.UTC);
@@ -864,6 +977,9 @@ public class PDQQueryManager
 		pRPA_IN201305UV02.setCreationTime(creationTime);		
 	}
 
+	/**
+	 * @param qUQIIN000003UV01
+	 */
 	private void setReceiverQueryContinuation(QUQIIN000003UV01Type qUQIIN000003UV01)
 	{
 		MCCIMT000300UV01Receiver receiver = new MCCIMT000300UV01Receiver();
@@ -881,6 +997,9 @@ public class PDQQueryManager
 		qUQIIN000003UV01.getReceiver().add(receiver);
 	}
 
+	/**
+	 * @param pRPA_IN201305UV02
+	 */
 	private void setReceiver(PRPAIN201305UV02 pRPA_IN201305UV02)
 	{
 		MCCIMT000100UV01Receiver receiver = new MCCIMT000100UV01Receiver();
@@ -905,6 +1024,9 @@ public class PDQQueryManager
 		pRPA_IN201305UV02.getReceiver().add(receiver);
 	}
 
+	/**
+	 * @param qUQIIN000003UV01
+	 */
 	private void setSenderQueryContinuation(QUQIIN000003UV01Type qUQIIN000003UV01)
 	{
 		MCCIMT000300UV01Sender sender = new MCCIMT000300UV01Sender();
@@ -919,6 +1041,9 @@ public class PDQQueryManager
 		qUQIIN000003UV01.setSender(sender);		
 	}
 
+	/**
+	 * @param pRPA_IN201305UV02
+	 */
 	private void setSender(PRPAIN201305UV02 pRPA_IN201305UV02)
 	{
 		MCCIMT000100UV01Sender sender = new MCCIMT000100UV01Sender();
@@ -943,6 +1068,13 @@ public class PDQQueryManager
 		pRPA_IN201305UV02.setSender(sender);
 	}
 	
+	/**
+	 * @param livingSubjectName
+	 * @param familyName
+	 * @param givenName
+	 * @param middleName
+	 * @return
+	 */
 	private PRPAMT201306UV02LivingSubjectName setLivingSubjectName(PRPAMT201306UV02LivingSubjectName livingSubjectName,
 			String familyName,
 			String givenName,
@@ -991,6 +1123,11 @@ public class PDQQueryManager
 		return livingSubjectName;
 	}
 	
+	/**
+	 * @param adminGender
+	 * @param gender
+	 * @return
+	 */
 	private PRPAMT201306UV02LivingSubjectAdministrativeGender setLivingSubjectAdministrativeGender(PRPAMT201306UV02LivingSubjectAdministrativeGender adminGender,
 			String gender)
 	{
@@ -1005,6 +1142,11 @@ public class PDQQueryManager
 		return adminGender;
 	}
 	
+	/**
+	 * @param otherIDsScopingOrganization
+	 * @param otherIDsScopingOrganizationString
+	 * @return
+	 */
 	private PRPAMT201306UV02OtherIDsScopingOrganization setOtherIDsScopingOrganization(PRPAMT201306UV02OtherIDsScopingOrganization otherIDsScopingOrganization,
 			String otherIDsScopingOrganizationString)
 	{
@@ -1018,6 +1160,14 @@ public class PDQQueryManager
 		return otherIDsScopingOrganization; 
 	}
 	
+	/**
+	 * @param patientAddress
+	 * @param addressStreet
+	 * @param addressCity
+	 * @param addressState
+	 * @param addressPostalCode
+	 * @return
+	 */
 	private PRPAMT201306UV02PatientAddress setPatientAddress(PRPAMT201306UV02PatientAddress patientAddress,
 			String addressStreet,
 			String addressCity,
@@ -1066,6 +1216,11 @@ public class PDQQueryManager
 		return patientAddress;
 	}
 	
+	/**
+	 * @param livingSubjectBirthTime
+	 * @param dateOfBirth
+	 * @return
+	 */
 	private PRPAMT201306UV02LivingSubjectBirthTime setLivingSubjectBirthTime(PRPAMT201306UV02LivingSubjectBirthTime livingSubjectBirthTime,
 			String dateOfBirth)
 	{
@@ -1089,6 +1244,12 @@ public class PDQQueryManager
 		return livingSubjectBirthTime;
 	}
 	
+	/**
+	 * @param livingSubjectId
+	 * @param patientId
+	 * @param patientIdDomain
+	 * @return
+	 */
 	private PRPAMT201306UV02LivingSubjectId setLivingSubjectId(PRPAMT201306UV02LivingSubjectId livingSubjectId,
 			String patientId,
 			String patientIdDomain)

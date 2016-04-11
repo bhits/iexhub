@@ -1,3 +1,18 @@
+/*******************************************************************************
+ * Copyright (c) 2016 Substance Abuse and Mental Health Services Administration (SAMHSA)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Contributors:
+ *     Eversolve, LLC - initial IExHub implementation
+ *******************************************************************************/
 package org.iexhub.connectors;
 
 import java.io.File;
@@ -44,6 +59,9 @@ import org.productivity.java.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig;
 
 
 /**
+ * XDS.b   Registry
+ * ITI-18 Ad-hoc Query
+ * ITI-43 Retrieve Document
  * @author A. Sute
  *
  */
@@ -80,6 +98,9 @@ public class XdsB
 
 	private static SSLTCPNetSyslogConfig sysLogConfig = null;
 
+	/**
+	 * @param registryEndpointURI
+	 */
 	public static void setRegistryEndpointURI(String registryEndpointURI)
 	{
 		if (registryStub != null)
@@ -89,6 +110,9 @@ public class XdsB
 		}
 	}
 	
+	/**
+	 * @param repositoryEndpointURI
+	 */
 	public static void setRepositoryEndpointURI(String repositoryEndpointURI)
 	{
 		if (repositoryStub != null)
@@ -98,6 +122,12 @@ public class XdsB
 		}
 	}
 
+	/**
+	 * @param registryEndpointURI
+	 * @param repositoryEndpointURI
+	 * @throws AxisFault
+	 * @throws Exception
+	 */
 	public XdsB(String registryEndpointURI,
 			String repositoryEndpointURI) throws AxisFault, Exception
 	{
@@ -106,6 +136,13 @@ public class XdsB
 				false);
 	}
 	
+	/**
+	 * @param registryEndpointURI
+	 * @param repositoryEndpointURI
+	 * @param enableTLS
+	 * @throws AxisFault
+	 * @throws Exception
+	 */
 	public XdsB(String registryEndpointURI,
 			String repositoryEndpointURI,
 			boolean enableTLS) throws AxisFault, Exception
@@ -374,6 +411,11 @@ public class XdsB
 //        return policy;
 //    }
 
+	/**
+	 * @param queryText
+	 * @param patientId
+	 * @throws IOException
+	 */
 	private void logIti18AuditMsg(String queryText,
 			String patientId) throws IOException
 	{
@@ -428,6 +470,13 @@ public class XdsB
 		Syslog.getInstance("sslTcp").flush();
 	}
 
+	/**
+	 * @param documentId
+	 * @param repositoryUniqueId
+	 * @param homeCommunityId
+	 * @param patientId
+	 * @throws IOException
+	 */
 	private void logIti43AuditMsg(String documentId,
 			String repositoryUniqueId,
 			String homeCommunityId,
@@ -498,6 +547,13 @@ public class XdsB
 		Syslog.getInstance("sslTcp").flush();
 	}
 
+	/**
+	 * @param patientID
+	 * @param queryStartDate
+	 * @param queryEndDate
+	 * @return
+	 * @throws Exception
+	 */
 	public AdhocQueryResponse registryStoredQuery(String patientID,
 			String queryStartDate,
 			String queryEndDate) throws Exception
@@ -603,6 +659,13 @@ public class XdsB
 		}
 	}
 	
+	/**
+	 * @param repositoryUniqueIdVal
+	 * @param documents
+	 * @param patientId
+	 * @return
+	 * @throws Exception
+	 */
 	public RetrieveDocumentSetResponse retrieveDocumentSet(String repositoryUniqueIdVal,
 			HashMap<String, String> documents,
 			String patientId) throws Exception
