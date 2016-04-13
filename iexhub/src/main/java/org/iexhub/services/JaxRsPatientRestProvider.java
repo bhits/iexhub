@@ -1,3 +1,18 @@
+/*******************************************************************************
+ * Copyright (c) 2016 Substance Abuse and Mental Health Services Administration (SAMHSA)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Contributors:
+ *     Eversolve, LLC - initial IExHub implementation
+ *******************************************************************************/
 package org.iexhub.services;
 
 import java.io.FileInputStream;
@@ -31,23 +46,23 @@ import org.iexhub.exceptions.PatientIdParamMissingException;
 import org.iexhub.exceptions.UnexpectedServerException;
 
 import PDQSupplier.org.hl7.v3.AD;
+import PDQSupplier.org.hl7.v3.COCTMT150003UV03ContactParty;
 import PDQSupplier.org.hl7.v3.COCTMT150003UV03Organization;
 import PDQSupplier.org.hl7.v3.ON;
-import PDQSupplier.org.hl7.v3.ObjectFactory;
 import PDQSupplier.org.hl7.v3.PN;
 import PDQSupplier.org.hl7.v3.PRPAIN201306UV02;
 import PDQSupplier.org.hl7.v3.PRPAIN201306UV02MFMIMT700711UV01Subject1;
 import PDQSupplier.org.hl7.v3.PRPAMT201310UV02OtherIDs;
 import PDQSupplier.org.hl7.v3.PRPAMT201310UV02Person;
-import PDQSupplier.org.hl7.v3.ST;
 import PDQSupplier.org.hl7.v3.TEL;
 import PIXManager.org.hl7.v3.MCCIIN000002UV01;
 import ca.uhn.fhir.jaxrs.server.AbstractJaxRsResourceProvider;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.AddressDt;
-import ca.uhn.fhir.model.dstu2.composite.ContactPointDt;
 import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
 import ca.uhn.fhir.model.dstu2.resource.Condition;
+import ca.uhn.fhir.model.dstu2.resource.Organization;
+import ca.uhn.fhir.model.dstu2.resource.Organization.Contact;
 import ca.uhn.fhir.model.dstu2.resource.Parameters;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
@@ -82,7 +97,8 @@ import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
 import ca.uhn.fhir.rest.server.interceptor.IServerInterceptor;
 
 /**
- * @author 
+ * FHIR Patient Implementation supports: find, search, and create.
+ * @author A. Sute
  */
 @Local
 @Path(JaxRsPatientRestProvider.PATH)
@@ -116,14 +132,6 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 	static {
 		PAGE_PROVIDER = new FifoMemoryPagingProvider(10);
 	}
-
-//	static {
-//		patients.put(String.valueOf(counter), createPatient("Van Houte"));
-//		patients.put(String.valueOf(counter), createPatient("Agnew"));
-//		for (int i = 0; i < 20; i++) {
-//			patients.put(String.valueOf(counter), createPatient("Random Patient " + counter));
-//		}
-//	}
 
 	public JaxRsPatientRestProvider() {
 		super(JaxRsPatientRestProvider.class);
@@ -161,6 +169,13 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 		}
 	}
 	
+	/**
+	 * Patient create
+	 * @param patient
+	 * @param theConditional
+	 * @return
+	 * @throws Exception
+	 */
 	@Create
 	public MethodOutcome create(@ResourceParam final Patient patient, @ConditionalUrlParam String theConditional) throws Exception
 	{
@@ -194,22 +209,7 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 		try
 		{
 			// ITI-44-Source-Feed message
-			MCCIIN000002UV01 pixRegistrationResponse = pixManager.registerPatient((patient.getName() != null) ? patient.getName().get(0).getGivenAsSingleString()
-							: null,
-					(patient.getName() != null) ? patient.getName().get(0).getFamilyAsSingleString()
-							: null,
-					null,
-					(patient.getBirthDate() != null) ? patient.getBirthDateElement().getValueAsString()
-							: null,
-					(patient.getGender() == null) ? ""
-							: (patient.getGender().compareToIgnoreCase(AdministrativeGenderEnum.MALE.getCode()) == 0) ? "M"
-									: ((patient.getGender().compareToIgnoreCase(AdministrativeGenderEnum.FEMALE.getCode()) == 0) ? "F"
-											: ((patient.getGender().compareToIgnoreCase(AdministrativeGenderEnum.OTHER.getCode()) == 0) ? "UN"
-													: "")),
-					(patient.getId() != null) ? patient.getId().getValueAsString()
-							: null,
-					(patient.getIdentifier() != null) ? patient.getIdentifier()
-							: null);
+			MCCIIN000002UV01 pixRegistrationResponse = pixManager.registerPatient(patient);
 			
 			if ((pixRegistrationResponse.getAcknowledgement().get(0).getTypeCode().getCode().compareToIgnoreCase("CA") == 0) ||
 				(pixRegistrationResponse.getAcknowledgement().get(0).getTypeCode().getCode().compareToIgnoreCase("AA") == 0))
@@ -228,15 +228,20 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 		return result;
 	}
 
-	@Delete
-	public MethodOutcome delete(@IdParam final IdDt theId) throws Exception {
-		final Patient deletedPatient = find(theId);
-		patients.remove(deletedPatient.getId().getIdPart());
-		final MethodOutcome result = new MethodOutcome().setCreated(true);
-		result.setResource(deletedPatient);
-		return result;
-	}
+//	@Delete
+//	public MethodOutcome delete(@IdParam final IdDt theId) throws Exception {
+//		final Patient deletedPatient = find(theId);
+//		patients.remove(deletedPatient.getId().getIdPart());
+//		final MethodOutcome result = new MethodOutcome().setCreated(true);
+//		result.setResource(deletedPatient);
+//		return result;
+//	}
 
+	/**
+	 * Parses the patient address from V3 Patient
+	 * @param patientPerson
+	 * @return patient address as FHIR Address datatype
+	 */
 	private AddressDt populateFhirAddress(PRPAMT201310UV02Person patientPerson)
 	{
 		AddressDt fhirAddr = new AddressDt();
@@ -275,7 +280,57 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 		
 		return fhirAddr;
 	}
-	
+
+	/**
+	 * Parses the contact address from V3 Contact
+	 * @param contact
+	 * @return FHIR Address datatype
+	 */
+	private AddressDt populateFhirAddress(COCTMT150003UV03ContactParty contact)
+	{
+		AddressDt fhirAddr = new AddressDt();
+
+		for (AD addr : contact.getAddr())
+		{
+			for (Serializable nameComponent : addr.getContent())
+			{
+				JAXBElement<?> testNameComponent = (JAXBElement<?>) nameComponent;
+				if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.AdxpCity.class)
+				{
+					fhirAddr.setCity(((PDQSupplier.org.hl7.v3.AdxpCity)testNameComponent.getValue()).getContent().get(0).toString());
+				}
+				else
+				if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.AdxpState.class)
+				{
+					fhirAddr.setState(((PDQSupplier.org.hl7.v3.AdxpState)testNameComponent.getValue()).getContent().get(0).toString());
+				}
+				else
+				if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.AdxpPostalCode.class)
+				{
+					fhirAddr.setPostalCode(((PDQSupplier.org.hl7.v3.AdxpPostalCode)testNameComponent.getValue()).getContent().get(0).toString());
+				}
+				else
+				if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.AdxpCountry.class)
+				{
+					fhirAddr.setCountry(((PDQSupplier.org.hl7.v3.AdxpCountry)testNameComponent.getValue()).getContent().get(0).toString());
+				}
+				else
+				if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.AdxpStreetAddressLine.class)
+				{
+					fhirAddr.addLine(((PDQSupplier.org.hl7.v3.AdxpStreetAddressLine)testNameComponent.getValue()).getContent().get(0).toString());
+				}
+			}
+		}
+		
+		return fhirAddr;
+	}
+
+	/**
+	 * Parses the V3 Patient structure returned by PDQV Query
+	 * @param queryResponse Query response message containing matching patient records
+	 * @return ArrayList<Patient> containing FHIR Patient object 
+	 * @throws ParseException
+	 */
 	private ArrayList<Patient> populatePatientObject(PRPAIN201306UV02 queryResponse) throws ParseException
 	{
 		ArrayList<Patient> result = new ArrayList<Patient>();
@@ -410,50 +465,62 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 				}
 			}
 			
-//			if ((subject.getRegistrationEvent() != null) &&
-//				(subject.getRegistrationEvent().getSubject1() != null) &&
-//				(subject.getRegistrationEvent().getSubject1().getPatient() != null) &&
-//				(subject.getRegistrationEvent().getSubject1().getPatient().getProviderOrganization() != null))
-//			{
-//				COCTMT150003UV03Organization provider = subject.getRegistrationEvent().getSubject1().getPatient().getProviderOrganization().getValue(); 
-//				String providerName = null;
-//				String providerTelecom = null;
-//				
-//				// Create Organization FHIR resource...
-////				Organization organization = new Organization();
-////				organization.setId(arg0);
-////				organization.setIdentifier(theValue)
-//
-//				// Extract name if present...
-//				if (provider.getName() != null)
-//				{
-//					for (ON name : provider.getName())
-//					{
-//						for (Serializable nameComponent : name.getContent())
-//						{
-//							JAXBElement<?> testNameComponent = (JAXBElement<?>) nameComponent;
-//							if (testNameComponent.getValue().getClass() == String.class)
-//							{
-//								providerName = testNameComponent.getValue().toString();
-//								break;
-//							}
-//						}
-//					}
-//				}
-//					
-////				if (provider.getContactParty() != null)
-////				{
-////					for (COCTMT150003UV03ContactParty contact : provider.getContactParty())
-////					{
-////						if (contact.getAddr() != null)
-////						{
-////							retVal.addAddress(populateFhirAddress(patientPerson));
-////						}
-////					}
-////				}
-//
-//					patient.addCareProvider().setDisplay(providerName);
-//			}
+			if ((subject.getRegistrationEvent() != null) &&
+				(subject.getRegistrationEvent().getSubject1() != null) &&
+				(subject.getRegistrationEvent().getSubject1().getPatient() != null) &&
+				(subject.getRegistrationEvent().getSubject1().getPatient().getProviderOrganization() != null))
+			{
+				COCTMT150003UV03Organization provider = subject.getRegistrationEvent().getSubject1().getPatient().getProviderOrganization().getValue(); 
+				
+				// Create Organization FHIR resource and set its ID...
+				Organization organization = new Organization();
+				organization.getId().setValue(provider.getId().get(0).getRoot());
+
+				// Extract name if present...
+				if (provider.getName() != null)
+				{
+					for (ON name : provider.getName())
+					{
+						for (Serializable nameComponent : name.getContent())
+						{
+							JAXBElement<?> testNameComponent = (JAXBElement<?>) nameComponent;
+							if (testNameComponent.getValue().getClass() == String.class)
+							{
+								organization.setName(testNameComponent.getValue().toString());
+								break;
+							}
+						}
+					}
+				}
+					
+				if (provider.getContactParty() != null)
+				{
+					for (COCTMT150003UV03ContactParty contact : provider.getContactParty())
+					{
+						Contact organizationContact = new Contact();
+						
+						if (contact.getTelecom() != null)
+						{
+							for (TEL telecom : contact.getTelecom())
+							{
+								organizationContact.addTelecom().setValue(telecom.getValue());
+							}
+						}
+						
+						if (contact.getAddr() != null)
+						{
+							//  While the PDQ ITI-47 response can contain multiple providerOrganization contact addresses, FHIR only allows one contact address to be specified...
+							organizationContact.setAddress(populateFhirAddress(contact));
+						}
+						
+						organization.getContact().add(organizationContact);
+					}
+				}
+
+				patient.addCareProvider().setReference("#"
+						+ organization.getId().getValue());
+				patient.getContained().getContainedResources().add(organization);
+			}
 			
 			result.add(patient);
 		}
@@ -461,6 +528,12 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 		return result;
 	}
 	
+	/**
+	 * Patient find
+	 * @param id
+	 * @return matching patient
+	 * @throws Exception
+	 */
 	@Read
 	public Patient find(@IdParam final IdDt id) throws Exception
 	{
@@ -517,8 +590,10 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 						null,
 						null,
 						null,
-						id.getIdPart().toString(),
-						null,
+						(id.getIdPart().contains("^")) ? id.getIdPart().split("\\^")[0]
+								: id.getIdPart(),
+						(id.getIdPart().contains("^")) ? id.getIdPart().split("\\^")[1]
+								: null,
 						null,
 						null);
 				
@@ -549,26 +624,26 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 		return result;
 	}
 
-	@Read(version = true)
-	public Patient findHistory(@IdParam final IdDt theId) {
-		if (patients.containsKey(theId.getIdPart())) {
-			final List<Patient> list = patients.get(theId.getIdPart());
-			for (final Patient patient : list) {
-				if (patient.getId().getVersionIdPartAsLong().equals(theId.getVersionIdPartAsLong())) {
-					return patient;
-				}
-			}
-		}
-		throw new ResourceNotFoundException(theId);
-	}
-
-	@Operation(name = "firstVersion", idempotent = true, returnParameters = { @OperationParam(name = "return", type = StringDt.class) })
-	public Parameters firstVersion(@IdParam final IdDt theId, @OperationParam(name = "dummy") StringDt dummyInput) throws Exception {
-		Parameters parameters = new Parameters();
-		Patient patient = find(new IdDt(theId.getResourceType(), theId.getIdPart(), "0"));
-		parameters.addParameter().setName("return").setResource(patient).setValue(new StringDt((1) + "" + "inputVariable [ " + dummyInput.getValue() + "]"));
-		return parameters;
-	}
+//	@Read(version = true)
+//	public Patient findHistory(@IdParam final IdDt theId) {
+//		if (patients.containsKey(theId.getIdPart())) {
+//			final List<Patient> list = patients.get(theId.getIdPart());
+//			for (final Patient patient : list) {
+//				if (patient.getId().getVersionIdPartAsLong().equals(theId.getVersionIdPartAsLong())) {
+//					return patient;
+//				}
+//			}
+//		}
+//		throw new ResourceNotFoundException(theId);
+//	}
+//
+//	@Operation(name = "firstVersion", idempotent = true, returnParameters = { @OperationParam(name = "return", type = StringDt.class) })
+//	public Parameters firstVersion(@IdParam final IdDt theId, @OperationParam(name = "dummy") StringDt dummyInput) throws Exception {
+//		Parameters parameters = new Parameters();
+//		Patient patient = find(new IdDt(theId.getResourceType(), theId.getIdPart(), "0"));
+//		parameters.addParameter().setName("return").setResource(patient).setValue(new StringDt((1) + "" + "inputVariable [ " + dummyInput.getValue() + "]"));
+//		return parameters;
+//	}
 
 	@Override
 	public AddProfileTagEnum getAddProfileTag() {
@@ -615,18 +690,19 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 	public boolean isUseBrowserFriendlyContentTypes() {
 		return true;
 	}
-
-	@GET
-	@Path("/{id}/$firstVersion")
-	public Response operationFirstVersionUsingGet(@PathParam("id") String id) throws IOException {
-		return customOperation(null, RequestTypeEnum.GET, id, "$firstVersion", RestOperationTypeEnum.EXTENDED_OPERATION_INSTANCE);
-	}
-
-	@POST
-	@Path("/{id}/$firstVersion")
-	public Response operationFirstVersionUsingGet(@PathParam("id") String id, final String resource) throws Exception {
-		return customOperation(resource, RequestTypeEnum.POST, id, "$firstVersion", RestOperationTypeEnum.EXTENDED_OPERATION_INSTANCE);
-	}
+	
+//
+//	@GET
+//	@Path("/{id}/$firstVersion")
+//	public Response operationFirstVersionUsingGet(@PathParam("id") String id) throws IOException {
+//		return customOperation(null, RequestTypeEnum.GET, id, "$firstVersion", RestOperationTypeEnum.EXTENDED_OPERATION_INSTANCE);
+//	}
+//
+//	@POST
+//	@Path("/{id}/$firstVersion")
+//	public Response operationFirstVersionUsingGet(@PathParam("id") String id, final String resource) throws Exception {
+//		return customOperation(resource, RequestTypeEnum.POST, id, "$firstVersion", RestOperationTypeEnum.EXTENDED_OPERATION_INSTANCE);
+//	}
 
 	@Search
 	public List<Patient> search(@RequiredParam(name = Patient.SP_FAMILY) final StringParam familyName,
@@ -693,7 +769,11 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 			{
 				// ITI-47-Consumer-Query-Patient-PatientId message
 				Calendar birthDateCalendar = Calendar.getInstance();
-				birthDateCalendar.setTime(birthDate.getValue());
+				if (birthDate != null)
+				{
+					birthDateCalendar.setTime(birthDate.getValue());
+				}
+				
 				PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.queryPatientDemographics(givenName.getValue(),
 						familyName.getValue(),
 						null,
@@ -757,47 +837,47 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 		return result;
 	}
 
-	@Search(compartmentName = "Condition")
-	public List<IResource> searchCompartment(@IdParam IdDt thePatientId) {
-		List<IResource> retVal = new ArrayList<IResource>();
-		Condition condition = new Condition();
-		condition.setId(new IdDt("665577"));
-		retVal.add(condition);
-		return retVal;
-	}
-
-	@Update
-	public MethodOutcome update(@IdParam final IdDt theId, @ResourceParam final Patient patient) {
-		final String idPart = theId.getIdPart();
-		if (patients.containsKey(idPart)) {
-			final List<Patient> patientList = patients.get(idPart);
-			final Patient lastPatient = getLast(patientList);
-			patient.setId(createId(theId.getIdPartAsLong(), lastPatient.getId().getVersionIdPartAsLong() + 1));
-			patientList.add(patient);
-			final MethodOutcome result = new MethodOutcome().setCreated(false);
-			result.setResource(patient);
-			result.setId(patient.getId());
-			return result;
-		} else {
-			throw new ResourceNotFoundException(theId);
-		}
-	}
-
-	private static IdDt createId(final Long id, final Long theVersionId) {
-		return new IdDt("Patient", "" + id, "" + theVersionId);
-	}
-
-	private static List<Patient> createPatient(final Patient patient) {
-		patient.setId(createId(1L, 1L));
-		final LinkedList<Patient> list = new LinkedList<Patient>();
-		list.add(patient);
-		return list;
-	}
-
-	private static List<Patient> createPatient(final String name) {
-		final Patient patient = new Patient();
-		patient.getNameFirstRep().addFamily(name);
-		return createPatient(patient);
-	}
+//	@Search(compartmentName = "Condition")
+//	public List<IResource> searchCompartment(@IdParam IdDt thePatientId) {
+//		List<IResource> retVal = new ArrayList<IResource>();
+//		Condition condition = new Condition();
+//		condition.setId(new IdDt("665577"));
+//		retVal.add(condition);
+//		return retVal;
+//	}
+//
+//	@Update
+//	public MethodOutcome update(@IdParam final IdDt theId, @ResourceParam final Patient patient) {
+//		final String idPart = theId.getIdPart();
+//		if (patients.containsKey(idPart)) {
+//			final List<Patient> patientList = patients.get(idPart);
+//			final Patient lastPatient = getLast(patientList);
+//			patient.setId(createId(theId.getIdPartAsLong(), lastPatient.getId().getVersionIdPartAsLong() + 1));
+//			patientList.add(patient);
+//			final MethodOutcome result = new MethodOutcome().setCreated(false);
+//			result.setResource(patient);
+//			result.setId(patient.getId());
+//			return result;
+//		} else {
+//			throw new ResourceNotFoundException(theId);
+//		}
+//	}
+//
+//	private static IdDt createId(final Long id, final Long theVersionId) {
+//		return new IdDt("Patient", "" + id, "" + theVersionId);
+//	}
+//
+//	private static List<Patient> createPatient(final Patient patient) {
+//		patient.setId(createId(1L, 1L));
+//		final LinkedList<Patient> list = new LinkedList<Patient>();
+//		list.add(patient);
+//		return list;
+//	}
+//
+//	private static List<Patient> createPatient(final String name) {
+//		final Patient patient = new Patient();
+//		patient.getNameFirstRep().addFamily(name);
+//		return createPatient(patient);
+//	}
 
 }

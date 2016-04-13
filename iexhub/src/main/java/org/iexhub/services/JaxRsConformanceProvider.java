@@ -1,3 +1,18 @@
+/*******************************************************************************
+ * Copyright (c) 2016 Substance Abuse and Mental Health Services Administration (SAMHSA)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Contributors:
+ *     Eversolve, LLC - initial IExHub implementation
+ *******************************************************************************/
 package org.iexhub.services;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,16 +28,16 @@ import ca.uhn.fhir.rest.server.Constants;
 import ca.uhn.fhir.rest.server.IResourceProvider;
 
 /**
- * Conformance Rest Service
+ * IExHub FHIR Conformance Service
  * 
- * @author Peter Van Houte | peter.vanhoute@agfa.com | Agfa Healthcare
+ * @author A. Sute | Eversolve, LLC
  */
 @Path("")
 @Stateless
 @Produces({ MediaType.APPLICATION_JSON, Constants.CT_FHIR_JSON, Constants.CT_FHIR_XML })
 public class JaxRsConformanceProvider extends AbstractJaxRsConformanceProvider {
 	private static final String SERVER_VERSION = "1.0.0";
-	private static final String SERVER_DESCRIPTION = "IExHub - Eversolve, LLC";
+	private static final String SERVER_DESCRIPTION = "Information Exchange Hub FHIR Services";
 	private static final String SERVER_NAME = "IExHub";
 	
     @Inject

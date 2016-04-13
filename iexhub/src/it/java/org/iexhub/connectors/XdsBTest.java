@@ -1,9 +1,25 @@
+/*******************************************************************************
+ * Copyright (c) 2016 Substance Abuse and Mental Health Services Administration (SAMHSA)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Contributors:
+ *     Eversolve, LLC - initial IExHub implementation
+ *******************************************************************************/
 /**
  * 
  */
 package org.iexhub.connectors;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,7 +31,6 @@ import java.util.Properties;
 
 import javax.activation.DataHandler;
 
-import org.junit.Test;
 import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.soap.SOAPFactory;
@@ -28,6 +43,7 @@ import org.iexhub.services.client.DocumentRegistry_ServiceStub.IdentifiableType;
 import org.iexhub.services.client.DocumentRegistry_ServiceStub.RegistryObjectListType;
 import org.iexhub.services.client.DocumentRepository_ServiceStub.DocumentResponse_type0;
 import org.iexhub.services.client.DocumentRepository_ServiceStub.RetrieveDocumentSetResponse;
+import org.junit.Test;
 
 /**
  * @author A. Sute
@@ -59,7 +75,14 @@ public class XdsBTest
 
 	private static String propertiesFile = "/temp/IExHub.properties";
 
-	private HashMap<String, String> queryRegistry(String enterpriseMRN,
+	/**
+	 * Query Registry
+	 * @param patientIdentifier
+	 * @param startDate
+	 * @param endDate
+	 * @return
+	 */
+	private HashMap<String, String> queryRegistry(String patientIdentifier,
 			String startDate,
 			String endDate)
 	{
@@ -67,7 +90,7 @@ public class XdsBTest
 
 		try
 		{
-			AdhocQueryResponse registryResponse = xdsB.registryStoredQuery(enterpriseMRN,
+			AdhocQueryResponse registryResponse = xdsB.registryStoredQuery(patientIdentifier,
 					(startDate != null) ? DateFormat.getDateInstance().format(startDate) : null,
 					(endDate != null) ? DateFormat.getDateInstance().format(endDate) : null);
 			
@@ -99,7 +122,7 @@ public class XdsBTest
 						{
 							String val = externalIdentifier.getName().getInternationalStringTypeSequence()[0].getLocalizedString().getValue().getFreeFormText();
 							if ((val != null) &&
-								(val.compareToIgnoreCase("XDSDocumentEntry.uniqueId") == 0))
+								val.equalsIgnoreCase("XDSDocumentEntry.uniqueId") )
 							{
 								uniqueId = externalIdentifier.getValue().getLongName();
 								break;
@@ -175,12 +198,12 @@ public class XdsBTest
 			xdsB = new XdsB(registryEndpointURI,
 					repositoryEndpointURI);
 			
-			String enterpriseMRN = "'086666c2fd154f7^^^&1.3.6.1.4.1.21367.2005.13.20.3000&ISO'";
+			String patientIdentifier = "'086666c2fd154f7^^^&1.3.6.1.4.1.21367.2005.13.20.3000&ISO'";
 			String startDate = null;
 			String endDate = null;
 
 			assertFalse("Error - no documents found",
-					queryRegistry(enterpriseMRN, startDate, endDate).isEmpty());
+					queryRegistry(patientIdentifier, startDate, endDate).isEmpty());
 			
 			log.info("Registry stored query (ITI-18) unit test ending.");
 		}
@@ -204,14 +227,14 @@ public class XdsBTest
 					null,
 					true);
 			
-//			String enterpriseMRN = "IHEBLUE-2332^^^&1.3.6.1.4.1.21367.13.20.3000&ISO^PI";
-//			String enterpriseMRN = "IHEBLUE-1019^^^&1.3.6.1.4.1.21367.13.20.3000&ISO";
-//			String enterpriseMRN = "IHEGREEN-2376^^^&1.3.6.1.4.1.21367.13.20.2000&ISO";
-			String enterpriseMRN = "940140b7-7c8b-4491-90f4-4819ded969bf^^^&1.3.6.1.4.1.21367.13.20.3000&ISO";
+//			String patientIdentifier = "IHEBLUE-2332^^^&1.3.6.1.4.1.21367.13.20.3000&ISO^PI";
+//			String patientIdentifier = "IHEBLUE-1019^^^&1.3.6.1.4.1.21367.13.20.3000&ISO";
+//			String patientIdentifier = "IHEGREEN-2376^^^&1.3.6.1.4.1.21367.13.20.2000&ISO";
+			String patientIdentifier = "940140b7-7c8b-4491-90f4-4819ded969bf^^^&1.3.6.1.4.1.21367.13.20.3000&ISO";
 			String startDate = null;
 			String endDate = null;
 
-			HashMap<String, String> documents = queryRegistry(enterpriseMRN, startDate, endDate);
+			HashMap<String, String> documents = queryRegistry(patientIdentifier, startDate, endDate);
 
 			assertFalse("Error - no documents found",
 					documents == null);
@@ -238,13 +261,13 @@ public class XdsBTest
 			xdsB = new XdsB("http://ihexds.nist.gov:12090/tf6/services/xcaregistry",
 					"http://ihexds.nist.gov:12090/tf6/services/xcarepository");
 			
-			String enterpriseMRN = "'f10f8d972aba4fd^^^&1.3.6.1.4.1.21367.2005.13.20.3000&ISO'"; 
+			String patientIdentifier = "'f10f8d972aba4fd^^^&1.3.6.1.4.1.21367.2005.13.20.3000&ISO'"; 
 			//"'086666c2fd154f7^^^&1.3.6.1.4.1.21367.2005.13.20.3000&ISO'";
 			String startDate = null;
 			String endDate = null;
 
 			assertFalse("Error - no documents found",
-					queryRegistry(enterpriseMRN, startDate, endDate).isEmpty());
+					queryRegistry(patientIdentifier, startDate, endDate).isEmpty());
 			log.info("XCA registry stored query unit test ending.");
 		}
 		catch (Exception e)
@@ -266,18 +289,18 @@ public class XdsBTest
 			xdsB = new XdsB("http://10.242.52.11:9080/tf6/services/xcaregistry",
 					"http://10.242.52.11:9080/tf6/services/xcarepository");
 			
-			String enterpriseMRN = "'P20160124152404.2^^^&1.3.6.1.4.1.21367.2005.13.20.1000&ISO'"; 
+			String patientIdentifier = "'P20160124152404.2^^^&1.3.6.1.4.1.21367.2005.13.20.1000&ISO'"; 
 			//"'086666c2fd154f7^^^&1.3.6.1.4.1.21367.2005.13.20.3000&ISO'";
 			String startDate = null;
 			String endDate = null;
 
-			HashMap<String, String> documents = queryRegistry(enterpriseMRN, startDate, endDate);
+			HashMap<String, String> documents = queryRegistry(patientIdentifier, startDate, endDate);
 			assertFalse("Error - no documents found",
 					documents.isEmpty());
 			
 			RetrieveDocumentSetResponse documentSetResponse = xdsB.retrieveDocumentSet(xdsBRepositoryUniqueId,
 					documents,
-					enterpriseMRN);
+					patientIdentifier);
 			log.info("XDS.b document set query response in log message immediately following...");
 			OMElement requestElement = documentSetResponse.getOMElement(RetrieveDocumentSetResponse.MY_QNAME,
 					soapFactory);
@@ -355,17 +378,17 @@ public class XdsBTest
 			xdsB = new XdsB(registryEndpointURI,
 					repositoryEndpointURI);
 			
-			String enterpriseMRN = "'086666c2fd154f7^^^&1.3.6.1.4.1.21367.2005.13.20.3000&ISO'";
+			String patientIdentifier = "'086666c2fd154f7^^^&1.3.6.1.4.1.21367.2005.13.20.3000&ISO'";
 			String startDate = null;
 			String endDate = null;
 
-			HashMap<String, String> documents = queryRegistry(enterpriseMRN, startDate, endDate);
+			HashMap<String, String> documents = queryRegistry(patientIdentifier, startDate, endDate);
 			assertFalse("Error - no documents found",
 					documents.isEmpty());
 			
 			RetrieveDocumentSetResponse documentSetResponse = xdsB.retrieveDocumentSet(xdsBRepositoryUniqueId,
 					documents,
-					enterpriseMRN);
+					patientIdentifier);
 			log.info("XDS.b document set query response in log message immediately following...");
 			OMElement requestElement = documentSetResponse.getOMElement(RetrieveDocumentSetResponse.MY_QNAME,
 					soapFactory);
@@ -423,14 +446,14 @@ public class XdsBTest
 					xdsBRepositoryTLSEndpointURI,
 					true);
 			
-//			String enterpriseMRN = "IHERED-2332^^^&1.3.6.1.4.1.21367.13.20.1000&ISO^PI";
-//			String enterpriseMRN = "IHEBLUE-1019^^^&1.3.6.1.4.1.21367.13.20.3000&ISO";
-//			String enterpriseMRN = "IHEGREEN-2376^^^&1.3.6.1.4.1.21367.13.20.2000&ISO";
-			String enterpriseMRN = "940140b7-7c8b-4491-90f4-4819ded969bf^^^&1.3.6.1.4.1.21367.13.20.3000&ISO";
+//			String patientIdentifier = "IHERED-2332^^^&1.3.6.1.4.1.21367.13.20.1000&ISO^PI";
+//			String patientIdentifier = "IHEBLUE-1019^^^&1.3.6.1.4.1.21367.13.20.3000&ISO";
+//			String patientIdentifier = "IHEGREEN-2376^^^&1.3.6.1.4.1.21367.13.20.2000&ISO";
+			String patientIdentifier = "940140b7-7c8b-4491-90f4-4819ded969bf^^^&1.3.6.1.4.1.21367.13.20.3000&ISO";
 			String startDate = null;
 			String endDate = null;
 
-			HashMap<String, String> documents = queryRegistry(enterpriseMRN, startDate, endDate);
+			HashMap<String, String> documents = queryRegistry(patientIdentifier, startDate, endDate);
 			assertFalse("Error - no documents found",
 					documents == null);
 			assertFalse("Error - no documents found",
@@ -438,7 +461,7 @@ public class XdsBTest
 			
 			RetrieveDocumentSetResponse documentSetResponse = xdsB.retrieveDocumentSet(xdsBRepositoryUniqueId,
 					documents,
-					enterpriseMRN);
+					patientIdentifier);
 			log.info("XDS.b document set query response in log message immediately following...");
 			OMElement requestElement = documentSetResponse.getOMElement(RetrieveDocumentSetResponse.MY_QNAME,
 					soapFactory);
