@@ -98,7 +98,8 @@ public class PatientResourceTest
 			IGenericClient client = ctxt.newRestfulGenericClient(serverBaseUrl);
 			client.registerInterceptor(loggingInterceptor);							// Required only for logging
 			Patient retVal = client.read(Patient.class,
-					"d80383d0-f561-11e5-83b6-00155dc95705%5E2.16.840.1.113883.4.357");
+					"HJ-361%5E2.16.840.1.113883.3.72.5.9.1");
+//		"d80383d0-f561-11e5-83b6-00155dc95705%5E2.16.840.1.113883.4.357");
 			assertTrue("Error - unexpected return value for testFindPatient",
 					retVal != null);
 		}
@@ -178,7 +179,7 @@ public class PatientResourceTest
 	}
 
 	/**
-	 * Test method for {@link com.InfoExchangeHub.Services.JaxRsPatientRestProvider#create(Patient patient, String theConditional)}.
+	 * Test method for {@link org.iexhub.services.JaxRsPatientRestProvider#create(Patient patient, String theConditional)}.
 	 */
 	@Test
 	public void testRegisterPatient()

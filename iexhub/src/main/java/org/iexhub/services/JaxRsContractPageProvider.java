@@ -22,16 +22,24 @@ import javax.ws.rs.core.MediaType;
 
 import ca.uhn.fhir.jaxrs.server.AbstractJaxRsPageProvider;
 import ca.uhn.fhir.rest.server.Constants;
+import ca.uhn.fhir.rest.server.FifoMemoryPagingProvider;
 import ca.uhn.fhir.rest.server.IPagingProvider;
 
 @Path("/")
 @Stateless
 @Produces({ MediaType.APPLICATION_JSON, Constants.CT_FHIR_JSON, Constants.CT_FHIR_XML })
-public class JaxRsPageProvider extends AbstractJaxRsPageProvider
+public class JaxRsContractPageProvider extends AbstractJaxRsPageProvider
 {
+	public static final IPagingProvider PAGE_PROVIDER;
+
+	static
+	{
+		PAGE_PROVIDER = new FifoMemoryPagingProvider(10);
+	}
+
 	@Override
 	public IPagingProvider getPagingProvider()
 	{
-		return JaxRsPatientRestProvider.PAGE_PROVIDER;
+		return PAGE_PROVIDER;
 	}
 }

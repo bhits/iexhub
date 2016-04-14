@@ -43,6 +43,9 @@ public class JaxRsConformanceProvider extends AbstractJaxRsConformanceProvider {
     @Inject
     private JaxRsPatientRestProvider patientProvider;
 
+    @Inject
+    private JaxRsContractRestProvider contractProvider;
+
 	/**
 	 * Standard Constructor
 	 */
@@ -57,6 +60,7 @@ public class JaxRsConformanceProvider extends AbstractJaxRsConformanceProvider {
 		ConcurrentHashMap<Class<? extends IResourceProvider>, IResourceProvider> map = new ConcurrentHashMap<Class<? extends IResourceProvider>, IResourceProvider>();
 		map.put(JaxRsConformanceProvider.class, this);
 		map.put(JaxRsPatientRestProvider.class, patientProvider);
+		map.put(JaxRsContractRestProvider.class, contractProvider);
 		return map;
 	}
 }
