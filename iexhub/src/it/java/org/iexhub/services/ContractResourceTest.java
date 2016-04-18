@@ -14,6 +14,7 @@
  *     Eversolve, LLC - initial IExHub implementation
  *******************************************************************************/
 /**
+ * FHIR Contract Resource Test
  * 
  */
 package org.iexhub.services;
@@ -37,9 +38,12 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
 import ca.uhn.fhir.model.dstu2.resource.Contract;
 import ca.uhn.fhir.model.dstu2.resource.Organization;
+import ca.uhn.fhir.model.dstu2.resource.Practitioner;
+import ca.uhn.fhir.model.dstu2.resource.SearchParameter;
 import ca.uhn.fhir.model.dstu2.resource.Organization.Contact;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
+import ca.uhn.fhir.model.dstu2.valueset.ContractTypeCodesEnum;
 import ca.uhn.fhir.model.primitive.DateDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.rest.api.MethodOutcome;
@@ -57,7 +61,43 @@ public class ContractResourceTest
 	private static String iExHubAssigningAuthority = "ISO";
 	private static int fhirClientSocketTimeout = 5000;
 	private static String serverBaseUrl = "http://localhost:8080/iexhub/services";
+	private static String patientSignerId = "123-45-6789";
+	private static Patient testPatient = new Patient();
+	{
+		
+		testPatient.addName().addFamily("SMITH").addGiven("ANDREW");
+		// SSN
+		
+		testPatient.addIdentifier().setSystem("2.16.840.1.113883.4.1").setValue(patientSignerId);
+		testPatient.setGender(AdministrativeGenderEnum.MALE);
+		Calendar dobCalendar = Calendar.getInstance();
+		dobCalendar.set(1978,
+				11,
+				8);
+		DateDt dob = new DateDt();
+		dob.setValue(dobCalendar.getTime());
+		testPatient.setBirthDate(dob);
 
+		// Provider organization...
+		Organization providerOrganization = new Organization();
+		IdDt orgId = new IdDt();
+		orgId.setValue("urn:oid:2.16.840.1.113883.6.1");
+		providerOrganization.setId(orgId);
+		providerOrganization.setName("Provider Organization");
+		providerOrganization.addAddress().addLine("1 Main Street").setCity("Cupertino").setState("CA").setPostalCode("95014");
+		Contact organizationContact = new Contact();
+		organizationContact.addTelecom().setValue("tel:408-555-1212");
+		HumanNameDt contactName = new HumanNameDt();
+		contactName.addFamily().setValue("JONES");
+		contactName.addGiven().setValue("MARTHA");
+		organizationContact.setName(contactName);
+		List<Contact> contacts = new ArrayList<Contact>();
+		contacts.add(organizationContact);
+		providerOrganization.setContact(contacts);
+		testPatient.addCareProvider().setReference("#urn:oid:2.16.840.1.113883.6.1");
+		testPatient.getContained().getContainedResources().add(providerOrganization);
+	
+	}
 	
 	/**
 	 * Test method for {@link org.iexhub.services.JaxRsContractRestProvider#find(@IdParam final IdDt id)}.
@@ -148,20 +188,15 @@ public class ContractResourceTest
 			loggingInterceptor.setLogger(logger);
 			
 			IGenericClient client = ctxt.newRestfulGenericClient(serverBaseUrl);
-			client.registerInterceptor(loggingInterceptor);							// Required only for logging
+			client.registerInterceptor(loggingInterceptor);		
 			
-//			ca.uhn.fhir.model.dstu2.resource.Bundle response = client.search()
-//				      .forResource(Patient.class)
-////				      .where(Patient.FAMILY.matches().values("HINOJOXS"))
-////				      .and(Patient.GIVEN.matches().values("JOYCE"))
-//				      .where(Patient.FAMILY.matches().values("SMITH"))
-//				      .and(Patient.GIVEN.matches().values("ANDREW"))
-////				      .and(Patient.BIRTHDATE.exactly().day("1967-12-14"))					// MUST specify as YYYY-MM-DD
-////				      .and(Patient.TELECOM.exactly().identifier("tel:706-750-4736"))		// MUST specify as "tel:XXX-XXX-XXXX" if phone number
-//				      .returnBundle(ca.uhn.fhir.model.dstu2.resource.Bundle.class)
-//				      .execute();
-//			assertTrue("Error - unexpected return value for testSearchContract",
-//					response != null);
+			ca.uhn.fhir.model.dstu2.resource.Bundle response = client.search()
+					.forResource(Contract.class)
+					//.where(Contract.)
+					.returnBundle(ca.uhn.fhir.model.dstu2.resource.Bundle.class).execute();
+				
+		assertTrue("Error - unexpected return value for testSearchContract",
+					response != null);
 		}
 		catch (Exception e)
 		{
@@ -200,8 +235,10 @@ public class ContractResourceTest
 		{
 			Contract contract = new Contract();
 
-			// TBD...
-						
+			contract.getIdentifier().setSystem("uri").setValue("guid");
+			contract.getType().setValueAsEnum(ContractTypeCodesEnum.DISCLOSURE);
+			contract.getSubject().get(0).setReference("#"+patientSignerId);	
+			contract.getContained().getContainedResources().add(testPatient);
 			Logger logger = LoggerFactory.getLogger(PatientResourceTest.class);
 			FhirContext ctxt = new FhirContext();
 			ctxt.getRestfulClientFactory().setSocketTimeout(ContractResourceTest.fhirClientSocketTimeout);
