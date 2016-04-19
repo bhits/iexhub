@@ -25,7 +25,7 @@ import ca.uhn.fhir.rest.server.Constants;
 import ca.uhn.fhir.rest.server.FifoMemoryPagingProvider;
 import ca.uhn.fhir.rest.server.IPagingProvider;
 
-@Path("/")
+@Path(/*"/"*/ JaxRsPatientRestProvider.PATH)
 @Stateless
 @Produces({ MediaType.APPLICATION_JSON, Constants.CT_FHIR_JSON, Constants.CT_FHIR_XML })
 public class JaxRsPatientPageProvider extends AbstractJaxRsPageProvider
