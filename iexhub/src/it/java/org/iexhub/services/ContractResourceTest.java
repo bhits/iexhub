@@ -33,9 +33,9 @@ import org.slf4j.LoggerFactory;
 import org.iexhub.exceptions.UnexpectedServerException;
 import org.junit.*;
 
-
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
+import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Contract;
 import ca.uhn.fhir.model.dstu2.resource.Organization;
 import ca.uhn.fhir.model.dstu2.resource.Practitioner;
@@ -47,103 +47,118 @@ import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
 import ca.uhn.fhir.model.dstu2.valueset.ContactPointSystemEnum;
 import ca.uhn.fhir.model.dstu2.valueset.ContactPointUseEnum;
 import ca.uhn.fhir.model.dstu2.valueset.ContractTypeCodesEnum;
+import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
 import ca.uhn.fhir.model.primitive.DateDt;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import ca.uhn.fhir.model.primitive.IdDt;
+import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
+
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.client.IGenericClient;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
 
 /**
+ * Contract Resource Test - used to create, find, search Privacy Consents
+ * 
  * @author A. Sute
  *
  */
-public class ContractResourceTest
-{
+public class ContractResourceTest {
 	private static String propertiesFile = "/temp/IExHub.properties";
 	private static String uriPrefix = "urn:oid";
 	private static String iExHubDomainOid = "2.16.840.1.113883.3.72.5.9.1";
 	private static String iExHubAssigningAuthority = "ISO";
 	private static int fhirClientSocketTimeout = 5000;
 	private static String serverBaseUrl = "http://localhost:8080/iexhub/services";
-	private static String localPatientId = "4d6e1717-99f8-4e96-bf88-be7cea8f5820";
-	private static String providerOrganizationId = "2.16.840.1.113883.6.1";
-	private static String practitionerId = "db653797-5ad7-41bf-8abf-14588da7f7e8";
+	private static String patientId = "4d6e1717-99f8-4e96-bf88-be7cea8f5820";
+	private static String sourceOrganizationId = "2.16.840.1.113883.6.1";
+	private static String sourcePractitionerId = "db653797-5ad7-41bf-8abf-14588da7f7e8";
+	private static String recipientPractitionerId = "1a54a1c7-34e8-4387-ba88-704620c5a3c8";
 	private static String versionId = "1"; // default version
-	//FHIR objects used to create a Consent
+	// FHIR objects used to create a Consent
 	private static Patient testPatient = new Patient();
-	private static Organization providerOrganization = new Organization();
+	private static Organization sourceOrganization = new Organization();
 	private static Contact organizationContact = new Contact();
-	private static Practitioner testPractitioner = new Practitioner();
+	private static Practitioner sourcePractitioner = new Practitioner();
+	private static Practitioner recipientPractitioner = new Practitioner();
 	{
-		//create the testPatient resource to be embedded into a contract
-		testPatient.setId(new IdDt("Patient", localPatientId,versionId));
+		// create the testPatient resource to be embedded into a contract
+		testPatient.setId(new IdDt("Patient", patientId, versionId));
 		testPatient.addName().addFamily("Patient_family").addGiven("Patient_given_name");
 		// set SSN value using coding system 2.16.840.1.113883.4.1
-		testPatient.addIdentifier().setSystem(uriPrefix+"2.16.840.1.113883.4.1").setValue("123-45-6789");
+		testPatient.addIdentifier().setSystem(uriPrefix + "2.16.840.1.113883.4.1").setValue("123-45-6789");
 		// set local patient id
-		testPatient.addIdentifier().setSystem(uriPrefix+iExHubDomainOid).setValue(localPatientId);
-		testPatient.setGender(AdministrativeGenderEnum.MALE);
+		testPatient.addIdentifier().setSystem(uriPrefix + iExHubDomainOid).setValue(patientId);
+		testPatient.setGender(AdministrativeGenderEnum.FEMALE);
 		testPatient.setBirthDate(new DateDt("1966-10-22"));
-		testPatient.addAddress().addLine("Patient Address Line").setCity("City").setState("NY").setPostalCode("12345").setType(AddressTypeEnum.POSTAL);
-		testPatient.addTelecom().setUse(ContactPointUseEnum.HOME).setSystem(ContactPointSystemEnum.PHONE).setValue("555-1212");
-		// Provider organization...		
-		//set id to be used to reference the providerOrganization as an inline resource 
-		providerOrganization.setId(new IdDt(providerOrganizationId));
-		providerOrganization.addIdentifier().setSystem("NPI uri").setValue("NPI of organization");
-		providerOrganization.setName("Provider Organization");
-		providerOrganization.addAddress().addLine("1 Main Street").setCity("Cupertino").setState("CA").setPostalCode("95014");
-		//contact
+		testPatient.addAddress().addLine("Patient Address Line").setCity("City").setState("NY").setPostalCode("12345")
+				.setType(AddressTypeEnum.POSTAL);
+		testPatient.addTelecom().setUse(ContactPointUseEnum.HOME).setSystem(ContactPointSystemEnum.PHONE)
+				.setValue("555-1212");
+		// Provider organization...
+		// set id to be used to reference the providerOrganization as an inline
+		// resource
+		sourceOrganization.setId(new IdDt(sourceOrganizationId));
+		sourceOrganization.addIdentifier().setSystem("NPI uri").setValue("NPI of source organization");
+		sourceOrganization.setName("Provider Organization");
+		sourceOrganization.addAddress().addLine("1 Main Street").setCity("Cupertino").setState("CA")
+				.setPostalCode("95014");
+		// contact
 		organizationContact.addTelecom().setSystem(ContactPointSystemEnum.PHONE).setValue("tel:408-555-1212");
-		HumanNameDt contactName = new HumanNameDt();		
-		contactName.addFamily().setValue("JONES");
-		contactName.addGiven().setValue("MARTHA");
+		HumanNameDt contactName = new HumanNameDt();
+		contactName.addFamily().setValue("Contact Family Name");
+		contactName.addGiven().setValue("Contact Given Name");
 		organizationContact.setName(contactName);
 		List<Contact> contacts = new ArrayList<Contact>();
 		contacts.add(organizationContact);
-		providerOrganization.setContact(contacts);
-		//set reference using "#" prefix
-		testPatient.addCareProvider().setReference("#"+providerOrganizationId);
-		//add resource 
-		testPatient.getContained().getContainedResources().add(providerOrganization);
-		//intended recipient	
-		testPractitioner.setId(new IdDt("Practitioner",practitionerId, versionId));
-		testPractitioner.addIdentifier().setSystem("NPI uri").setValue("NPI");
-		testPractitioner.getName().addFamily("Practitioner Last Name").addGiven("Practitioner Given Name").addSuffix("MD");
-		testPractitioner.addAddress().addLine("Practitioner Address Line").setCity("City").setState("NY").setPostalCode("98765");
-		testPractitioner.addTelecom().setSystem(ContactPointSystemEnum.PHONE).setValue("212-555-1212");
-	
+		sourceOrganization.setContact(contacts);
+		// set reference using "#" prefix
+		testPatient.addCareProvider().setReference("#" + sourceOrganizationId);
+		// add resource
+		testPatient.getContained().getContainedResources().add(sourceOrganization);
+		// authoring practitioner
+		sourcePractitioner.setId(new IdDt("Practitioner", sourcePractitionerId, versionId));
+		sourcePractitioner.addIdentifier().setSystem("NPI uri").setValue("NPI");
+		sourcePractitioner.getName().addFamily("Source Practitioner Last Name")
+				.addGiven("Recipient Practitioner Given Name").addSuffix("MD");
+		sourcePractitioner.addAddress().addLine("Source Practitioner Address Line").setCity("City").setState("NY")
+				.setPostalCode("98765");
+		sourcePractitioner.addTelecom().setSystem(ContactPointSystemEnum.PHONE).setValue("212-555-1212");
+		// recipient practitioner
+		recipientPractitioner.setId(new IdDt("Practitioner", recipientPractitionerId, versionId));
+		recipientPractitioner.addIdentifier().setSystem("NPI uri").setValue("NPI");
+		recipientPractitioner.getName().addFamily("Recipient Practitioner Last Name")
+				.addGiven("Recipient Practitioner Given Name").addSuffix("MD");
+		recipientPractitioner.addAddress().addLine("Recipient Practitioner Address Line").setCity("City").setState("NY")
+				.setPostalCode("98765");
+		recipientPractitioner.addTelecom().setSystem(ContactPointSystemEnum.PHONE).setValue("212-000-1212");
 	}
-	
+
 	/**
-	 * Test method for {@link org.iexhub.services.JaxRsContractRestProvider#find(@IdParam final IdDt id)}.
+	 * Test method for
+	 * {@link org.iexhub.services.JaxRsContractRestProvider#find(@IdParam final
+	 * IdDt id)}.
 	 */
 	@Test
-	public void testFindContract()
-	{
+	public void testFindContract() {
 		Properties props = null;
-		try
-		{
+		try {
 			props = new Properties();
 			props.load(new FileInputStream(propertiesFile));
-			ContractResourceTest.iExHubDomainOid = (props.getProperty("IExHubDomainOID") == null) ? ContractResourceTest.iExHubDomainOid
-					: props.getProperty("IExHubDomainOID");
-			ContractResourceTest.iExHubAssigningAuthority = (props.getProperty("IExHubAssigningAuthority") == null) ? ContractResourceTest.iExHubAssigningAuthority
-					: props.getProperty("IExHubAssigningAuthority");
-			ContractResourceTest.fhirClientSocketTimeout = (props.getProperty("FHIRClientSocketTimeoutInMs") == null) ? ContractResourceTest.fhirClientSocketTimeout
+			ContractResourceTest.iExHubDomainOid = (props.getProperty("IExHubDomainOID") == null)
+					? ContractResourceTest.iExHubDomainOid : props.getProperty("IExHubDomainOID");
+			ContractResourceTest.iExHubAssigningAuthority = (props.getProperty("IExHubAssigningAuthority") == null)
+					? ContractResourceTest.iExHubAssigningAuthority : props.getProperty("IExHubAssigningAuthority");
+			ContractResourceTest.fhirClientSocketTimeout = (props.getProperty("FHIRClientSocketTimeoutInMs") == null)
+					? ContractResourceTest.fhirClientSocketTimeout
 					: Integer.parseInt(props.getProperty("FHIRClientSocketTimeoutInMs"));
-		}
-		catch (IOException e)
-		{
-			throw new UnexpectedServerException("Error encountered loading properties file, "
-					+ propertiesFile
-					+ ", "
-					+ e.getMessage());
+		} catch (IOException e) {
+			throw new UnexpectedServerException(
+					"Error encountered loading properties file, " + propertiesFile + ", " + e.getMessage());
 		}
 
-		try
-		{
+		try {
 			Logger logger = LoggerFactory.getLogger(ContractResourceTest.class);
 			FhirContext ctxt = new FhirContext();
 			ctxt.getRestfulClientFactory().setSocketTimeout(ContractResourceTest.fhirClientSocketTimeout);
@@ -152,49 +167,42 @@ public class ContractResourceTest
 			loggingInterceptor.setLogRequestSummary(true);
 			loggingInterceptor.setLogRequestBody(true);
 			loggingInterceptor.setLogger(logger);
-			
+
 			IGenericClient client = ctxt.newRestfulGenericClient(serverBaseUrl);
-			client.registerInterceptor(loggingInterceptor);							// Required only for logging
-			Contract retVal = client.read(Contract.class,
-					"HJ-361%5E2.16.840.1.113883.3.72.5.9.1");
-//		"d80383d0-f561-11e5-83b6-00155dc95705%5E2.16.840.1.113883.4.357");
-			assertTrue("Error - unexpected return value for testFindContract",
-					retVal != null);
-		}
-		catch (Exception e)
-		{
+			client.registerInterceptor(loggingInterceptor); // Required only for
+															// logging
+			Contract retVal = client.read(Contract.class, "HJ-361%5E2.16.840.1.113883.3.72.5.9.1");
+			// "d80383d0-f561-11e5-83b6-00155dc95705%5E2.16.840.1.113883.4.357");
+			assertTrue("Error - unexpected return value for testFindContract", retVal != null);
+		} catch (Exception e) {
 			fail("Error - " + e.getMessage());
 		}
 	}
 
 	/**
-	 * Test method for {@link org.iexhub.services.JaxRsContractRestProvider#search(@IdParam final IdDt id)}.
+	 * Test method for
+	 * {@link org.iexhub.services.JaxRsContractRestProvider#search(@IdParam
+	 * final IdDt id)}.
 	 */
 	@Test
-	public void testSearchContract()
-	{
+	public void testSearchContract() {
 		Properties props = null;
-		try
-		{
+		try {
 			props = new Properties();
 			props.load(new FileInputStream(propertiesFile));
-			ContractResourceTest.iExHubDomainOid = (props.getProperty("IExHubDomainOID") == null) ? ContractResourceTest.iExHubDomainOid
-					: props.getProperty("IExHubDomainOID");
-			ContractResourceTest.iExHubAssigningAuthority = (props.getProperty("IExHubAssigningAuthority") == null) ? ContractResourceTest.iExHubAssigningAuthority
-					: props.getProperty("IExHubAssigningAuthority");
-			ContractResourceTest.fhirClientSocketTimeout = (props.getProperty("FHIRClientSocketTimeoutInMs") == null) ? ContractResourceTest.fhirClientSocketTimeout
+			ContractResourceTest.iExHubDomainOid = (props.getProperty("IExHubDomainOID") == null)
+					? ContractResourceTest.iExHubDomainOid : props.getProperty("IExHubDomainOID");
+			ContractResourceTest.iExHubAssigningAuthority = (props.getProperty("IExHubAssigningAuthority") == null)
+					? ContractResourceTest.iExHubAssigningAuthority : props.getProperty("IExHubAssigningAuthority");
+			ContractResourceTest.fhirClientSocketTimeout = (props.getProperty("FHIRClientSocketTimeoutInMs") == null)
+					? ContractResourceTest.fhirClientSocketTimeout
 					: Integer.parseInt(props.getProperty("FHIRClientSocketTimeoutInMs"));
-		}
-		catch (IOException e)
-		{
-			throw new UnexpectedServerException("Error encountered loading properties file, "
-					+ propertiesFile
-					+ ", "
-					+ e.getMessage());
+		} catch (IOException e) {
+			throw new UnexpectedServerException(
+					"Error encountered loading properties file, " + propertiesFile + ", " + e.getMessage());
 		}
 
-		try
-		{
+		try {
 			Logger logger = LoggerFactory.getLogger(ContractResourceTest.class);
 			FhirContext ctxt = new FhirContext();
 			ctxt.getRestfulClientFactory().setSocketTimeout(ContractResourceTest.fhirClientSocketTimeout);
@@ -203,84 +211,154 @@ public class ContractResourceTest
 			loggingInterceptor.setLogRequestSummary(true);
 			loggingInterceptor.setLogRequestBody(true);
 			loggingInterceptor.setLogger(logger);
-			
+
 			IGenericClient client = ctxt.newRestfulGenericClient(serverBaseUrl);
-			client.registerInterceptor(loggingInterceptor);		
-			
-			ca.uhn.fhir.model.dstu2.resource.Bundle response = client.search()
-					.forResource(Contract.class)
-					//.where(Contract.)
+			client.registerInterceptor(loggingInterceptor);
+
+			ca.uhn.fhir.model.dstu2.resource.Bundle response = client.search().forResource(Contract.class)
+					// .where(Contract.)
 					.returnBundle(ca.uhn.fhir.model.dstu2.resource.Bundle.class).execute();
-				
-		assertTrue("Error - unexpected return value for testSearchContract",
-					response != null);
-		}
-		catch (Exception e)
-		{
+
+			assertTrue("Error - unexpected return value for testSearchContract", response != null);
+		} catch (Exception e) {
 			fail("Error - " + e.getMessage());
 		}
 	}
 
 	/**
-	 * Test method for {@link org.iexhub.services.JaxRsContractRestProvider#create(Patient patient, String theConditional)}.
-	 * Basic Consent Content 
+	 * Test method for Basic Consent Content
+	 * {@link org.iexhub.services.JaxRsContractRestProvider#create(Patient patient, String theConditional)}
+	 * 
+	 * @author Ioana Singureanu
 	 */
 	@Test
-	public void testCreateContract()
-	{
+	public void testCreateBasicConsent() {
 		Properties props = null;
-		try
-		{
+		try {
 			props = new Properties();
 			props.load(new FileInputStream(propertiesFile));
-			ContractResourceTest.iExHubDomainOid = (props.getProperty("IExHubDomainOID") == null) ? ContractResourceTest.iExHubDomainOid
-					: props.getProperty("IExHubDomainOID");
-			ContractResourceTest.iExHubAssigningAuthority = (props.getProperty("IExHubAssigningAuthority") == null) ? ContractResourceTest.iExHubAssigningAuthority
-					: props.getProperty("IExHubAssigningAuthority");
-			ContractResourceTest.fhirClientSocketTimeout = (props.getProperty("FHIRClientSocketTimeoutInMs") == null) ? ContractResourceTest.fhirClientSocketTimeout
+			ContractResourceTest.iExHubDomainOid = (props.getProperty("IExHubDomainOID") == null)
+					? ContractResourceTest.iExHubDomainOid : props.getProperty("IExHubDomainOID");
+			ContractResourceTest.iExHubAssigningAuthority = (props.getProperty("IExHubAssigningAuthority") == null)
+					? ContractResourceTest.iExHubAssigningAuthority : props.getProperty("IExHubAssigningAuthority");
+			ContractResourceTest.fhirClientSocketTimeout = (props.getProperty("FHIRClientSocketTimeoutInMs") == null)
+					? ContractResourceTest.fhirClientSocketTimeout
 					: Integer.parseInt(props.getProperty("FHIRClientSocketTimeoutInMs"));
-		}
-		catch (IOException e)
-		{
-			throw new UnexpectedServerException("Error encountered loading properties file, "
-					+ propertiesFile
-					+ ", "
-					+ e.getMessage());
+		} catch (IOException e) {
+			throw new UnexpectedServerException(
+					"Error encountered loading properties file, " + propertiesFile + ", " + e.getMessage());
 		}
 
-		// ITI-41 ProvideAndRegisterDocumentSet using Contract service 
-		try
-		{
-			Contract contract = new Contract();
-			contract.getIdentifier().setSystem(uriPrefix+iExHubDomainOid).setValue("consent GUID");
-			contract.getType().setValueAsEnum(ContractTypeCodesEnum.DISCLOSURE);			
-			DateTimeDt issuedDateTime = new DateTimeDt();
-			issuedDateTime.setValue(Calendar.getInstance().getTime());
-			contract.setIssued(issuedDateTime);
-			//specify the covered entity making the disclosure
-			contract.addAuthority().setReference("#"+providerOrganizationId);
-			contract.getContained().getContainedResources().add(providerOrganization);
-			//specify the provider who authored the data
-			
-			//specify the 
-			//contract.getSubject().add();	
-			contract.getContained().getContainedResources().add(testPatient);
+		// Create a Privacy Consent as a Contract to be submitted as document
+		// using ITI-41
+		try {
+			Contract contract = createBasicTestConsent();
+
 			Logger logger = LoggerFactory.getLogger(PatientResourceTest.class);
 			FhirContext ctxt = new FhirContext();
 			ctxt.getRestfulClientFactory().setSocketTimeout(ContractResourceTest.fhirClientSocketTimeout);
 
+			String xmlEncodedConsent = ctxt.newXmlParser().encodeResourceToString(contract);
+			String jsonEncodedConsent = ctxt.newJsonParser().encodeResourceToString(contract);
+
 			LoggingInterceptor loggingInterceptor = new LoggingInterceptor();
 			loggingInterceptor.setLogRequestSummary(true);
 			loggingInterceptor.setLogRequestBody(true);
 			loggingInterceptor.setLogger(logger);
-			
+			// create FHIR client
 			IGenericClient client = ctxt.newRestfulGenericClient(serverBaseUrl);
-			client.registerInterceptor(loggingInterceptor);							// Required only for logging
-			MethodOutcome outcome = client.create().resource(contract).execute();			
-		}
-		catch (Exception e)
-		{
+			client.registerInterceptor(loggingInterceptor);
+			// invoke service
+			MethodOutcome outcome = client.create().resource(contract).execute();
+		} catch (Exception e) {
 			fail("Error - " + e.getMessage());
 		}
-	}	
+	}
+
+	/**
+	 * Test method for Basic Granular Content
+	 * {@link org.iexhub.services.JaxRsContractRestProvider#create(Patient patient, String theConditional)}
+	 * 
+	 * @author Ioana Singureanu
+	 */
+	@Test
+	public void testCreateGranularConsent() {
+		Properties props = null;
+		try {
+			props = new Properties();
+			props.load(new FileInputStream(propertiesFile));
+			ContractResourceTest.iExHubDomainOid = (props.getProperty("IExHubDomainOID") == null)
+					? ContractResourceTest.iExHubDomainOid : props.getProperty("IExHubDomainOID");
+			ContractResourceTest.iExHubAssigningAuthority = (props.getProperty("IExHubAssigningAuthority") == null)
+					? ContractResourceTest.iExHubAssigningAuthority : props.getProperty("IExHubAssigningAuthority");
+			ContractResourceTest.fhirClientSocketTimeout = (props.getProperty("FHIRClientSocketTimeoutInMs") == null)
+					? ContractResourceTest.fhirClientSocketTimeout
+					: Integer.parseInt(props.getProperty("FHIRClientSocketTimeoutInMs"));
+		} catch (IOException e) {
+			throw new UnexpectedServerException(
+					"Error encountered loading properties file, " + propertiesFile + ", " + e.getMessage());
+		}
+
+		// Create a Privacy Consent as a Contract to be submitted as document
+		// using ITI-41
+		try {
+			Contract contract = createBasicTestConsent();
+			
+			// add granular preferences
+
+			Logger logger = LoggerFactory.getLogger(PatientResourceTest.class);
+			FhirContext ctxt = new FhirContext();
+			ctxt.getRestfulClientFactory().setSocketTimeout(ContractResourceTest.fhirClientSocketTimeout);
+
+			String xmlEncodedConsent = ctxt.newXmlParser().encodeResourceToString(contract);
+			String jsonEncodedConsent = ctxt.newJsonParser().encodeResourceToString(contract);
+
+			LoggingInterceptor loggingInterceptor = new LoggingInterceptor();
+			loggingInterceptor.setLogRequestSummary(true);
+			loggingInterceptor.setLogRequestBody(true);
+			loggingInterceptor.setLogger(logger);
+			// create FHIR client
+			IGenericClient client = ctxt.newRestfulGenericClient(serverBaseUrl);
+			client.registerInterceptor(loggingInterceptor);
+			// invoke service
+			MethodOutcome outcome = client.create().resource(contract).execute();
+		} catch (Exception e) {
+			fail("Error - " + e.getMessage());
+		}
+	}
+
+	/**
+	 * createBasicTestConsent() 
+	 * @return Contract containing a basic consent
+	 */
+	private Contract createBasicTestConsent() {
+		Contract contract = new Contract();
+		contract.getIdentifier().setSystem(uriPrefix + iExHubDomainOid).setValue("consent GUID");
+		contract.getType().setValueAsEnum(ContractTypeCodesEnum.DISCLOSURE);
+		contract.getActionReason().add(new CodeableConceptDt("http://hl7.org/fhir/ValueSet/v3-PurposeOfUse", "TREAT"));
+		DateTimeDt issuedDateTime = new DateTimeDt();
+		issuedDateTime.setValue(Calendar.getInstance().getTime());
+		contract.setIssued(issuedDateTime);
+		// specify the covered entity authorized to disclose
+		contract.addAuthority().setReference("#" + sourceOrganizationId);
+		contract.getContained().getContainedResources().add(sourceOrganization);
+		// specify the provider who authored the data
+		contract.addActor().getEntity().setReference("#" + sourcePractitionerId);
+		contract.getContained().getContainedResources().add(sourcePractitioner);
+		// specify the patient identified in the consent
+		// add local reference to patient
+		ResourceReferenceDt patientReference = new ResourceReferenceDt("#" + patientId);
+		contract.getSubject().add(patientReference);
+		contract.getSignerFirstRep().setParty(patientReference);
+		contract.getContained().getContainedResources().add(testPatient);
+		// set terms of consent and intended recipient(s)
+		PeriodDt applicablePeriod = new PeriodDt();
+		applicablePeriod.setEnd(new DateTimeDt("2017-10-10"));
+		contract.getTermFirstRep().setApplies(applicablePeriod);
+		// list all recipients
+		contract.getTermFirstRep().addActor().getEntity().setReference("#" + recipientPractitionerId);
+		contract.getContained().getContainedResources().add(recipientPractitioner);
+		contract.getTermFirstRep().setText("description of the consent terms");
+		return contract;
+	}
 }
