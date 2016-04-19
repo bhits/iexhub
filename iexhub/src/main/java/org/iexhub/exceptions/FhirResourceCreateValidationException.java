@@ -13,33 +13,28 @@
  * Contributors:
  *     Eversolve, LLC - initial IExHub implementation
  *******************************************************************************/
-package org.iexhub.services;
+/**
+ * 
+ */
+package org.iexhub.exceptions;
 
-import javax.ejb.Stateless;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
-import ca.uhn.fhir.jaxrs.server.AbstractJaxRsPageProvider;
-import ca.uhn.fhir.rest.server.Constants;
-import ca.uhn.fhir.rest.server.FifoMemoryPagingProvider;
-import ca.uhn.fhir.rest.server.IPagingProvider;
-
-@Path(/*"/"*/ JaxRsContractRestProvider.PATH)
-@Stateless
-@Produces({ MediaType.APPLICATION_JSON, Constants.CT_FHIR_JSON, Constants.CT_FHIR_XML })
-public class JaxRsContractPageProvider extends AbstractJaxRsPageProvider
+/**
+ * @author A. Sute
+ *
+ */
+public class ContractIdParamMissingException extends WebApplicationException
 {
-	public static final IPagingProvider PAGE_PROVIDER;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
-	static
+	public ContractIdParamMissingException(String message)
 	{
-		PAGE_PROVIDER = new FifoMemoryPagingProvider(10);
-	}
-
-	@Override
-	public IPagingProvider getPagingProvider()
-	{
-		return PAGE_PROVIDER;
-	}
+		super(Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(message).type(MediaType.APPLICATION_XML).build());
+    }
 }

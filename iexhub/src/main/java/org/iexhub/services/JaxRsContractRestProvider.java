@@ -73,7 +73,8 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 	private static String iExHubAssigningAuthority = "ISO";
 	private static String xdsBRegistryEndpointURI = null;
 	private static String xdsBRepositoryEndpointURI = null;
-	
+	private static FhirContext fhirCtxt = new FhirContext();
+
 	/**
 	 * The HAPI paging provider for this server
 	 */
@@ -160,17 +161,14 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 		try
 		{
 			// Serialize document to XML...
-			FhirContext ctxt = new FhirContext();
-			IParser xmlParser = ctxt.newXmlParser();
+			IParser xmlParser = fhirCtxt.newXmlParser();
 			xmlParser.setPrettyPrint(true);
 			String encoded = xmlParser.encodeResourceToString(contract);
-//			FhirSerializer.SerializeBundleToJson(inputBundle)
 			
 			// ITI-41 ProvideAndRegisterDocumentSet message...
-//			MCCIIN000002UV01 pixRegistrationResponse = pixManager.registerPatient(patient);
 //			
-//			if ((pixRegistrationResponse.getAcknowledgement().get(0).getTypeCode().getCode().compareToIgnoreCase("CA") == 0) ||
-//				(pixRegistrationResponse.getAcknowledgement().get(0).getTypeCode().getCode().compareToIgnoreCase("AA") == 0))
+//			if ((response.getAcknowledgement().get(0).getTypeCode().getCode().compareToIgnoreCase("CA") == 0) ||
+//				(response.getAcknowledgement().get(0).getTypeCode().getCode().compareToIgnoreCase("AA") == 0))
 //			{
 //				result = new MethodOutcome().setCreated(true);
 //			}

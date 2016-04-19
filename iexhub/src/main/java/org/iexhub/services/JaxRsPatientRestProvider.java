@@ -49,6 +49,7 @@ import PDQSupplier.org.hl7.v3.PRPAMT201310UV02OtherIDs;
 import PDQSupplier.org.hl7.v3.PRPAMT201310UV02Person;
 import PDQSupplier.org.hl7.v3.TEL;
 import PIXManager.org.hl7.v3.MCCIIN000002UV01;
+import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.jaxrs.server.AbstractJaxRsResourceProvider;
 import ca.uhn.fhir.model.dstu2.composite.AddressDt;
 import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
@@ -77,7 +78,14 @@ import ca.uhn.fhir.rest.server.ETagSupportEnum;
 import ca.uhn.fhir.rest.server.FifoMemoryPagingProvider;
 import ca.uhn.fhir.rest.server.IPagingProvider;
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
+import ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException;
 import ca.uhn.fhir.rest.server.interceptor.IServerInterceptor;
+import ca.uhn.fhir.validation.FhirValidator;
+import ca.uhn.fhir.validation.IValidatorModule;
+import ca.uhn.fhir.validation.SchemaBaseValidator;
+import ca.uhn.fhir.validation.SingleValidationMessage;
+import ca.uhn.fhir.validation.ValidationResult;
+import ca.uhn.fhir.validation.schematron.SchematronBaseValidator;
 
 /**
  * FHIR Patient Implementation supports: find, search, and create.
@@ -103,6 +111,8 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 	private static String iExHubAssigningAuthority = "ISO";
 	private static String pdqManagerEndpointUri = null;
 	private static String pixManagerEndpointUri = null;
+	private static FhirContext fhirCtxt = null;
+	private static FhirValidator fhirValidator = null;
 	
 	/**
 	 * The HAPI paging provider for this server
@@ -115,8 +125,16 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 	
 	static final String PATH = "/Patient";
 
-	public JaxRsPatientRestProvider() {
+	public JaxRsPatientRestProvider()
+	{
 		super(JaxRsPatientRestProvider.class);
+		
+		fhirCtxt = new FhirContext();
+		fhirValidator = fhirCtxt.newValidator();
+		IValidatorModule module1 = new SchemaBaseValidator(fhirCtxt);
+		fhirValidator.registerValidatorModule(module1);
+		IValidatorModule module2 = new SchematronBaseValidator(fhirCtxt);
+		fhirValidator.registerValidatorModule(module2);
 	}
 
 	private void loadProperties()
@@ -162,6 +180,22 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 	public MethodOutcome create(@ResourceParam final Patient patient, @ConditionalUrlParam String theConditional) throws Exception
 	{
 		log.info("Entered FHIR Patient create service");
+
+		// Validate FHIR resource...
+		ValidationResult validationResult = fhirValidator.validateWithResult(patient);
+		if (!validationResult.isSuccessful())
+		{
+			StringBuilder errorMsgs = new StringBuilder();
+			for (SingleValidationMessage next : validationResult.getMessages())
+			{
+				errorMsgs.append(next.getLocationString()
+						+ " "
+						+ next.getMessage());
+			}
+			
+			throw new UnprocessableEntityException(errorMsgs.toString(),
+					validationResult.toOperationOutcome()); 
+		}
 		
 		if (props == null)
 		{
