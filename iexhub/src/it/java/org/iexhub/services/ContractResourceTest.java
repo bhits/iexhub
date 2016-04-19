@@ -42,9 +42,14 @@ import ca.uhn.fhir.model.dstu2.resource.Practitioner;
 import ca.uhn.fhir.model.dstu2.resource.SearchParameter;
 import ca.uhn.fhir.model.dstu2.resource.Organization.Contact;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
+import ca.uhn.fhir.model.dstu2.valueset.AddressTypeEnum;
 import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
+import ca.uhn.fhir.model.dstu2.valueset.ContactPointSystemEnum;
+import ca.uhn.fhir.model.dstu2.valueset.ContactPointUseEnum;
 import ca.uhn.fhir.model.dstu2.valueset.ContractTypeCodesEnum;
 import ca.uhn.fhir.model.primitive.DateDt;
+import ca.uhn.fhir.model.primitive.DateTimeDt;
+import ca.uhn.fhir.model.primitive.InstantDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.client.IGenericClient;
@@ -57,45 +62,57 @@ import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
 public class ContractResourceTest
 {
 	private static String propertiesFile = "/temp/IExHub.properties";
+	private static String uriPrefix = "urn:oid";
 	private static String iExHubDomainOid = "2.16.840.1.113883.3.72.5.9.1";
 	private static String iExHubAssigningAuthority = "ISO";
 	private static int fhirClientSocketTimeout = 5000;
 	private static String serverBaseUrl = "http://localhost:8080/iexhub/services";
-	private static String patientSignerId = "123-45-6789";
+	private static String localPatientId = "4d6e1717-99f8-4e96-bf88-be7cea8f5820";
+	private static String providerOrganizationId = "2.16.840.1.113883.6.1";
+	private static String practitionerId = "db653797-5ad7-41bf-8abf-14588da7f7e8";
+	private static String versionId = "1"; // default version
+	//FHIR objects used to create a Consent
 	private static Patient testPatient = new Patient();
+	private static Organization providerOrganization = new Organization();
+	private static Contact organizationContact = new Contact();
+	private static Practitioner testPractitioner = new Practitioner();
 	{
-		
-		testPatient.addName().addFamily("SMITH").addGiven("ANDREW");
-		// SSN
-		
-		testPatient.addIdentifier().setSystem("2.16.840.1.113883.4.1").setValue(patientSignerId);
+		//create the testPatient resource to be embedded into a contract
+		testPatient.setId(new IdDt("Patient", localPatientId,versionId));
+		testPatient.addName().addFamily("Patient_family").addGiven("Patient_given_name");
+		// set SSN value using coding system 2.16.840.1.113883.4.1
+		testPatient.addIdentifier().setSystem(uriPrefix+"2.16.840.1.113883.4.1").setValue("123-45-6789");
+		// set local patient id
+		testPatient.addIdentifier().setSystem(uriPrefix+iExHubDomainOid).setValue(localPatientId);
 		testPatient.setGender(AdministrativeGenderEnum.MALE);
-		Calendar dobCalendar = Calendar.getInstance();
-		dobCalendar.set(1978,
-				11,
-				8);
-		DateDt dob = new DateDt();
-		dob.setValue(dobCalendar.getTime());
-		testPatient.setBirthDate(dob);
-
-		// Provider organization...
-		Organization providerOrganization = new Organization();
-		IdDt orgId = new IdDt();
-		orgId.setValue("urn:oid:2.16.840.1.113883.6.1");
-		providerOrganization.setId(orgId);
+		testPatient.setBirthDate(new DateDt("1966-10-22"));
+		testPatient.addAddress().addLine("Patient Address Line").setCity("City").setState("NY").setPostalCode("12345").setType(AddressTypeEnum.POSTAL);
+		testPatient.addTelecom().setUse(ContactPointUseEnum.HOME).setSystem(ContactPointSystemEnum.PHONE).setValue("555-1212");
+		// Provider organization...		
+		//set id to be used to reference the providerOrganization as an inline resource 
+		providerOrganization.setId(new IdDt(providerOrganizationId));
+		providerOrganization.addIdentifier().setSystem("NPI uri").setValue("NPI of organization");
 		providerOrganization.setName("Provider Organization");
 		providerOrganization.addAddress().addLine("1 Main Street").setCity("Cupertino").setState("CA").setPostalCode("95014");
-		Contact organizationContact = new Contact();
-		organizationContact.addTelecom().setValue("tel:408-555-1212");
-		HumanNameDt contactName = new HumanNameDt();
+		//contact
+		organizationContact.addTelecom().setSystem(ContactPointSystemEnum.PHONE).setValue("tel:408-555-1212");
+		HumanNameDt contactName = new HumanNameDt();		
 		contactName.addFamily().setValue("JONES");
 		contactName.addGiven().setValue("MARTHA");
 		organizationContact.setName(contactName);
 		List<Contact> contacts = new ArrayList<Contact>();
 		contacts.add(organizationContact);
 		providerOrganization.setContact(contacts);
-		testPatient.addCareProvider().setReference("#urn:oid:2.16.840.1.113883.6.1");
+		//set reference using "#" prefix
+		testPatient.addCareProvider().setReference("#"+providerOrganizationId);
+		//add resource 
 		testPatient.getContained().getContainedResources().add(providerOrganization);
+		//intended recipient	
+		testPractitioner.setId(new IdDt("Practitioner",practitionerId, versionId));
+		testPractitioner.addIdentifier().setSystem("NPI uri").setValue("NPI");
+		testPractitioner.getName().addFamily("Practitioner Last Name").addGiven("Practitioner Given Name").addSuffix("MD");
+		testPractitioner.addAddress().addLine("Practitioner Address Line").setCity("City").setState("NY").setPostalCode("98765");
+		testPractitioner.addTelecom().setSystem(ContactPointSystemEnum.PHONE).setValue("212-555-1212");
 	
 	}
 	
@@ -206,6 +223,7 @@ public class ContractResourceTest
 
 	/**
 	 * Test method for {@link org.iexhub.services.JaxRsContractRestProvider#create(Patient patient, String theConditional)}.
+	 * Basic Consent Content 
 	 */
 	@Test
 	public void testCreateContract()
@@ -230,14 +248,22 @@ public class ContractResourceTest
 					+ e.getMessage());
 		}
 
-		// ITI-41 ProvideAndRegisterDocumentSet message...
+		// ITI-41 ProvideAndRegisterDocumentSet using Contract service 
 		try
 		{
 			Contract contract = new Contract();
-
-			contract.getIdentifier().setSystem("uri").setValue("guid");
-			contract.getType().setValueAsEnum(ContractTypeCodesEnum.DISCLOSURE);
-			contract.getSubject().get(0).setReference("#"+patientSignerId);	
+			contract.getIdentifier().setSystem(uriPrefix+iExHubDomainOid).setValue("consent GUID");
+			contract.getType().setValueAsEnum(ContractTypeCodesEnum.DISCLOSURE);			
+			DateTimeDt issuedDateTime = new DateTimeDt();
+			issuedDateTime.setValue(Calendar.getInstance().getTime());
+			contract.setIssued(issuedDateTime);
+			//specify the covered entity making the disclosure
+			contract.addAuthority().setReference("#"+providerOrganizationId);
+			contract.getContained().getContainedResources().add(providerOrganization);
+			//specify the provider who authored the data
+			
+			//specify the 
+			//contract.getSubject().add();	
 			contract.getContained().getContainedResources().add(testPatient);
 			Logger logger = LoggerFactory.getLogger(PatientResourceTest.class);
 			FhirContext ctxt = new FhirContext();
