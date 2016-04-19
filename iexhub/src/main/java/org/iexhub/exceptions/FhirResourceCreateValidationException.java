@@ -26,14 +26,14 @@ import javax.ws.rs.core.Response;
  * @author A. Sute
  *
  */
-public class ContractIdParamMissingException extends WebApplicationException
+public class FhirResourceCreateValidationException extends WebApplicationException
 {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public ContractIdParamMissingException(String message)
+	public FhirResourceCreateValidationException(String message)
 	{
 		super(Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(message).type(MediaType.APPLICATION_XML).build());
     }
