@@ -309,13 +309,11 @@ public class ContractResourceTest {
 			// add granular preferences
 			String includedDataListId = "includedData";
 			ListResource list = new ListResource();
-			
 			list.setId(new IdDt(includedDataListId));
 			//add discharge summary
 			ListResource.Entry dischargeSummary = new ListResource.Entry();
 			dischargeSummary.setFlag(new CodeableConceptDt("urn:oid:2.16.840.1.113883.6.1", "18842-5"));	
-			list.addEntry(dischargeSummary);
-			
+			list.addEntry(dischargeSummary);			
 			ListResource.Entry summaryNote = new ListResource.Entry();
 			//"34133-9" LOINC term is currently used as the Clinical Document code for 
 			//both the Care Record Summary (CRS) and Continuity of Care Document (CCD).
@@ -324,8 +322,7 @@ public class ContractResourceTest {
 			//category
 			ListResource.Entry substanceAbuseRelated = new ListResource.Entry();
 			substanceAbuseRelated.setFlag(new CodeableConceptDt("urn:oid:2.16.840.1.113883.5.25", "ETH"));	
-			list.addEntry(substanceAbuseRelated);
-			
+			list.addEntry(substanceAbuseRelated);			
 			//add list to contract
 			contract.getTerm().get(0).getSubject().setReference("#"+includedDataListId);
 			contract.getContained().getContainedResources().add(list);
