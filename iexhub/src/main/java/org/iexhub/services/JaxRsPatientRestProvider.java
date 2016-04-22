@@ -23,20 +23,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-
 import javax.ejb.Local;
 import javax.ejb.Stateless;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXBElement;
 import org.apache.log4j.Logger;
 import org.iexhub.connectors.PDQQueryManager;
@@ -56,34 +49,25 @@ import PDQSupplier.org.hl7.v3.PRPAMT201310UV02OtherIDs;
 import PDQSupplier.org.hl7.v3.PRPAMT201310UV02Person;
 import PDQSupplier.org.hl7.v3.TEL;
 import PIXManager.org.hl7.v3.MCCIIN000002UV01;
+import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.jaxrs.server.AbstractJaxRsResourceProvider;
-import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.AddressDt;
 import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
-import ca.uhn.fhir.model.dstu2.resource.Condition;
 import ca.uhn.fhir.model.dstu2.resource.Organization;
 import ca.uhn.fhir.model.dstu2.resource.Organization.Contact;
-import ca.uhn.fhir.model.dstu2.resource.Parameters;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
 import ca.uhn.fhir.model.primitive.DateDt;
 import ca.uhn.fhir.model.primitive.IdDt;
-import ca.uhn.fhir.model.primitive.StringDt;
 import ca.uhn.fhir.rest.annotation.ConditionalUrlParam;
 import ca.uhn.fhir.rest.annotation.Create;
-import ca.uhn.fhir.rest.annotation.Delete;
 import ca.uhn.fhir.rest.annotation.IdParam;
-import ca.uhn.fhir.rest.annotation.Operation;
-import ca.uhn.fhir.rest.annotation.OperationParam;
 import ca.uhn.fhir.rest.annotation.OptionalParam;
 import ca.uhn.fhir.rest.annotation.Read;
 import ca.uhn.fhir.rest.annotation.RequiredParam;
 import ca.uhn.fhir.rest.annotation.ResourceParam;
 import ca.uhn.fhir.rest.annotation.Search;
-import ca.uhn.fhir.rest.annotation.Update;
 import ca.uhn.fhir.rest.api.MethodOutcome;
-import ca.uhn.fhir.rest.api.RequestTypeEnum;
-import ca.uhn.fhir.rest.api.RestOperationTypeEnum;
 import ca.uhn.fhir.rest.param.DateParam;
 import ca.uhn.fhir.rest.param.StringParam;
 import ca.uhn.fhir.rest.param.TokenParam;
@@ -94,7 +78,14 @@ import ca.uhn.fhir.rest.server.ETagSupportEnum;
 import ca.uhn.fhir.rest.server.FifoMemoryPagingProvider;
 import ca.uhn.fhir.rest.server.IPagingProvider;
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
+import ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException;
 import ca.uhn.fhir.rest.server.interceptor.IServerInterceptor;
+import ca.uhn.fhir.validation.FhirValidator;
+import ca.uhn.fhir.validation.IValidatorModule;
+import ca.uhn.fhir.validation.SchemaBaseValidator;
+import ca.uhn.fhir.validation.SingleValidationMessage;
+import ca.uhn.fhir.validation.ValidationResult;
+import ca.uhn.fhir.validation.schematron.SchematronBaseValidator;
 
 /**
  * FHIR Patient Implementation supports: find, search, and create.
@@ -120,21 +111,30 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 	private static String iExHubAssigningAuthority = "ISO";
 	private static String pdqManagerEndpointUri = null;
 	private static String pixManagerEndpointUri = null;
+	private static FhirContext fhirCtxt = null;
+	private static FhirValidator fhirValidator = null;
 	
 	/**
 	 * The HAPI paging provider for this server
 	 */
 	public static final IPagingProvider PAGE_PROVIDER;
+	static
+	{
+		PAGE_PROVIDER = JaxRsPatientPageProvider.PAGE_PROVIDER;
+	}
 	
 	static final String PATH = "/Patient";
-	private static final ConcurrentHashMap<String, List<Patient>> patients = new ConcurrentHashMap<String, List<Patient>>();
 
-	static {
-		PAGE_PROVIDER = new FifoMemoryPagingProvider(10);
-	}
-
-	public JaxRsPatientRestProvider() {
+	public JaxRsPatientRestProvider()
+	{
 		super(JaxRsPatientRestProvider.class);
+		
+		fhirCtxt = new FhirContext();
+		fhirValidator = fhirCtxt.newValidator();
+		IValidatorModule module1 = new SchemaBaseValidator(fhirCtxt);
+		fhirValidator.registerValidatorModule(module1);
+		IValidatorModule module2 = new SchematronBaseValidator(fhirCtxt);
+		fhirValidator.registerValidatorModule(module2);
 	}
 
 	private void loadProperties()
@@ -180,6 +180,22 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 	public MethodOutcome create(@ResourceParam final Patient patient, @ConditionalUrlParam String theConditional) throws Exception
 	{
 		log.info("Entered FHIR Patient create service");
+
+		// Validate FHIR resource...
+		ValidationResult validationResult = fhirValidator.validateWithResult(patient);
+		if (!validationResult.isSuccessful())
+		{
+			StringBuilder errorMsgs = new StringBuilder();
+			for (SingleValidationMessage next : validationResult.getMessages())
+			{
+				errorMsgs.append(next.getLocationString()
+						+ " "
+						+ next.getMessage());
+			}
+			
+			throw new UnprocessableEntityException(errorMsgs.toString(),
+					validationResult.toOperationOutcome()); 
+		}
 		
 		if (props == null)
 		{
@@ -556,7 +572,6 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 
 		Patient result = null;
 		
-		// First try PDQ ITI-47 retrieval if PDQ endpoint is specified...
 		if ((pdqManagerEndpointUri != null) &&
 			(pdqManagerEndpointUri.length() > 0))
 		{
