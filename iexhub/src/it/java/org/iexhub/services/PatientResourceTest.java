@@ -223,6 +223,7 @@ public class PatientResourceTest
 			DateDt dob = new DateDt();
 			dob.setValue(dobCalendar.getTime());
 			pat.setBirthDate(dob);
+			pat.addTelecom().setValue("tel:408-555-1010");
 
 			// Provider organization...
 			Organization organization = new Organization();
