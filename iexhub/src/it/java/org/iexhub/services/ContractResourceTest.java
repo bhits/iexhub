@@ -39,9 +39,12 @@ import org.slf4j.LoggerFactory;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
+import ca.uhn.fhir.model.dstu2.composite.CodingDt;
 import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
 import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
+import ca.uhn.fhir.model.dstu2.resource.Basic;
+import ca.uhn.fhir.model.dstu2.resource.Composition;
 import ca.uhn.fhir.model.dstu2.resource.Contract;
 import ca.uhn.fhir.model.dstu2.resource.ListResource;
 import ca.uhn.fhir.model.dstu2.resource.Organization;
@@ -53,6 +56,8 @@ import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
 import ca.uhn.fhir.model.dstu2.valueset.ContactPointSystemEnum;
 import ca.uhn.fhir.model.dstu2.valueset.ContactPointUseEnum;
 import ca.uhn.fhir.model.dstu2.valueset.ContractTypeCodesEnum;
+import ca.uhn.fhir.model.dstu2.valueset.ListModeEnum;
+import ca.uhn.fhir.model.dstu2.valueset.ListStatusEnum;
 import ca.uhn.fhir.model.primitive.DateDt;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
@@ -83,11 +88,12 @@ public class ContractResourceTest {
 	private static Practitioner sourcePractitionerResource = new Practitioner();
 	private static Practitioner recipientPractitionerResource = new Practitioner();
 	// FHIR resource identifiers for inline/embedded objects
-	private static String consentId = "consent_id";
-	private static String patientId = "patient_id";
-	private static String sourceOrganizationId = "source_org_oid";
-	private static String sourcePractitionerId = "source_practitioner_npi";
-	private static String recipientPractitionerId = "recipient_practitioner_npi";
+	private static String consentId = "consentId";
+	private static String patientId = "patientId";
+	private static String sourceOrganizationId = "sourceOrgOID";
+	private static String sourcePractitionerId = "sourcePractitionerNPI";
+	private static String recipientPractitionerId = "recipientPractitionerNPI";
+	private static String outputPath = "src/test/resources/";
 	private static FhirContext ctxt = new FhirContext();
 	static {
 		ctxt.getRestfulClientFactory().setSocketTimeout(ContractResourceTest.fhirClientSocketTimeout);
@@ -107,7 +113,7 @@ public class ContractResourceTest {
 		}
 		// create the testPatient resource to be embedded into a contract
 		testPatientResource.setId(new IdDt(patientId));
-		testPatientResource.addName().addFamily("Patient_family").addGiven("Patient_given_name");
+		testPatientResource.addName().addFamily("Patient Family Name").addGiven("Patient Given Name");
 		// set SSN value using coding system 2.16.840.1.113883.4.1
 		testPatientResource.addIdentifier().setSystem(uriPrefix + "2.16.840.1.113883.4.1").setValue("123-45-6789");
 		// set local patient id
@@ -143,8 +149,7 @@ public class ContractResourceTest {
 		sourceOrganizationResource.setContact(contacts);
 		// set reference using "#" prefix
 		testPatientResource.addCareProvider().setReference("#" + sourceOrganizationId);
-		// add resource
-		testPatientResource.getContained().getContainedResources().add(sourceOrganizationResource);
+		
 		// authoring practitioner
 		sourcePractitionerResource.setId(new IdDt(sourcePractitionerId));
 		sourcePractitionerResource.addIdentifier().setSystem("NPI uri").setValue("NPI");
@@ -186,7 +191,7 @@ public class ContractResourceTest {
 			IGenericClient client = ctxt.newRestfulGenericClient(serverBaseUrl);
 			client.registerInterceptor(loggingInterceptor); // Required only for
 															// logging
-			Contract retVal = client.read(Contract.class, iExHubDomainOid+"_"+consentId);
+			Contract retVal = client.read(Contract.class, iExHubDomainOid+"."+consentId);
 			
 			assertTrue("Error - unexpected return value for testFindContract", retVal != null);
 		} catch (Exception e) {
@@ -218,7 +223,7 @@ public class ContractResourceTest {
 
 			assertTrue("Error - unexpected return value for testSearchContract", response != null);
 		} catch (Exception e) {
-			fail("Error - " + e.getMessage());
+			fail(e.getMessage());
 		}
 	}
 
@@ -233,6 +238,7 @@ public class ContractResourceTest {
 
 		// Create a Privacy Consent as a Contract to be submitted as document
 		// using ITI-41
+		String currentTest = "BasicConsent";
 		try {
 			Logger logger = LoggerFactory.getLogger(ContractResourceTest.class);
 			LoggingInterceptor loggingInterceptor = new LoggingInterceptor();
@@ -246,17 +252,19 @@ public class ContractResourceTest {
 			// @TODO: add generator Thymeleaf templates
 			// ctxt.setNarrativeGenerator(new  DefaultThymeleafNarrativeGenerator());
 
-			String xmlEncodedBasicConsent = ctxt.newXmlParser().setPrettyPrint(true).encodeResourceToString(contract);
-			FileUtils.writeStringToFile(new File("xmlEncodedBasicConsent.xml"), xmlEncodedBasicConsent);
-
-			String jsonEncodedBasicConsent = ctxt.newJsonParser().setPrettyPrint(true).encodeResourceToString(contract);
-			FileUtils.writeStringToFile(new File("jsonEncodedBasicConsent.json"), jsonEncodedBasicConsent);
+			String xmlEncodedGranularConsent = ctxt.newXmlParser().setPrettyPrint(true)
+					.encodeResourceToString(contract);
+			FileUtils.writeStringToFile(new File(outputPath+"/XML/"+currentTest+".xml"), xmlEncodedGranularConsent);
+			String jsonEncodedGranularConsent = ctxt.newJsonParser().setPrettyPrint(true)
+					.encodeResourceToString(contract);
+			FileUtils.writeStringToFile(new File(outputPath+"/JSON/"+currentTest+".json"), jsonEncodedGranularConsent);
 
 			// create FHIR client
 			IGenericClient client = ctxt.newRestfulGenericClient(serverBaseUrl);
 			 client.registerInterceptor(loggingInterceptor);
-			// invoke Contract service
+			// @TODO: invoke Contract service
 			 //MethodOutcome outcome =  client.create().resource(contract).execute();
+			 
 		} catch (Exception e) {
 			fail( e.getMessage());
 		}
@@ -271,6 +279,7 @@ public class ContractResourceTest {
 	@Test
 	public void testCreateGranularConsent() {
 
+		String currentTest = "GranularConsent";
 		// Create a Privacy Consent as a Contract to be submitted as document
 		// using ITI-41
 		try {
@@ -282,49 +291,79 @@ public class ContractResourceTest {
 
 			Contract contract = createBasicTestConsent();
 			// add granular preferences
-			String includedDataListId = "included_list_of_data_types";
+			String includedDataListId = "includedListOfDataTypes";
 			ListResource list = new ListResource();
 			list.setId(new IdDt(includedDataListId));
 			list.setTitle("List of included data types");
+			//specifies how the list items are to be used 
 			list.setCode(new CodeableConceptDt("system", "INCLUDE"));
+			list.setStatus(ListStatusEnum.CURRENT);
+			list.setMode(ListModeEnum.SNAPSHOT_LIST);
 
-			// add discharge summary
-			ListResource.Entry dischargeSummary = new ListResource.Entry();
-			dischargeSummary.setFlag(
-					(new CodeableConceptDt("urn:oid:2.16.840.1.113883.6.1", "18842-5")).setText("Discharge Summary"));
-			list.addEntry(dischargeSummary);
-			ListResource.Entry summaryNote = new ListResource.Entry();
+			// add discharge summary document type
+			ListResource.Entry dischargeSummaryEntry = new ListResource.Entry();
+			//use list item flag to specify a category and the item to specify an instance (e.g. DocumentReference)
+			CodeableConceptDt dischargeSummaryCode = new CodeableConceptDt("urn:oid:2.16.840.1.113883.6.1", "18842-5");
+			//dischargeSummaryCode
+			dischargeSummaryCode.setText("Discharge Summary");
+			dischargeSummaryEntry.setFlag(dischargeSummaryCode);
+			Basic basicItem1 = new Basic();
+			basicItem1.setId(new IdDt("item1"));
+			basicItem1.setCode(dischargeSummaryCode);
+			
+			ResourceReferenceDt itemReference1  = new ResourceReferenceDt("#item1");
+			dischargeSummaryEntry.setItem(itemReference1);
+			list.addEntry(dischargeSummaryEntry);
+			// add a summary note document type
+			ListResource.Entry summaryNoteEntry= new ListResource.Entry();
 			// "34133-9" LOINC term is currently used as the Clinical Document
-			// code for
-			// both the Care Record Summary (CRS) and Continuity of Care
-			// Document (CCD).
-			summaryNote.setFlag((new CodeableConceptDt("urn:oid:2.16.840.1.113883.6.1", "34133-9"))
-					.setText("Summarization of Episode Note"));
-			list.addEntry(summaryNote);
-			// category
-			ListResource.Entry substanceAbuseRelated = new ListResource.Entry();
-			substanceAbuseRelated.setFlag((new CodeableConceptDt("urn:oid:2.16.840.1.113883.5.25", "ETH"))
-					.setText("Substance Abuse Related"));
-			list.addEntry(substanceAbuseRelated);
+			// code for both the Care Record Summary (CRS) and Continuity of Care Document (CCD).
+			CodeableConceptDt summaryNoteCode = new CodeableConceptDt("urn:oid:2.16.840.1.113883.6.1", "34133-9");
+			summaryNoteCode.setText("Summarization of Episode Note");
+			summaryNoteEntry.setFlag(summaryNoteCode);
+			summaryNoteEntry.setDeleted(false);		
+			Basic basicItem2 = new Basic();
+			basicItem2.setId("item2");
+			basicItem2.setCode(summaryNoteCode);			
+			ResourceReferenceDt itemReference2  = new ResourceReferenceDt("#item2");
+			itemReference2.setDisplay("referenced document type or instance");
+			summaryNoteEntry.setItem(itemReference2);
+			list.addEntry(summaryNoteEntry);
+			
+			// substance abuse category may reference a single category code or several diagnosis codes
+			ListResource.Entry substanceAbuseRelatedEntry = new ListResource.Entry();
+			CodeableConceptDt substanceAbuseRelatedCode = new CodeableConceptDt("urn:oid:2.16.840.1.113883.5.25", "ETH");
+			substanceAbuseRelatedCode.setText("Substance Abuse Related Data");
+			substanceAbuseRelatedEntry.setFlag(substanceAbuseRelatedCode);
+			Basic basicItem3 = new Basic();
+			basicItem3.setId("item3");
+			basicItem3.setCode(substanceAbuseRelatedCode);
+			
+			ResourceReferenceDt itemReference3  = new ResourceReferenceDt("#item3");
+			substanceAbuseRelatedEntry.setItem(itemReference3);
+			list.addEntry(substanceAbuseRelatedEntry);
 			// add list to contract
 			contract.getTerm().get(0).getSubject().setReference("#" + includedDataListId);
 			contract.getContained().getContainedResources().add(list);
-
+			//add items as Basic resources
+			contract.getContained().getContainedResources().add(basicItem1);
+			contract.getContained().getContainedResources().add(basicItem2);
+			contract.getContained().getContainedResources().add(basicItem3);
 			// Use the narrative generator
 			// @TODO: add generator Thymeleaf templates
 			// ctxt.setNarrativeGenerator(new  DefaultThymeleafNarrativeGenerator());
 			// Create XML and JSON files including generated narrative XHTML
 			String xmlEncodedGranularConsent = ctxt.newXmlParser().setPrettyPrint(true)
 					.encodeResourceToString(contract);
-			FileUtils.writeStringToFile(new File("xmlEncodedGranularConsent.xml"), xmlEncodedGranularConsent);
+			FileUtils.writeStringToFile(new File(outputPath+"/XML/"+currentTest+".xml"), xmlEncodedGranularConsent);
 			String jsonEncodedGranularConsent = ctxt.newJsonParser().setPrettyPrint(true)
 					.encodeResourceToString(contract);
-			FileUtils.writeStringToFile(new File("jsonEncodedGranularConsent.json"), jsonEncodedGranularConsent);
+			FileUtils.writeStringToFile(new File(outputPath+"/JSON/"+currentTest+".json"), jsonEncodedGranularConsent);
 
 			// Create FHIR client
 			 IGenericClient client =  ctxt.newRestfulGenericClient(serverBaseUrl);
 			 client.registerInterceptor(loggingInterceptor);
-			// Invoke service
+			// @TODO: Invoke service
 			// MethodOutcome outcome =  client.create().resource(contract).execute();
 		} catch (Exception e) {
 			fail( e.getMessage());
@@ -338,16 +377,18 @@ public class ContractResourceTest {
 	 */
 	private Contract createBasicTestConsent() {
 		Contract contract = new Contract();
-		// set the id as a concatenated "OID_consentId"
-		contract.setId(new IdDt(iExHubDomainOid+"_"+consentId));
+		// set the id as a concatenated "OID.consentId"
+		contract.setId(new IdDt(iExHubDomainOid+"."+consentId));
 		contract.getIdentifier().setSystem(uriPrefix + iExHubDomainOid)
 				.setValue("consent GUID generated by application");
 		contract.getType().setValueAsEnum(ContractTypeCodesEnum.DISCLOSURE);
-		contract.getActionReason().add(new CodeableConceptDt("http://hl7.org/fhir/ValueSet/v3-PurposeOfUse", "TREAT"));
+		contract.getActionReason().add(new CodeableConceptDt("	http://hl7.org/fhir/contractsubtypecodes ", "TREAT"));
 		DateTimeDt issuedDateTime = new DateTimeDt();
 		issuedDateTime.setValue(Calendar.getInstance().getTime());
 		contract.setIssued(issuedDateTime);
 		// specify the covered entity authorized to disclose
+		// add source resource and authority reference
+		contract.getContained().getContainedResources().add(sourceOrganizationResource);
 		contract.addAuthority().setReference("#" + sourceOrganizationId);
 		//This is required if the organization was not already added as a "contained" resource reference by the Patient
 		//contract.getContained().getContainedResources().add(sourceOrganizationResource);
@@ -358,7 +399,10 @@ public class ContractResourceTest {
 		// add local reference to patient
 		ResourceReferenceDt patientReference = new ResourceReferenceDt("#" + patientId);
 		contract.getSubject().add(patientReference);
+		contract.getSignerFirstRep().setType(new CodingDt("http://hl7.org/fhir/contractsignertypecodes","1.2.840.10065.1.12.1.7"));
+		contract.getSignerFirstRep().setSignature(testPatientResource.getNameFirstRep().getNameAsSingleString());
 		contract.getSignerFirstRep().setParty(patientReference);
+		//add test patient as a contained resource rather than external reference
 		contract.getContained().getContainedResources().add(testPatientResource);
 		// set terms of consent and intended recipient(s)
 		PeriodDt applicablePeriod = new PeriodDt();
