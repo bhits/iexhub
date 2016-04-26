@@ -73,7 +73,8 @@ import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
  *
  */
 public class ContractResourceTest {
-	private static String propertiesFile = "/temp/IExHub.properties";
+	private static String testResourcesPath = "src/test/resources/";
+	private static String propertiesFile = testResourcesPath+"/properties/IExHub.properties";
 	private static Properties properties = new Properties();
 	private static String uriPrefix = "urn:oid:";
 	private static String iExHubDomainOid = "2.16.840.1.113883.3.72.5.9.1";
@@ -254,10 +255,10 @@ public class ContractResourceTest {
 
 			String xmlEncodedGranularConsent = ctxt.newXmlParser().setPrettyPrint(true)
 					.encodeResourceToString(contract);
-			FileUtils.writeStringToFile(new File(outputPath+"/XML/"+currentTest+".xml"), xmlEncodedGranularConsent);
+			FileUtils.writeStringToFile(new File(testResourcesPath+"/XML/"+currentTest+".xml"), xmlEncodedGranularConsent);
 			String jsonEncodedGranularConsent = ctxt.newJsonParser().setPrettyPrint(true)
 					.encodeResourceToString(contract);
-			FileUtils.writeStringToFile(new File(outputPath+"/JSON/"+currentTest+".json"), jsonEncodedGranularConsent);
+			FileUtils.writeStringToFile(new File(testResourcesPath+"/JSON/"+currentTest+".json"), jsonEncodedGranularConsent);
 
 			// create FHIR client
 			IGenericClient client = ctxt.newRestfulGenericClient(serverBaseUrl);
@@ -355,10 +356,10 @@ public class ContractResourceTest {
 			// Create XML and JSON files including generated narrative XHTML
 			String xmlEncodedGranularConsent = ctxt.newXmlParser().setPrettyPrint(true)
 					.encodeResourceToString(contract);
-			FileUtils.writeStringToFile(new File(outputPath+"/XML/"+currentTest+".xml"), xmlEncodedGranularConsent);
+			FileUtils.writeStringToFile(new File(testResourcesPath+"/XML/"+currentTest+".xml"), xmlEncodedGranularConsent);
 			String jsonEncodedGranularConsent = ctxt.newJsonParser().setPrettyPrint(true)
 					.encodeResourceToString(contract);
-			FileUtils.writeStringToFile(new File(outputPath+"/JSON/"+currentTest+".json"), jsonEncodedGranularConsent);
+			FileUtils.writeStringToFile(new File(testResourcesPath+"/JSON/"+currentTest+".json"), jsonEncodedGranularConsent);
 
 			// Create FHIR client
 			 IGenericClient client =  ctxt.newRestfulGenericClient(serverBaseUrl);
