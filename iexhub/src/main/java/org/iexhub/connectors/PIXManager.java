@@ -841,6 +841,17 @@ public class PIXManager
 		patientPerson.getClassCode().add("PSN");
 		patientPerson.setDeterminerCode("INSTANCE");
 		
+		if ((fhirPatientResource.getTelecom() != null) &&
+			(!fhirPatientResource.getTelecom().isEmpty()))
+		{
+			for (ContactPointDt contactPoint : fhirPatientResource.getTelecom())
+			{
+				TEL contactPartyTelecom = new TEL();
+				contactPartyTelecom.setValue(contactPoint.getValue());
+				patientPerson.getTelecom().add(contactPartyTelecom);
+			}
+		}
+		
 		if (dateOfBirth != null)
 		{
 			// Try several formats for date parsing...

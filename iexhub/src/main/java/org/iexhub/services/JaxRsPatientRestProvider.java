@@ -129,12 +129,12 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 	{
 		super(JaxRsPatientRestProvider.class);
 		
-		fhirCtxt = new FhirContext();
-		fhirValidator = fhirCtxt.newValidator();
-		IValidatorModule module1 = new SchemaBaseValidator(fhirCtxt);
-		fhirValidator.registerValidatorModule(module1);
-		IValidatorModule module2 = new SchematronBaseValidator(fhirCtxt);
-		fhirValidator.registerValidatorModule(module2);
+//		fhirCtxt = new FhirContext();
+//		fhirValidator = fhirCtxt.newValidator();
+//		IValidatorModule module1 = new SchemaBaseValidator(fhirCtxt);
+//		fhirValidator.registerValidatorModule(module1);
+//		IValidatorModule module2 = new SchematronBaseValidator(fhirCtxt);
+//		fhirValidator.registerValidatorModule(module2);
 	}
 
 	private void loadProperties()
@@ -182,20 +182,20 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 		log.info("Entered FHIR Patient create service");
 
 		// Validate FHIR resource...
-		ValidationResult validationResult = fhirValidator.validateWithResult(patient);
-		if (!validationResult.isSuccessful())
-		{
-			StringBuilder errorMsgs = new StringBuilder();
-			for (SingleValidationMessage next : validationResult.getMessages())
-			{
-				errorMsgs.append(next.getLocationString()
-						+ " "
-						+ next.getMessage());
-			}
-			
-			throw new UnprocessableEntityException(errorMsgs.toString(),
-					validationResult.toOperationOutcome()); 
-		}
+//		ValidationResult validationResult = fhirValidator.validateWithResult(patient);
+//		if (!validationResult.isSuccessful())
+//		{
+//			StringBuilder errorMsgs = new StringBuilder();
+//			for (SingleValidationMessage next : validationResult.getMessages())
+//			{
+//				errorMsgs.append(next.getLocationString()
+//						+ " "
+//						+ next.getMessage());
+//			}
+//			
+//			throw new UnprocessableEntityException(errorMsgs.toString(),
+//					validationResult.toOperationOutcome()); 
+//		}
 		
 		if (props == null)
 		{
