@@ -94,7 +94,7 @@ public class ContractResourceTest {
 	private static String sourceOrganizationId = "sourceOrgOID";
 	private static String sourcePractitionerId = "sourcePractitionerNPI";
 	private static String recipientPractitionerId = "recipientPractitionerNPI";
-	private static String outputPath = "src/test/resources/";
+	//FHIr context singleton
 	private static FhirContext ctxt = new FhirContext();
 	static {
 		ctxt.getRestfulClientFactory().setSocketTimeout(ContractResourceTest.fhirClientSocketTimeout);

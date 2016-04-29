@@ -1,0 +1,69 @@
+<Patient xmlns="http://hl7.org/fhir">
+   <id value="patientId"/>
+   <contained>
+      <Organization xmlns="http://hl7.org/fhir">
+         <id value="sourceOrgOID"/>
+         <identifier>
+            <system value="NPI uri"/>
+            <value value="NPI of source organization"/>
+         </identifier>
+         <name value="Source Organization Name"/>
+         <address>
+            <line value="1 Source Drive"/>
+            <city value="Source City"/>
+            <state value="NY"/>
+            <postalCode value="01221"/>
+         </address>
+         <contact>
+            <name>
+               <family value="Contact Family Name"/>
+               <given value="Contact Given Name"/>
+            </name>
+            <telecom>
+               <system value="phone"/>
+               <value value="408-555-1212"/>
+               <use value="work"/>
+            </telecom>
+            <telecom>
+               <system value="email"/>
+               <value value="contact@sourceorgnization.org"/>
+               <use value="work"/>
+            </telecom>
+         </contact>
+      </Organization>
+   </contained>
+   <identifier>
+      <system value="urn:oid:2.16.840.1.113883.4.1"/>
+      <value value="123-45-6789"/>
+   </identifier>
+   <identifier>
+      <system value="urn:oid:2.16.840.1.113883.3.72.5.9.1"/>
+      <value value="patientId"/>
+   </identifier>
+   <name>
+      <family value="Patient Family Name"/>
+      <given value="Patient Given Name"/>
+   </name>
+   <telecom>
+      <system value="phone"/>
+      <value value="555-1212"/>
+      <use value="home"/>
+   </telecom>
+   <telecom>
+      <system value="email"/>
+      <value value="patient@home.org"/>
+      <use value="home"/>
+   </telecom>
+   <gender value="female"/>
+   <birthDate value="1966-10-22"/>
+   <address>
+      <type value="postal"/>
+      <line value="Patient Address Line"/>
+      <city value="City"/>
+      <state value="NY"/>
+      <postalCode value="12345"/>
+   </address>
+   <careProvider>
+      <reference value="#sourceOrgOID"/>
+   </careProvider>
+</Patient>
