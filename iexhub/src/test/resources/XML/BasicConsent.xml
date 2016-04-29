@@ -150,7 +150,7 @@
    </type>
    <actionReason>
       <coding>
-         <system value="&#x9;http://hl7.org/fhir/contractsubtypecodes "/>
+         <system value="http://hl7.org/fhir/contractsubtypecodes "/>
          <code value="TREAT"/>
       </coding>
    </actionReason>
