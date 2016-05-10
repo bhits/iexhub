@@ -241,7 +241,7 @@ public class ResearchConsentTest {
 			Iterator<CodeableConceptDt> purposeOfUseIterator = consentFromFile.getActionReason().iterator();
 			while (purposeOfUseIterator.hasNext()) {
 				CodeableConceptDt cd = purposeOfUseIterator.next();
-				assertTrue(cd.getCodingFirstRep().getCode().equalsIgnoreCase("TREAT"));
+				assertTrue(cd.getCodingFirstRep().getCode().equalsIgnoreCase("HRESCH"));
 			}
 		}
 		if (!consentFromFile.getSubject().isEmpty()) {
