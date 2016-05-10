@@ -80,7 +80,7 @@
          </identifier>
          <name>
             <family value="Source Practitioner Last Name"/>
-            <given value="Recipient Practitioner Given Name"/>
+            <given value="Source Practitioner Given Name"/>
             <suffix value="MD"/>
          </name>
          <telecom>
@@ -113,40 +113,18 @@
          <status value="current"/>
          <mode value="snapshot"/>
          <entry>
-            <flag>
-               <coding>
-                  <system value="urn:oid:2.16.840.1.113883.6.1"/>
-                  <code value="18842-5"/>
-               </coding>
-               <text value="Discharge Summary"/>
-            </flag>
-            <item>
+             <item>
                <reference value="#item1"/>
             </item>
          </entry>
          <entry>
-            <flag>
-               <coding>
-                  <system value="urn:oid:2.16.840.1.113883.6.1"/>
-                  <code value="34133-9"/>
-               </coding>
-               <text value="Summarization of Episode Note"/>
-            </flag>
-            <deleted value="false"/>
             <item>
                <reference value="#item2"/>
                <display value="referenced document type or instance"/>
             </item>
          </entry>
          <entry>
-            <flag>
-               <coding>
-                  <system value="urn:oid:2.16.840.1.113883.5.25"/>
-                  <code value="ETH"/>
-               </coding>
-               <text value="Substance Abuse Related Data"/>
-            </flag>
-            <item>
+               <item>
                <reference value="#item3"/>
             </item>
          </entry>

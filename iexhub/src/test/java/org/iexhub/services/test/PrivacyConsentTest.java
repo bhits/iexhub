@@ -109,6 +109,7 @@ public class PrivacyConsentTest {
 		// set id to be used to reference the providerOrganization as an inline
 		// resource
 		sourceOrganizationResource.setId(new IdDt(sourceOrganizationId));
+		//system 2.16.840.1.113883.4.6
 		sourceOrganizationResource.addIdentifier().setSystem("NPI uri").setValue("NPI of source organization");
 		sourceOrganizationResource.setName("Source Organization Name");
 		sourceOrganizationResource.addAddress().addLine("1 Source Drive").setCity("Source City").setState("NY")
@@ -132,7 +133,7 @@ public class PrivacyConsentTest {
 		sourcePractitionerResource.setId(new IdDt(sourcePractitionerId));
 		sourcePractitionerResource.addIdentifier().setSystem("NPI uri").setValue("NPI");
 		sourcePractitionerResource.getName().addFamily("Source Practitioner Last Name")
-				.addGiven("Recipient Practitioner Given Name").addSuffix("MD");
+				.addGiven("Source Practitioner Given Name").addSuffix("MD");
 		sourcePractitionerResource.addAddress().addLine("Source Practitioner Address Line").setCity("City")
 				.setState("NY").setPostalCode("98765");
 		sourcePractitionerResource.addTelecom().setSystem(ContactPointSystemEnum.PHONE).setValue("212-555-1212");
@@ -177,8 +178,7 @@ public class PrivacyConsentTest {
 				.setType(new CodingDt("http://hl7.org/fhir/contractsignertypecodes", "1.2.840.10065.1.12.1.7"));
 		contract.getSignerFirstRep().setSignature(testPatientResource.getNameFirstRep().getNameAsSingleString());
 		contract.getSignerFirstRep().setParty(patientReference);
-		// add test patient as a contained resource rather than external
-		// reference
+		// add test patient as a contained resource rather than externalreference
 		contract.getContained().getContainedResources().add(testPatientResource);
 		// set terms of consent and intended recipient(s)
 		PeriodDt applicablePeriod = new PeriodDt();
@@ -206,7 +206,7 @@ public class PrivacyConsentTest {
 		CodeableConceptDt dischargeSummaryCode = new CodeableConceptDt("urn:oid:2.16.840.1.113883.6.1", "18842-5");
 		// dischargeSummaryCode
 		dischargeSummaryCode.setText("Discharge Summary");
-		dischargeSummaryEntry.setFlag(dischargeSummaryCode);
+		//dischargeSummaryEntry.setFlag(dischargeSummaryCode);
 		Basic basicItem1 = new Basic();
 		basicItem1.setId(new IdDt("item1"));
 		basicItem1.setCode(dischargeSummaryCode);
@@ -221,7 +221,7 @@ public class PrivacyConsentTest {
 		// Document (CCD).
 		CodeableConceptDt summaryNoteCode = new CodeableConceptDt("urn:oid:2.16.840.1.113883.6.1", "34133-9");
 		summaryNoteCode.setText("Summarization of Episode Note");
-		summaryNoteEntry.setFlag(summaryNoteCode);
+		//summaryNoteEntry.setFlag(summaryNoteCode);
 		summaryNoteEntry.setDeleted(false);
 		Basic basicItem2 = new Basic();
 		basicItem2.setId("item2");
@@ -236,7 +236,7 @@ public class PrivacyConsentTest {
 		ListResource.Entry substanceAbuseRelatedEntry = new ListResource.Entry();
 		CodeableConceptDt substanceAbuseRelatedCode = new CodeableConceptDt("urn:oid:2.16.840.1.113883.5.25", "ETH");
 		substanceAbuseRelatedCode.setText("Substance Abuse Related Data");
-		substanceAbuseRelatedEntry.setFlag(substanceAbuseRelatedCode);
+		//substanceAbuseRelatedEntry.setFlag(substanceAbuseRelatedCode);
 		Basic basicItem3 = new Basic();
 		basicItem3.setId("item3");
 		basicItem3.setCode(substanceAbuseRelatedCode);

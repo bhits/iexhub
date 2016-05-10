@@ -161,45 +161,20 @@
             "mode":"snapshot",
             "entry":[
                 {
-                    "flag":{
-                        "coding":[
-                            {
-                                "system":"urn:oid:2.16.840.1.113883.6.1",
-                                "code":"18842-5"
-                            }
-                        ],
-                        "text":"Discharge Summary"
-                    },
+                    
                     "item":{
                         "reference":"#item1"
                     }
                 },
                 {
-                    "flag":{
-                        "coding":[
-                            {
-                                "system":"urn:oid:2.16.840.1.113883.6.1",
-                                "code":"34133-9"
-                            }
-                        ],
-                        "text":"Summarization of Episode Note"
-                    },
-                    "deleted":false,
+                    
                     "item":{
                         "reference":"#item2",
                         "display":"referenced document type or instance"
                     }
                 },
                 {
-                    "flag":{
-                        "coding":[
-                            {
-                                "system":"urn:oid:2.16.840.1.113883.5.25",
-                                "code":"ETH"
-                            }
-                        ],
-                        "text":"Substance Abuse Related Data"
-                    },
+                    
                     "item":{
                         "reference":"#item3"
                     }

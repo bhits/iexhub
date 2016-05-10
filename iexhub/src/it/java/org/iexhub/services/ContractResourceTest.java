@@ -155,7 +155,7 @@ public class ContractResourceTest {
 		sourcePractitionerResource.setId(new IdDt(sourcePractitionerId));
 		sourcePractitionerResource.addIdentifier().setSystem("NPI uri").setValue("NPI");
 		sourcePractitionerResource.getName().addFamily("Source Practitioner Last Name")
-				.addGiven("Recipient Practitioner Given Name").addSuffix("MD");
+				.addGiven("Source Practitioner Given Name").addSuffix("MD");
 		sourcePractitionerResource.addAddress().addLine("Source Practitioner Address Line").setCity("City")
 				.setState("NY").setPostalCode("98765");
 		sourcePractitionerResource.addTelecom().setSystem(ContactPointSystemEnum.PHONE).setValue("212-555-1212");
@@ -263,8 +263,8 @@ public class ContractResourceTest {
 			// create FHIR client
 			IGenericClient client = ctxt.newRestfulGenericClient(serverBaseUrl);
 			 client.registerInterceptor(loggingInterceptor);
-			// @TODO: invoke Contract service
-			 //MethodOutcome outcome =  client.create().resource(contract).execute();
+			//  invoke Contract service
+			 MethodOutcome outcome =  client.create().resource(contract).execute();
 			 
 		} catch (Exception e) {
 			fail( e.getMessage());
@@ -364,8 +364,8 @@ public class ContractResourceTest {
 			// Create FHIR client
 			 IGenericClient client =  ctxt.newRestfulGenericClient(serverBaseUrl);
 			 client.registerInterceptor(loggingInterceptor);
-			// @TODO: Invoke service
-			// MethodOutcome outcome =  client.create().resource(contract).execute();
+			//  Invoke service
+			MethodOutcome outcome =  client.create().resource(contract).execute();
 		} catch (Exception e) {
 			fail( e.getMessage());
 		}

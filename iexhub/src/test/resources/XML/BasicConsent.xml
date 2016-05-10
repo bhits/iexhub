@@ -80,7 +80,7 @@
          </identifier>
          <name>
             <family value="Source Practitioner Last Name"/>
-            <given value="Recipient Practitioner Given Name"/>
+            <given value="Source Practitioner Given Name"/>
             <suffix value="MD"/>
          </name>
          <telecom>
