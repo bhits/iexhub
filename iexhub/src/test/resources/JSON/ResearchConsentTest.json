@@ -1,0 +1,324 @@
+
+{
+    "resourceType":"Contract",
+    "id":"2.16.840.1.113883.3.72.5.9.1.consentId",
+    "contained":[
+        {
+            "resourceType":"Organization",
+            "id":"researchOrgOID",
+            "identifier":[
+                {
+                    "system":"NPI uri",
+                    "value":"NPI of source organization"
+                }
+            ],
+            "name":"Research Organization Name",
+            "address":[
+                {
+                    "line":[
+                        "1 Research Drive"
+                    ],
+                    "city":"Research City",
+                    "state":"MA",
+                    "postalCode":"01221"
+                }
+            ],
+            "contact":[
+                {
+                    "name":{
+                        "family":[
+                            "Researcher Family Name"
+                        ],
+                        "given":[
+                            "Researcher Given Name"
+                        ]
+                    },
+                    "telecom":[
+                        {
+                            "system":"phone",
+                            "value":"408-555-1212",
+                            "use":"work"
+                        },
+                        {
+                            "system":"email",
+                            "value":"contact@sourceorgnization.org",
+                            "use":"work"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "resourceType":"Basic",
+            "id":"item1",
+            "identifier":[
+                {
+                    "system":"local system id",
+                    "value":"id for Human Nature study"
+                }
+            ],
+            "code":{
+                "coding":[
+                    {
+                        "system":"urn:oid:2.16.840.1.113883.6.1",
+                        "code":"1111-1"
+                    }
+                ],
+                "text":"Human Nature Research Study"
+            }
+        },
+        {
+            "resourceType":"Patient",
+            "id":"patientId",
+            "identifier":[
+                {
+                    "system":"urn:oid:2.16.840.1.113883.4.1",
+                    "value":"123-45-6789"
+                },
+                {
+                    "system":"urn:oid:2.16.840.1.113883.3.72.5.9.1",
+                    "value":"patientId"
+                }
+            ],
+            "name":[
+                {
+                    "family":[
+                        "Patient Family Name"
+                    ],
+                    "given":[
+                        "Patient Given Name"
+                    ]
+                }
+            ],
+            "telecom":[
+                {
+                    "system":"phone",
+                    "value":"555-1212",
+                    "use":"home"
+                },
+                {
+                    "system":"email",
+                    "value":"patient@home.org",
+                    "use":"home"
+                }
+            ],
+            "gender":"female",
+            "birthDate":"1966-10-22",
+            "address":[
+                {
+                    "type":"postal",
+                    "line":[
+                        "Patient Address Line"
+                    ],
+                    "city":"City",
+                    "state":"NY",
+                    "postalCode":"12345"
+                }
+            ],
+            "careProvider":[
+                {
+                    "reference":"#researchOrgOID"
+                }
+            ]
+        },
+        {
+            "resourceType":"Organization",
+            "id":"researchOrgOID",
+            "identifier":[
+                {
+                    "system":"NPI uri",
+                    "value":"NPI of source organization"
+                }
+            ],
+            "name":"Research Organization Name",
+            "address":[
+                {
+                    "line":[
+                        "1 Research Drive"
+                    ],
+                    "city":"Research City",
+                    "state":"MA",
+                    "postalCode":"01221"
+                }
+            ],
+            "contact":[
+                {
+                    "name":{
+                        "family":[
+                            "Researcher Family Name"
+                        ],
+                        "given":[
+                            "Researcher Given Name"
+                        ]
+                    },
+                    "telecom":[
+                        {
+                            "system":"phone",
+                            "value":"408-555-1212",
+                            "use":"work"
+                        },
+                        {
+                            "system":"email",
+                            "value":"contact@sourceorgnization.org",
+                            "use":"work"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "resourceType":"List",
+            "id":"includedListOfDataTypes",
+            "title":"List of included data types",
+            "code":{
+                "coding":[
+                    {
+                        "system":"system",
+                        "code":"INCLUDE"
+                    }
+                ]
+            },
+            "status":"current",
+            "mode":"snapshot",
+            "entry":[
+                {
+                    "item":{
+                        "reference":"#item1"
+                    }
+                }
+            ]
+        },
+        {
+            "resourceType":"Basic",
+            "id":"item1",
+            "identifier":[
+                {
+                    "system":"local system id",
+                    "value":"id for Human Nature study"
+                }
+            ],
+            "code":{
+                "coding":[
+                    {
+                        "system":"urn:oid:2.16.840.1.113883.6.1",
+                        "code":"1111-1"
+                    }
+                ],
+                "text":"Human Nature Research Study"
+            }
+        },
+        {
+            "resourceType":"Practitioner",
+            "id":"recipientResearcherId",
+            "identifier":[
+                {
+                    "system":"NPI uri",
+                    "value":"NPI"
+                }
+            ],
+            "name":{
+                "family":[
+                    "Recipient Practitioner Last Name"
+                ],
+                "given":[
+                    "Recipient Practitioner Given Name"
+                ],
+                "prefix":[
+                    "Ms."
+                ],
+                "suffix":[
+                    "MD"
+                ]
+            },
+            "telecom":[
+                {
+                    "system":"phone",
+                    "value":"212-000-1212",
+                    "use":"work"
+                },
+                {
+                    "system":"email",
+                    "value":"recipient@destination.org",
+                    "use":"work"
+                }
+            ],
+            "address":[
+                {
+                    "line":[
+                        "Recipient Practitioner Address Line"
+                    ],
+                    "city":"City",
+                    "state":"NY",
+                    "postalCode":"98765"
+                }
+            ]
+        }
+    ],
+    "identifier":{
+        "system":"urn:oid:2.16.840.1.113883.3.72.5.9.1",
+        "value":"consent GUID generated by application"
+    },
+    "issued":"2016-05-09T20:18:52-04:00",
+    "subject":[
+        {
+            "reference":"#patientId",
+            "display":"Research Participant"
+        }
+    ],
+    "authority":[
+        {
+            "reference":"#researchOrgOID"
+        }
+    ],
+    "type":{
+        "coding":[
+            {
+                "system":"http://hl7.org/fhir/contracttypecodes",
+                "code":"disclosure"
+            }
+        ]
+    },
+    "actionReason":[
+        {
+            "coding":[
+                {
+                    "system":"http://hl7.org/fhir/contractsubtypecodes ",
+                    "code":"HRESCH"
+                }
+            ],
+            "text":"Consent for research"
+        }
+    ],
+    "signer":[
+        {
+            "type":{
+                "system":"http://hl7.org/fhir/contractsignertypecodes",
+                "code":"1.2.840.10065.1.12.1.7"
+            },
+            "party":{
+                "reference":"#patientId",
+                "display":"Research Participant"
+            },
+            "signature":"Patient Given Name Patient Family Name"
+        }
+    ],
+    "term":[
+        {
+            "applies":{
+                "start":"2015-10-10",
+                "end":"2016-10-10"
+            },
+            "subject":{
+                "reference":"#includedListOfDataTypes"
+            },
+            "actor":[
+                {
+                    "entity":{
+                        "reference":"#recipientResearcherId"
+                    }
+                }
+            ],
+            "text":"description of the consent terms"
+        }
+    ]
+}
