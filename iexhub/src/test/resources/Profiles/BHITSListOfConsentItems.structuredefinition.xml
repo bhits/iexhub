@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<StructureDefinition xmlns="http://hl7.org/fhir">
+  <meta>
+    <lastUpdated value="2016-05-25T01:06:48.723-04:00" />
+  </meta>
+  <url value="http://hl7.org/fhir/StructureDefinition/bhits-consent-list" />
+  <name value="List of Consent Items" />
+  <status value="draft" />
+  <date value="2015-09-22T20:02:49+10:00" />
+  <description value="List of data types referenced by a Consent. It may be used ot list the included/excluded data types. " />
+  <fhirVersion value="1.0.2" />
+  <kind value="resource" />
+  <constrainedType value="List" />
+  <abstract value="false" />
+  <base value="http://hl7.org/fhir/StructureDefinition/List" />
+  <differential>
+    <element>
+      <path value="List" />
+      <min value="0" />
+      <type>
+        <code value="List" />
+      </type>
+    </element>
+    <element>
+      <path value="List.meta" />
+      <min value="0" />
+      <max value="0" />
+      <isSummary value="true" />
+    </element>
+    <element>
+      <path value="List.implicitRules" />
+      <min value="0" />
+      <max value="0" />
+      <isModifier value="true" />
+      <isSummary value="true" />
+    </element>
+    <element>
+      <path value="List.language" />
+      <min value="0" />
+      <max value="0" />
+    </element>
+  </differential>
+</StructureDefinition>

@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ImplementationGuide xmlns="http://hl7.org/fhir">
+  <meta>
+    <lastUpdated value="2016-05-25T01:27:48.816-04:00" />
+  </meta>
+  <text>
+    <status value="generated" /><div xmlns="http://www.w3.org/1999/xhtml">BHITS Privacy Consent Implementation Guide</div></text>
+  <url value="http://www.samhsa.org/bhits/fhir/ig/consent" />
+  <version value="1" />
+  <name value="BHITS Consent Implementation Guide" />
+  <status value="draft" />
+  <publisher value="SAMHSA BHITS Project" />
+  <date value="2016-05-25T01:27:41-04:00" />
+  <description value="BHITS Consent Implementation Guide" />
+  <fhirVersion value="1.0.2" />
+  <package>
+    <name value=" BHITSPrivacy Consent Package" />
+    <description value="Contains the FHIR profiles used to instantiate a Privacy Consent. It uses a Contract resource profile, List profile, and Basic resource profile." />
+    <resource>
+      <purpose value="profile" />
+      <name value="BHITS Consent" />
+      <description value="Privacy Consent Directives structure for " />
+      <sourceReference>
+        <reference value="http://hl7.org/fhir/StructureDefinition/bhits-consent" />
+      </sourceReference>
+    </resource>
+    <resource>
+      <purpose value="profile" />
+      <name value="List of Consent Items" />
+      <description value="Base StructureDefinition for List Resource" />
+      <sourceReference>
+        <reference value="http://hl7.org/fhir/StructureDefinition/bhits-consent-list" />
+      </sourceReference>
+    </resource>
+    <resource>
+      <purpose value="profile" />
+      <name value="Consent Item" />
+      <description value="Base StructureDefinition for Basic Resource" />
+      <sourceReference>
+        <reference value="http://hl7.org/fhir/StructureDefinition/bhits-consent-list-item" />
+      </sourceReference>
+    </resource>
+  </package>
+  <page>
+    <source value="http://gforge.hl7.org/gf/project/cbcc/frs/?action=FrsReleaseBrowse&amp;frs_package_id=303" />
+    <name value="BHITS Consent" />
+    <kind value="page" />
+    <type value="Basic" />
+    <type value="Contract" />
+    <type value="ImplementationGuide" />
+    <type value="List" />
+  </page>
+</ImplementationGuide>

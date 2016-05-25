@@ -1,0 +1,124 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<StructureDefinition xmlns="http://hl7.org/fhir">
+  <meta>
+    <lastUpdated value="2016-05-25T01:06:52.832-04:00" />
+  </meta>
+  <url value="http://hl7.org/fhir/StructureDefinition/bhits-consent-list-item" />
+  <version value="1" />
+  <name value="Consent Item" />
+  <status value="draft" />
+  <date value="2016-05-15T00:00:00-04:00" />
+  <description value="This profile is used to specify an item (e.g. protected information, research study, etc.) that is referenced by a privacy consent." />
+  <requirements value="This structure is used to specify a coded value for describing a type of information (e.g. substance abuse, mental health, etc.) or a specific instance (e.g. a specific research study)." />
+  <fhirVersion value="1.0.2" />
+  <kind value="resource" />
+  <constrainedType value="Basic" />
+  <abstract value="false" />
+  <base value="http://hl7.org/fhir/StructureDefinition/Basic" />
+  <differential>
+    <element>
+      <path value="Basic" />
+      <min value="0" />
+      <type>
+        <code value="Basic" />
+      </type>
+      <isSummary value="true" />
+    </element>
+    <element>
+      <path value="Basic.id" />
+      <name value="Item id" />
+      <label value="Item id" />
+      <min value="1" />
+      <isSummary value="true" />
+    </element>
+    <element>
+      <path value="Basic.meta" />
+      <min value="0" />
+      <max value="0" />
+      <isSummary value="true" />
+    </element>
+    <element>
+      <path value="Basic.implicitRules" />
+      <min value="0" />
+      <max value="0" />
+      <isModifier value="true" />
+      <isSummary value="true" />
+    </element>
+    <element>
+      <path value="Basic.language" />
+      <min value="0" />
+      <max value="0" />
+    </element>
+    <element>
+      <path value="Basic.contained" />
+      <min value="0" />
+      <max value="0" />
+    </element>
+    <element>
+      <path value="Basic.identifier" />
+      <name value="Consent Item's Identifier" />
+      <min value="0" />
+      <max value="1" />
+      <isSummary value="true" />
+    </element>
+    <element>
+      <path value="Basic.code" />
+      <name value="Item Code " />
+      <definition value="Identifies the 'type' of data reprsented by this item. A LOINC code may be sufficient in most cases." />
+      <requirements value="Must be able to distinguish different types of data sets that may be referenced by a Consent." />
+      <min value="1" />
+      <mustSupport value="true" />
+      <isModifier value="true" />
+      <isSummary value="true" />
+      <binding>
+        <strength value="preferred" />
+        <valueSetReference>
+          <reference value="http://loinc.org" />
+        </valueSetReference>
+      </binding>
+    </element>
+    <element>
+      <path value="Basic.code.coding" />
+      <min value="0" />
+      <mustSupport value="true" />
+      <isSummary value="true" />
+      <binding>
+        <strength value="example" />
+        <valueSetUri value="http://loinc.org" />
+      </binding>
+    </element>
+    <element>
+      <path value="Basic.code.coding.system" />
+      <name value="Code System" />
+      <min value="1" />
+      <fixedUri value="http://loinc.org" />
+      <mustSupport value="true" />
+      <isSummary value="true" />
+    </element>
+    <element>
+      <path value="Basic.code.coding.code" />
+      <name value="Code Value" />
+      <min value="1" />
+      <mustSupport value="true" />
+      <isSummary value="true" />
+    </element>
+    <element>
+      <path value="Basic.subject" />
+      <min value="0" />
+      <max value="0" />
+      <isSummary value="true" />
+    </element>
+    <element>
+      <path value="Basic.author" />
+      <min value="0" />
+      <max value="0" />
+      <isSummary value="true" />
+    </element>
+    <element>
+      <path value="Basic.created" />
+      <min value="0" />
+      <max value="0" />
+      <isSummary value="true" />
+    </element>
+  </differential>
+</StructureDefinition>
