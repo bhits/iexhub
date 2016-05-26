@@ -3,10 +3,10 @@
   <id value="spark177" />
   <meta>
     <versionId value="spark441" />
-    <lastUpdated value="2016-05-25T23:43:11.272-04:00" />
+    <lastUpdated value="2016-05-26T19:29:35.727-04:00" />
   </meta>
   <url value="http://hl7.org/fhir/StructureDefinition/bhits-consent-list" />
-  <name value="List of Consent Items" />
+  <name value="BHITS List of Consent Items" />
   <status value="draft" />
   <date value="2015-09-22T20:02:49+10:00" />
   <description value="List of data types referenced by a Consent. It may be used ot list the included/excluded data types. " />
@@ -203,6 +203,11 @@
       <label value="Reference to Consent Item" />
       <min value="1" />
       <mustSupport value="true" />
+    </element>
+    <element>
+      <path value="List.entry.item.reference" />
+      <min value="1" />
+      <isSummary value="true" />
     </element>
     <element>
       <path value="List.emptyReason" />

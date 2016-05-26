@@ -3,16 +3,16 @@
   <id value="spark116" />
   <meta>
     <versionId value="spark272" />
-    <lastUpdated value="2016-05-26T00:16:23.178-04:00" />
+    <lastUpdated value="2016-05-26T19:38:25.757-04:00" />
   </meta>
   <text>
-    <status value="generated" /><div xmlns="http://www.w3.org/1999/xhtml" /></text>
+    <status value="empty" /><div xmlns="http://www.w3.org/1999/xhtml" /></text>
   <url value="http://www.samhsa.org/bhits/fhir/ig/consent" />
   <version value="1" />
   <name value="BHITS Consent Implementation Guide" />
   <status value="draft" />
   <publisher value="SAMHSA BHITS Project" />
-  <date value="2016-05-26T00:16:19-04:00" />
+  <date value="2016-05-26T19:38:23-04:00" />
   <description value="BHITS Consent Implementation Guide" />
   <fhirVersion value="1.0.2" />
   <package>
@@ -28,7 +28,7 @@
     </resource>
     <resource>
       <purpose value="profile" />
-      <name value="List of Consent Items" />
+      <name value="BHITS List of Consent Items" />
       <description value="Base StructureDefinition for List Resource" />
       <sourceReference>
         <reference value="http://hl7.org/fhir/StructureDefinition/bhits-consent-list" />
@@ -36,7 +36,7 @@
     </resource>
     <resource>
       <purpose value="profile" />
-      <name value="Consent Item" />
+      <name value="BHITS Consent Item" />
       <description value="Base StructureDefinition for Basic Resource" />
       <sourceReference>
         <reference value="http://hl7.org/fhir/StructureDefinition/bhits-consent-list-item" />

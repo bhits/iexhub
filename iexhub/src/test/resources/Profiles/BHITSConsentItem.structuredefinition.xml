@@ -3,11 +3,11 @@
   <id value="spark179" />
   <meta>
     <versionId value="spark443" />
-    <lastUpdated value="2016-05-25T23:43:32.23-04:00" />
+    <lastUpdated value="2016-05-26T19:29:46.414-04:00" />
   </meta>
   <url value="http://hl7.org/fhir/StructureDefinition/bhits-consent-list-item" />
   <version value="1" />
-  <name value="Consent Item" />
+  <name value="BHITS Consent Item" />
   <status value="draft" />
   <date value="2016-05-15T00:00:00-04:00" />
   <description value="This profile is used to specify an item (e.g. protected information, research study, etc.) that is referenced by a privacy consent." />

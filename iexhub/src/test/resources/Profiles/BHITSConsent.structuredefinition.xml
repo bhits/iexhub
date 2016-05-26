@@ -3,7 +3,7 @@
   <id value="spark178" />
   <meta>
     <versionId value="spark442" />
-    <lastUpdated value="2016-05-26T00:28:29.731-04:00" />
+    <lastUpdated value="2016-05-26T19:30:43.665-04:00" />
   </meta>
   <url value="http://hl7.org/fhir/StructureDefinition/bhits-consent" />
   <version value="1" />
@@ -193,6 +193,7 @@
       <definition value="A reference to a the contained Patient resrouce." />
       <min value="1" />
       <fixedString value="#patientId" />
+      <mustSupport value="true" />
       <isSummary value="true" />
     </element>
     <element>
@@ -213,6 +214,7 @@
     <element>
       <path value="Contract.authority.reference" />
       <min value="1" />
+      <mustSupport value="true" />
       <isSummary value="true" />
     </element>
     <element>
@@ -236,7 +238,7 @@
       <path value="Contract.type.coding" />
       <min value="1" />
       <max value="1" />
-      <mustSupport value="false" />
+      <mustSupport value="true" />
       <isSummary value="true" />
       <binding>
         <strength value="required" />
@@ -245,14 +247,16 @@
     </element>
     <element>
       <path value="Contract.type.coding.system" />
-      <min value="0" />
+      <min value="1" />
       <fixedUri value="http://hl7.org/fhir/contracttypecodes" />
+      <mustSupport value="true" />
       <isSummary value="true" />
     </element>
     <element>
       <path value="Contract.type.coding.code" />
-      <min value="0" />
+      <min value="1" />
       <patternCode value="disclosure" />
+      <mustSupport value="true" />
       <isSummary value="true" />
     </element>
     <element>
@@ -329,8 +333,15 @@
       <label value="Authorized Practitioner" />
       <short value="Authorized Practitioner" />
       <definition value="In addition to the Authorized Organization this element specifies a practitioner (e.g. a substance abuse treatment provider, psychiatrist) who authorized or receives the consent of the patient identified as &quot;Contract.subject&quot;." />
-      <min value="1" />
+      <min value="0" />
       <max value="1" />
+      <mustSupport value="true" />
+    </element>
+    <element>
+      <path value="Contract.actor.id" />
+      <representation value="xmlAttr" />
+      <min value="0" />
+      <max value="0" />
     </element>
     <element>
       <path value="Contract.actor.entity" />
@@ -344,6 +355,7 @@
         <code value="Reference" />
         <profile value="http://hl7.org/fhir/StructureDefinition/Practitioner" />
       </type>
+      <mustSupport value="true" />
     </element>
     <element>
       <extension url="http://hl7.org/fhir/StructureDefinition/structuredefinition-explicit-type-name">
@@ -364,6 +376,32 @@
       <min value="1" />
       <max value="1" />
       <mustSupport value="true" />
+    </element>
+    <element>
+      <path value="Contract.signer.id" />
+      <representation value="xmlAttr" />
+      <min value="0" />
+      <max value="0" />
+    </element>
+    <element>
+      <path value="Contract.signer.type.id" />
+      <representation value="xmlAttr" />
+      <min value="0" />
+      <max value="0" />
+    </element>
+    <element>
+      <path value="Contract.signer.type.system" />
+      <name value="Signer type code system" />
+      <min value="1" />
+      <fixedUri value="http://hl7.org/fhir/contractsignertypecodes" />
+      <isSummary value="true" />
+    </element>
+    <element>
+      <path value="Contract.signer.type.code" />
+      <name value="Signer type code value" />
+      <min value="1" />
+      <fixedCode value="1.2.840.10065.1.12.1.7" />
+      <isSummary value="true" />
     </element>
     <element>
       <path value="Contract.signer.party" />
@@ -443,9 +481,19 @@
       <isSummary value="true" />
     </element>
     <element>
+      <path value="Contract.term.type" />
+      <min value="0" />
+      <max value="0" />
+    </element>
+    <element>
+      <path value="Contract.term.subType" />
+      <min value="0" />
+      <max value="0" />
+    </element>
+    <element>
       <path value="Contract.term.subject" />
       <name value="Items Specified by Consent" />
-      <definition value="This subject is a reference to list of consent items. " />
+      <definition value="This subject is a reference to list of consent items. &#xD;&#xA; This is used by a granual consent." />
       <min value="0" />
       <type>
         <code value="Reference" />
@@ -454,6 +502,12 @@
       </type>
       <meaningWhenMissing value="If the reference to the list items is missing then all matching information is included, &#xD;&#xA;without any specific/granular specfiier." />
       <mustSupport value="true" />
+    </element>
+    <element>
+      <path value="Contract.term.subject.id" />
+      <representation value="xmlAttr" />
+      <min value="0" />
+      <max value="0" />
     </element>
     <element>
       <path value="Contract.term.subject.reference" />
@@ -480,6 +534,7 @@
       <name value="Intended Recipient(s)" />
       <definition value="The intended recipient practitionr " />
       <min value="0" />
+      <mustSupport value="true" />
     </element>
     <element>
       <path value="Contract.term.actor.id" />
@@ -510,8 +565,13 @@
       <max value="0" />
     </element>
     <element>
+      <path value="Contract.term.group" />
+      <min value="0" />
+      <max value="0" />
+    </element>
+    <element>
       <path value="Contract.binding[x]" />
-      <name value="Alternative Document " />
+      <name value="Alternative Document  (PDF)" />
       <min value="0" />
     </element>
     <element>
