@@ -1,16 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ImplementationGuide xmlns="http://hl7.org/fhir">
+  <id value="spark116" />
   <meta>
-    <lastUpdated value="2016-05-25T01:27:48.816-04:00" />
+    <versionId value="spark272" />
+    <lastUpdated value="2016-05-26T00:16:23.178-04:00" />
   </meta>
   <text>
-    <status value="generated" /><div xmlns="http://www.w3.org/1999/xhtml">BHITS Privacy Consent Implementation Guide</div></text>
+    <status value="generated" /><div xmlns="http://www.w3.org/1999/xhtml" /></text>
   <url value="http://www.samhsa.org/bhits/fhir/ig/consent" />
   <version value="1" />
   <name value="BHITS Consent Implementation Guide" />
   <status value="draft" />
   <publisher value="SAMHSA BHITS Project" />
-  <date value="2016-05-25T01:27:41-04:00" />
+  <date value="2016-05-26T00:16:19-04:00" />
   <description value="BHITS Consent Implementation Guide" />
   <fhirVersion value="1.0.2" />
   <package>

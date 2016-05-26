@@ -3,7 +3,90 @@
     "resourceType":"Contract",
     "id":"2.16.840.1.113883.3.72.5.9.1.consentId",
     "contained":[
-       
+        {
+            "resourceType":"Organization",
+            "id":"sourceOrgOID",
+            "identifier":[
+                {
+                    "system":"urn:oid:2.16.840.1.113883.4.6",
+                    "value":"NPI of source organization"
+                }
+            ],
+            "name":"Provider Organization Name",
+            "address":[
+                {
+                    "line":[
+                        "1 Main Street"
+                    ],
+                    "city":"Cupertino",
+                    "state":"CA",
+                    "postalCode":"95014"
+                }
+            ],
+            "contact":[
+                {
+                    "name":{
+                        "family":[
+                            "Contact Family Name"
+                        ],
+                        "given":[
+                            "Contact Given Name"
+                        ]
+                    },
+                    "telecom":[
+                        {
+                            "system":"phone",
+                            "value":"408-555-1212",
+                            "use":"work"
+                        },
+                        {
+                            "system":"email",
+                            "value":"contact@sourceorgnization.org",
+                            "use":"work"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "resourceType":"Basic",
+            "id":"item1",
+            "code":{
+                "coding":[
+                    {
+                        "system":"urn:oid:2.16.840.1.113883.6.1",
+                        "code":"18842-5"
+                    }
+                ],
+                "text":"Discharge Summary"
+            }
+        },
+        {
+            "resourceType":"Basic",
+            "id":"item2",
+            "code":{
+                "coding":[
+                    {
+                        "system":"urn:oid:2.16.840.1.113883.6.1",
+                        "code":"34133-9"
+                    }
+                ],
+                "text":"Summarization of Episode Note"
+            }
+        },
+        {
+            "resourceType":"Basic",
+            "id":"item3",
+            "code":{
+                "coding":[
+                    {
+                        "system":"urn:oid:2.16.840.1.113883.5.25",
+                        "code":"ETH"
+                    }
+                ],
+                "text":"Substance Abuse Related Data"
+            }
+        },
         {
             "resourceType":"Patient",
             "id":"patientId",
@@ -63,7 +146,7 @@
             "id":"sourceOrgOID",
             "identifier":[
                 {
-                    "system":"NPI uri",
+                    "system":"urn:oid:2.16.840.1.113883.4.6",
                     "value":"NPI of source organization"
                 }
             ],
@@ -108,7 +191,7 @@
             "id":"sourcePractitionerNPI",
             "identifier":[
                 {
-                    "system":"NPI uri",
+                    "system":"urn:oid:2.16.840.1.113883.4.6",
                     "value":"NPI"
                 }
             ],
@@ -117,7 +200,7 @@
                     "Source Practitioner Last Name"
                 ],
                 "given":[
-                    "Recipient Practitioner Given Name"
+                    "Source Practitioner Given Name"
                 ],
                 "suffix":[
                     "MD"
@@ -152,29 +235,55 @@
             "code":{
                 "coding":[
                     {
-                        "system":"system",
-                        "code":"INCLUDE"
+                        "system":"http://hl7.org/fhir/v3/SetOperator",
+                        "code":"I"
                     }
-                ]
+                ],
+                "text":"Include"
             },
             "status":"current",
             "mode":"snapshot",
             "entry":[
                 {
-                    
+                    "flag":{
+                        "coding":[
+                            {
+                                "system":"urn:oid:2.16.840.1.113883.6.1",
+                                "code":"18842-5"
+                            }
+                        ],
+                        "text":"Discharge Summary"
+                    },
                     "item":{
                         "reference":"#item1"
                     }
                 },
                 {
-                    
+                    "flag":{
+                        "coding":[
+                            {
+                                "system":"urn:oid:2.16.840.1.113883.6.1",
+                                "code":"34133-9"
+                            }
+                        ],
+                        "text":"Summarization of Episode Note"
+                    },
+                    "deleted":false,
                     "item":{
                         "reference":"#item2",
                         "display":"referenced document type or instance"
                     }
                 },
                 {
-                    
+                    "flag":{
+                        "coding":[
+                            {
+                                "system":"urn:oid:2.16.840.1.113883.5.25",
+                                "code":"ETH"
+                            }
+                        ],
+                        "text":"Substance Abuse Related Data"
+                    },
                     "item":{
                         "reference":"#item3"
                     }
@@ -225,7 +334,7 @@
             "id":"recipientPractitionerNPI",
             "identifier":[
                 {
-                    "system":"NPI uri",
+                    "system":"urn:oid:2.16.840.1.113883.4.6",
                     "value":"NPI"
                 }
             ],
@@ -271,7 +380,7 @@
         "system":"urn:oid:2.16.840.1.113883.3.72.5.9.1",
         "value":"consent GUID generated by application"
     },
-    "issued":"2016-04-26T00:38:35-04:00",
+    "issued":"2016-05-26T00:41:17-04:00",
     "subject":[
         {
             "reference":"#patientId"
@@ -294,7 +403,7 @@
         {
             "coding":[
                 {
-                    "system":"\thttp://hl7.org/fhir/contractsubtypecodes ",
+                    "system":"http://hl7.org/fhir/contractsubtypecodes ",
                     "code":"TREAT"
                 }
             ]

@@ -1,7 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <StructureDefinition xmlns="http://hl7.org/fhir">
+  <id value="spark177" />
   <meta>
-    <lastUpdated value="2016-05-25T01:06:48.723-04:00" />
+    <versionId value="spark441" />
+    <lastUpdated value="2016-05-25T23:43:11.272-04:00" />
   </meta>
   <url value="http://hl7.org/fhir/StructureDefinition/bhits-consent-list" />
   <name value="List of Consent Items" />
@@ -36,6 +38,174 @@
     </element>
     <element>
       <path value="List.language" />
+      <min value="0" />
+      <max value="0" />
+    </element>
+    <element>
+      <path value="List.identifier" />
+      <min value="0" />
+      <max value="0" />
+    </element>
+    <element>
+      <path value="List.title" />
+      <name value="List title" />
+      <min value="0" />
+      <exampleString value="Dr. Jane's Patients" />
+      <isSummary value="true" />
+    </element>
+    <element>
+      <path value="List.code" />
+      <name value="List code" />
+      <label value="List code structure" />
+      <definition value="This code defines the purpose of the list - why it was created. In this profile this code indicates whehter the list is intended to &quot;include&quot; or &quot;exclude&quot; the data types identified by the list items. " />
+      <min value="1" />
+      <isSummary value="true" />
+    </element>
+    <element>
+      <path value="List.code.id" />
+      <representation value="xmlAttr" />
+      <min value="0" />
+      <max value="0" />
+    </element>
+    <element>
+      <path value="List.code.coding" />
+      <name value="List set operator " />
+      <label value="List set operator " />
+      <code>
+        <code value="I" />
+        <display value="include" />
+      </code>
+      <code>
+        <system value="http://hl7.org/fhir/v3/SetOperator" />
+        <code value="E" />
+        <display value="exclude" />
+      </code>
+      <short value="List set operator " />
+      <min value="1" />
+      <max value="1" />
+      <mustSupport value="true" />
+      <isSummary value="true" />
+      <binding>
+        <strength value="required" />
+        <description value="HL7 v3 Code System SetOperator" />
+        <valueSetUri value="http://hl7.org/fhir/v3/SetOperator" />
+      </binding>
+    </element>
+    <element>
+      <path value="List.code.coding.id" />
+      <representation value="xmlAttr" />
+      <min value="0" />
+      <max value="0" />
+    </element>
+    <element>
+      <path value="List.code.coding.system" />
+      <name value="HL7 v3 Code System SetOperato" />
+      <label value="List code system" />
+      <min value="1" />
+      <fixedUri value="http://hl7.org/fhir/v3/SetOperator" />
+      <mustSupport value="true" />
+      <isSummary value="true" />
+    </element>
+    <element>
+      <path value="List.code.coding.code" />
+      <name value="List set code value" />
+      <label value="List code value" />
+      <min value="1" />
+      <mustSupport value="true" />
+      <isSummary value="true" />
+    </element>
+    <element>
+      <path value="List.subject" />
+      <min value="0" />
+      <max value="0" />
+      <isSummary value="true" />
+    </element>
+    <element>
+      <path value="List.source" />
+      <min value="0" />
+      <max value="0" />
+      <isSummary value="true" />
+    </element>
+    <element>
+      <path value="List.encounter" />
+      <min value="0" />
+      <max value="0" />
+    </element>
+    <element>
+      <path value="List.status" />
+      <label value="List Statue" />
+      <comments value="Fixed, mandatory for this resource" />
+      <min value="1" />
+      <fixedCode value="current" />
+      <mustSupport value="true" />
+      <isModifier value="true" />
+      <isSummary value="true" />
+    </element>
+    <element>
+      <path value="List.date" />
+      <min value="0" />
+      <max value="0" />
+      <isSummary value="true" />
+    </element>
+    <element>
+      <path value="List.orderedBy" />
+      <min value="0" />
+      <max value="0" />
+    </element>
+    <element>
+      <path value="List.mode" />
+      <name value="List mode" />
+      <label value="List mode" />
+      <comments value="Fixed, mandatory for this resource" />
+      <min value="1" />
+      <fixedCode value="snapshot" />
+      <mustSupport value="true" />
+      <isModifier value="true" />
+      <isSummary value="true" />
+    </element>
+    <element>
+      <path value="List.note" />
+      <min value="0" />
+      <max value="0" />
+    </element>
+    <element>
+      <path value="List.entry" />
+      <name value="Reference to consent list items" />
+      <min value="1" />
+      <mustSupport value="true" />
+    </element>
+    <element>
+      <path value="List.entry.id" />
+      <representation value="xmlAttr" />
+      <min value="0" />
+      <max value="0" />
+    </element>
+    <element>
+      <path value="List.entry.flag" />
+      <min value="0" />
+      <max value="0" />
+    </element>
+    <element>
+      <path value="List.entry.deleted" />
+      <min value="0" />
+      <max value="0" />
+      <defaultValueBoolean value="false" />
+      <isModifier value="true" />
+    </element>
+    <element>
+      <path value="List.entry.date" />
+      <min value="0" />
+      <max value="0" />
+    </element>
+    <element>
+      <path value="List.entry.item" />
+      <name value="Reference to Consent Item" />
+      <label value="Reference to Consent Item" />
+      <min value="1" />
+      <mustSupport value="true" />
+    </element>
+    <element>
+      <path value="List.emptyReason" />
       <min value="0" />
       <max value="0" />
     </element>

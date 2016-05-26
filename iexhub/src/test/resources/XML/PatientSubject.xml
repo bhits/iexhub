@@ -4,7 +4,7 @@
       <Organization xmlns="http://hl7.org/fhir">
          <id value="researchOrgOID"/>
          <identifier>
-            <system value="NPI uri"/>
+            <system value="urn:oid:2.16.840.1.113883.4.6"/>
             <value value="NPI of source organization"/>
          </identifier>
          <name value="Research Organization Name"/>

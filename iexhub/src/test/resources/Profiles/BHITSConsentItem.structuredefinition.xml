@@ -1,7 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <StructureDefinition xmlns="http://hl7.org/fhir">
+  <id value="spark179" />
   <meta>
-    <lastUpdated value="2016-05-25T01:06:52.832-04:00" />
+    <versionId value="spark443" />
+    <lastUpdated value="2016-05-25T23:43:32.23-04:00" />
   </meta>
   <url value="http://hl7.org/fhir/StructureDefinition/bhits-consent-list-item" />
   <version value="1" />
@@ -18,6 +20,8 @@
   <differential>
     <element>
       <path value="Basic" />
+      <short value="Basic Resource constrainted for Consent Item " />
+      <definition value="Basic is used for handling concepts not yet defined in FHIR, narrative-only resources that don't map to an existing resource, and custom resources not appropriate for inclusion in the FHIR specification.&#xD;&#xA;In this case it used to specify items covered by a privacy consent terms." />
       <min value="0" />
       <type>
         <code value="Basic" />
@@ -57,6 +61,7 @@
     <element>
       <path value="Basic.identifier" />
       <name value="Consent Item's Identifier" />
+      <comments value="This an optional critierion to define the item consented (data type, research study/protocol, etc.)/" />
       <min value="0" />
       <max value="1" />
       <isSummary value="true" />
@@ -78,26 +83,43 @@
       </binding>
     </element>
     <element>
-      <path value="Basic.code.coding" />
+      <path value="Basic.code.id" />
+      <representation value="xmlAttr" />
       <min value="0" />
+      <max value="0" />
+    </element>
+    <element>
+      <path value="Basic.code.coding" />
+      <name value="Consent Item" />
+      <definition value="A reference to a code defined by a terminology system. A LOINC code may be used." />
+      <min value="1" />
+      <max value="1" />
       <mustSupport value="true" />
       <isSummary value="true" />
       <binding>
         <strength value="example" />
-        <valueSetUri value="http://loinc.org" />
+        <valueSetUri value="urn:oid:2.16.840.1.113883.6.1" />
       </binding>
     </element>
     <element>
+      <path value="Basic.code.coding.id" />
+      <representation value="xmlAttr" />
+      <min value="0" />
+      <max value="0" />
+    </element>
+    <element>
       <path value="Basic.code.coding.system" />
-      <name value="Code System" />
+      <name value="Item Code System" />
+      <label value="Item Code System" />
+      <short value="Item Code System" />
       <min value="1" />
-      <fixedUri value="http://loinc.org" />
       <mustSupport value="true" />
       <isSummary value="true" />
     </element>
     <element>
       <path value="Basic.code.coding.code" />
-      <name value="Code Value" />
+      <name value="Item Code Value" />
+      <label value="Item Code Value" />
       <min value="1" />
       <mustSupport value="true" />
       <isSummary value="true" />

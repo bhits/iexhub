@@ -131,7 +131,7 @@ public class ContractResourceTest {
 		// set id to be used to reference the providerOrganization as an inline
 		// resource
 		sourceOrganizationResource.setId(new IdDt(sourceOrganizationId));
-		sourceOrganizationResource.addIdentifier().setSystem("NPI uri").setValue("NPI of source organization");
+		sourceOrganizationResource.addIdentifier().setSystem(uriPrefix + "2.16.840.1.113883.4.6").setValue("NPI of source organization");
 		sourceOrganizationResource.setName("Provider Organization Name");
 		sourceOrganizationResource.addAddress().addLine("1 Main Street").setCity("Cupertino").setState("CA")
 				.setPostalCode("95014");
@@ -153,7 +153,7 @@ public class ContractResourceTest {
 		
 		// authoring practitioner
 		sourcePractitionerResource.setId(new IdDt(sourcePractitionerId));
-		sourcePractitionerResource.addIdentifier().setSystem("NPI uri").setValue("NPI");
+		sourcePractitionerResource.addIdentifier().setSystem(uriPrefix + "2.16.840.1.113883.4.6").setValue("NPI");
 		sourcePractitionerResource.getName().addFamily("Source Practitioner Last Name")
 				.addGiven("Source Practitioner Given Name").addSuffix("MD");
 		sourcePractitionerResource.addAddress().addLine("Source Practitioner Address Line").setCity("City")
@@ -163,7 +163,7 @@ public class ContractResourceTest {
 		.setSystem(ContactPointSystemEnum.EMAIL).setValue("contact@sourceorgnization.org");
 		// recipient practitioner
 		recipientPractitionerResource.setId(new IdDt(recipientPractitionerId));
-		recipientPractitionerResource.addIdentifier().setSystem("NPI uri").setValue("NPI");
+		recipientPractitionerResource.addIdentifier().setSystem(uriPrefix + "2.16.840.1.113883.4.6").setValue("NPI");
 		recipientPractitionerResource.getName().addFamily("Recipient Practitioner Last Name")
 				.addGiven("Recipient Practitioner Given Name").addSuffix("MD").addPrefix("Ms.");
 		recipientPractitionerResource.addAddress().addLine("Recipient Practitioner Address Line").setCity("City")
@@ -297,7 +297,9 @@ public class ContractResourceTest {
 			list.setId(new IdDt(includedDataListId));
 			list.setTitle("List of included data types");
 			//specifies how the list items are to be used 
-			list.setCode(new CodeableConceptDt("system", "INCLUDE"));
+			CodeableConceptDt includeCodeValue = new CodeableConceptDt("http://hl7.org/fhir/v3/SetOperator", "I");
+			includeCodeValue.setText("Include");
+			list.setCode(includeCodeValue);
 			list.setStatus(ListStatusEnum.CURRENT);
 			list.setMode(ListModeEnum.SNAPSHOT_LIST);
 

@@ -57,6 +57,7 @@ public class PatientResourceTest
 	private static String iExHubAssigningAuthority = "ISO";
 	private static int fhirClientSocketTimeout = 5000;
 	private static String serverBaseUrl = "http://localhost:8080/iexhub/services";
+	private static String uriPrefix = "urn:oid:";
 
 	
 	/**
@@ -213,7 +214,7 @@ public class PatientResourceTest
 			pat.addName().addFamily("SMITH").addGiven("ANDREW");
 			
 			// SSN
-			pat.addIdentifier().setSystem("2.16.840.1.113883.4.1").setValue("123-45-6789");
+			pat.addIdentifier().setSystem(uriPrefix + "2.16.840.1.113883.4.1").setValue("123-45-6789");
 			
 			pat.setGender(AdministrativeGenderEnum.MALE);
 			Calendar dobCalendar = Calendar.getInstance();
