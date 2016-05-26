@@ -159,7 +159,7 @@
    </type>
    <actionReason>
       <coding>
-         <system value="http://hl7.org/fhir/contractsubtypecodes "/>
+         <system value="http://hl7.org/fhir/contractsubtypecodes"/>
          <code value="HRESCH"/>
       </coding>
       <text value="Consent for research"/>
