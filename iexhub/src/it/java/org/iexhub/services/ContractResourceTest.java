@@ -97,7 +97,6 @@ public class ContractResourceTest {
 	//FHIr context singleton
 	private static FhirContext ctxt = new FhirContext();
 	static {
-		ctxt.getRestfulClientFactory().setSocketTimeout(ContractResourceTest.fhirClientSocketTimeout);
 		try {
 			properties.load(new FileInputStream(propertiesFile));
 			ContractResourceTest.iExHubDomainOid = (properties.getProperty("IExHubDomainOID") == null)
@@ -112,6 +111,9 @@ public class ContractResourceTest {
 			throw new UnexpectedServerException(
 					"Error encountered loading properties file, " + propertiesFile + ", " + e.getMessage());
 		}
+
+		ctxt.getRestfulClientFactory().setSocketTimeout(ContractResourceTest.fhirClientSocketTimeout);
+
 		// create the testPatient resource to be embedded into a contract
 		testPatientResource.setId(new IdDt(patientId));
 		testPatientResource.addName().addFamily("Patient Family Name").addGiven("Patient Given Name");

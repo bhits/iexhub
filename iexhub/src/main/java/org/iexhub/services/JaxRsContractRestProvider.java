@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 import org.iexhub.connectors.XdsBRepositoryManager;
 import org.iexhub.exceptions.ContractIdParamMissingException;
 import org.iexhub.exceptions.UnexpectedServerException;
+import org.iexhub.services.client.DocumentRegistry_ServiceStub.RegistryResponseType;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.jaxrs.server.AbstractJaxRsResourceProvider;
@@ -160,18 +161,14 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 
 		try
 		{
-			// Serialize document to XML...
-			IParser xmlParser = fhirCtxt.newXmlParser();
-			xmlParser.setPrettyPrint(true);
-			String encoded = xmlParser.encodeResourceToString(contract);
-			
 			// ITI-41 ProvideAndRegisterDocumentSet message...
-//			
-//			if ((response.getAcknowledgement().get(0).getTypeCode().getCode().compareToIgnoreCase("CA") == 0) ||
-//				(response.getAcknowledgement().get(0).getTypeCode().getCode().compareToIgnoreCase("AA") == 0))
-//			{
-//				result = new MethodOutcome().setCreated(true);
-//			}
+			XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rs._3.RegistryResponseType response = xdsBRepositoryManager.provideAndRegisterDocumentSet(contract,
+					"text/xml");
+			
+			if (response.getRegistryErrorList().getRegistryError().isEmpty())
+			{
+				result = new MethodOutcome().setCreated(true);
+			}
 		}
 		catch (Exception e)
 		{
@@ -180,7 +177,7 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 			throw new UnexpectedServerException("Error - " + e.getMessage());
 		}
 
-		log.info("Exiting FHIR Patient create service");
+		log.info("Exiting FHIR Contract create service");
 		return result;
 	}
 	

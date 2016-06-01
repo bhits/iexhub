@@ -26,6 +26,9 @@ import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -42,6 +45,7 @@ import org.apache.axis2.AxisFault;
 import org.apache.axis2.Constants;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.iexhub.exceptions.DocumentTypeUnsupportedException;
 import org.iexhub.exceptions.UnexpectedServerException;
 import org.joda.time.DateTime;
@@ -70,6 +74,17 @@ import XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rim._3.SlotType1;
 import XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rim._3.ValueListType;
 import XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rs._3.RegistryResponseType;
 import XdsBDocumentRepository.org.iexhub.services.client.DocumentRepository_ServiceStub;
+import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.dstu2.composite.ContainedDt;
+import ca.uhn.fhir.model.dstu2.composite.IdentifierDt;
+import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
+import ca.uhn.fhir.model.dstu2.resource.Contract;
+import ca.uhn.fhir.model.dstu2.resource.Contract.Actor;
+import ca.uhn.fhir.model.dstu2.resource.Organization;
+import ca.uhn.fhir.model.dstu2.resource.Patient;
+import ca.uhn.fhir.model.dstu2.resource.Practitioner;
+import ca.uhn.fhir.model.primitive.DateTimeDt;
+import ca.uhn.fhir.model.primitive.StringDt;
 
 
 /**
@@ -1316,5 +1331,279 @@ public class XdsBRepositoryManager
 		{
 			throw e;
 		}
+	}
+	
+	/**
+	 * @param cdaDocument
+	 * @param mimeType
+	 * @return
+	 * @throws Exception
+	 */
+	public RegistryResponseType provideAndRegisterDocumentSet(Contract contract,
+			String mimeType)
+			throws Exception
+	{
+		try
+		{
+			ProvideAndRegisterDocumentSetRequestType documentSetRequest = new ProvideAndRegisterDocumentSetRequestType();
+			
+			// Create SubmitObjectsRequest...
+			SubmitObjectsRequest submitObjectsRequest = new SubmitObjectsRequest();
+			
+			//  Create RegistryObjectList...
+			RegistryObjectListType registryObjectList = new RegistryObjectListType();
+			
+			// Create ExtrinsicObject...
+			String documentId = UUID.randomUUID().toString();
+			ExtrinsicObjectType extrinsicObject = new ExtrinsicObjectType();
+			extrinsicObject.setId(documentId);
+			extrinsicObject.setMimeType(mimeType);
+			extrinsicObject.setObjectType("urn:uuid:7edca82f-054d-47f2-a032-9b2a5b5186c1");
+			
+			// Create creationTime rim:Slot...
+			ValueListType valueList = null;
+			SlotType1 slot = new SlotType1();
+			slot.setName("creationTime");
+			valueList = new ValueListType();
+			Calendar dateVal = Calendar.getInstance();
+			dateVal.setTime(contract.getIssued());
+		    valueList.getValue().add(new StringBuilder()
+					.append(dateVal.get(Calendar.YEAR))
+					.append(String.format("%02d", (dateVal.get(Calendar.MONTH) + 1)))
+					.append(String.format("%02d", dateVal.get(Calendar.DAY_OF_MONTH)))
+					.append(String.format("%02d", dateVal.get(Calendar.HOUR)))
+					.append(String.format("%02d", dateVal.get(Calendar.MINUTE)))
+					.append(String.format("%02d", dateVal.get(Calendar.SECOND))).toString());
+			slot.setValueList(valueList);
+			extrinsicObject.getSlot().add(slot);
+
+			// Create languageCode rim:Slot...
+			slot = new SlotType1();
+			slot.setName("languageCode");
+			valueList = new ValueListType();
+		    valueList.getValue().add("en-US");
+			slot.setValueList(valueList);
+			extrinsicObject.getSlot().add(slot);
+			
+			// Create serviceStartTime rim:Slot...
+			slot = new SlotType1();
+			slot.setName("serviceStartTime");
+			valueList = new ValueListType();
+			dateVal.setTime(contract.getTermFirstRep().getApplies().getStart());
+		    valueList.getValue().add(new StringBuilder()
+					.append(dateVal.get(Calendar.YEAR))
+					.append(String.format("%02d", (dateVal.get(Calendar.MONTH) + 1)))
+					.append(String.format("%02d", dateVal.get(Calendar.DAY_OF_MONTH)))
+					.append(String.format("%02d", dateVal.get(Calendar.HOUR)))
+					.append(String.format("%02d", dateVal.get(Calendar.MINUTE)))
+					.append(String.format("%02d", dateVal.get(Calendar.SECOND))).toString());
+			slot.setValueList(valueList);
+			extrinsicObject.getSlot().add(slot);
+
+			// Create serviceStopTime rim:Slot...
+			slot = new SlotType1();
+			slot.setName("serviceStopTime");
+			valueList = new ValueListType();
+			dateVal.setTime(contract.getTermFirstRep().getApplies().getEnd());
+		    valueList.getValue().add(new StringBuilder()
+					.append(dateVal.get(Calendar.YEAR))
+					.append(String.format("%02d", (dateVal.get(Calendar.MONTH) + 1)))
+					.append(String.format("%02d", dateVal.get(Calendar.DAY_OF_MONTH)))
+					.append(String.format("%02d", dateVal.get(Calendar.HOUR)))
+					.append(String.format("%02d", dateVal.get(Calendar.MINUTE)))
+					.append(String.format("%02d", dateVal.get(Calendar.SECOND))).toString());
+			slot.setValueList(valueList);
+			extrinsicObject.getSlot().add(slot);
+
+			// Create sourcePatientId rim:Slot...
+			ResourceReferenceDt consentSubjectRef = contract.getSubject().get(0);
+			IBaseResource referencedSubject = consentSubjectRef.getResource();
+			String referencedId = referencedSubject.getIdElement().getIdPart();
+			Patient patient = (getContainedResource(Patient.class, contract.getContained().getContainedResources(), referencedId) == null) ? null
+					: (Patient)getContainedResource(Patient.class, contract.getContained().getContainedResources(), referencedId);
+			slot = new SlotType1();
+			slot.setName("sourcePatientId");
+			valueList = new ValueListType();
+			for (IdentifierDt identifier : patient.getIdentifier())
+			{
+				String patientId = identifier.getValue()
+					+ "^^^&"
+		    		+ identifier.getSystem()
+		    		+ "&ISO";
+			    valueList.getValue().add(patientId);
+			}
+			slot.setValueList(valueList);
+			extrinsicObject.getSlot().add(slot);
+
+			// Create sourcePatientInfo rim:Slot...
+			if ((patient.getName() != null) && (!patient.getName().isEmpty()))
+			{
+				slot = new SlotType1();
+				slot.setName("sourcePatientInfo");
+				valueList = new ValueListType();
+			    valueList.getValue().add("PID-3|"
+			    		+ referencedId);
+
+			    StringBuilder name = new StringBuilder();
+			    name.append("PID-5|"
+			    		+ ((patient.getName().get(0).getFamilyAsSingleString() != null) ? patient.getName().get(0).getFamilyAsSingleString()
+			    				: "")
+			    		+ "^");
+			    
+				name.append(((patient.getName().get(0).getGivenAsSingleString() != null) ? patient.getName().get(0).getGivenAsSingleString()
+						: "")
+						+ "^^");
+				
+				name.append(((patient.getName().get(0).getPrefixAsSingleString() != null) ? patient.getName().get(0).getPrefixAsSingleString()
+						: "")
+						+ "^");
+
+				name.append(((patient.getName().get(0).getSuffixAsSingleString() != null) ? patient.getName().get(0).getSuffixAsSingleString()
+						: ""));
+
+				valueList.getValue().add(name.toString());
+			}
+
+			// Birthdate
+			dateVal.setTime(patient.getBirthDate());
+		    valueList.getValue().add(new StringBuilder()
+		    		.append("PID-7|")
+					.append(dateVal.get(Calendar.YEAR))
+					.append(String.format("%02d", (dateVal.get(Calendar.MONTH) + 1)))
+					.append(String.format("%02d", dateVal.get(Calendar.DAY_OF_MONTH))).toString());
+
+		    // Administrative gender code
+		    valueList.getValue().add("PID-8|"
+		    		+ ((patient.getGender().compareToIgnoreCase("female") == 0) || (patient.getGender().compareToIgnoreCase("f") == 0) ? "F"
+		    				: (((patient.getGender().compareToIgnoreCase("male") == 0) || (patient.getGender().compareToIgnoreCase("m") == 0) ? "M"
+		    						: "U"))));
+
+		    // Address info
+		    if ((patient.getAddress() != null) &&
+		    	(!patient.getAddress().isEmpty()))
+			{
+				StringBuilder address = new StringBuilder();
+				address.append("PID-11|");
+
+				// Street address line
+				StringBuilder addressLine = new StringBuilder();
+				for (StringDt lineItem : patient.getAddress().get(0).getLine())
+				{
+					addressLine.append(lineItem.getValue());
+				}
+				address.append(addressLine
+						+ "^^");
+				
+				// City
+				address.append(((patient.getAddress().get(0).getCity() != null) ? patient.getAddress().get(0).getCity()
+						: "")
+						+ "^");
+
+				// State
+				address.append(((patient.getAddress().get(0).getState() != null) ? patient.getAddress().get(0).getState()
+						: "")
+						+ "^");
+
+				// Postal code
+				address.append(((patient.getAddress().get(0).getPostalCode() != null) ? patient.getAddress().get(0).getPostalCode()
+						: "")
+						+ "^");
+
+				// Country
+				address.append(((patient.getAddress().get(0).getCountry() != null) ? patient.getAddress().get(0).getCountry()
+						: ""));
+
+			    valueList.getValue().add(address.toString());
+			}
+
+			slot.setValueList(valueList);
+			extrinsicObject.getSlot().add(slot);
+
+			// Create classifications - start with document author(s)...
+			ArrayList<ClassificationType> documentAuthorClassifications = new ArrayList<ClassificationType>();
+			StringBuilder authorName = new StringBuilder();
+
+			if ((contract.getActor() != null) &&
+				(!contract.getActor().isEmpty()))
+			{
+				for (Actor actor : contract.getActor())
+				{
+					ResourceReferenceDt actorRef = actor.getEntity();
+					IBaseResource referencedActor = actorRef.getResource();
+					String referencedActorId = referencedActor.getIdElement().getIdPart();
+					Practitioner sourcePractitioner = (getContainedResource(Practitioner.class, contract.getContained().getContainedResources(), referencedActorId) == null) ? null
+							: (Practitioner)getContainedResource(Practitioner.class, contract.getContained().getContainedResources(), referencedActorId);
+	
+					ClassificationType documentAuthorClassification = new ClassificationType();
+					documentAuthorClassification.setId(UUID.randomUUID().toString());
+					documentAuthorClassification.setClassificationScheme(documentAuthorClassificationScheme);
+					documentAuthorClassification.setClassifiedObject(documentId);
+					documentAuthorClassification.setNodeRepresentation("");
+					slot = new SlotType1();
+					slot.setName("authorPerson");
+	
+					// authorPerson rim:Slot
+					// Prefix
+					authorName.append(((sourcePractitioner.getName().getPrefixAsSingleString() != null) ? (sourcePractitioner.getName().getPrefixAsSingleString() + " ")
+							: ""));
+	
+					// Given name
+					authorName.append(((sourcePractitioner.getName().getGivenAsSingleString() != null) ? (sourcePractitioner.getName().getGivenAsSingleString() + " ")
+							: ""));
+		
+					// Family name
+					authorName.append(((sourcePractitioner.getName().getFamilyAsSingleString() != null) ? (sourcePractitioner.getName().getFamilyAsSingleString())
+							: ""));
+		
+					// Suffix
+					authorName.append(((sourcePractitioner.getName().getSuffixAsSingleString() != null) ? (" " + sourcePractitioner.getName().getSuffixAsSingleString())
+							: ""));
+				
+					valueList = new ValueListType();
+				    valueList.getValue().add(authorName.toString());
+					slot.setValueList(valueList);
+					documentAuthorClassification.getSlot().add(slot);
+						
+					documentAuthorClassifications.add(documentAuthorClassification);
+					extrinsicObject.getClassification().add(documentAuthorClassification);
+				}
+			}
+//			else
+//			{
+//				// If contract actor is not present, then check for organization/name...
+//				ResourceReferenceDt organizationRef = contract.getAuthority().get(0);
+//				IBaseResource referencedOrganization = organizationRef.getResource();
+//				String referencedOrganizationId = referencedOrganization.getIdElement().getIdPart();
+//				Organization organization = (getContainedResource(Organization.class, contract.getContained().getContainedResources(), referencedOrganizationId) == null) ? null
+//						: (Organization)getContainedResource(Organization.class, contract.getContained().getContainedResources(), referencedOrganizationId);
+//				
+//				authorName.append(((organization.getName() != null) ? organization.getName()
+//						: ""));
+//			}
+					
+			return repositoryStub.documentRepository_ProvideAndRegisterDocumentSetB(documentSetRequest);
+		}
+		catch (Exception e)
+		{
+			throw e;
+		}
+	}
+
+	private Object getContainedResource(Class<?> resourceClass,
+			List<IResource> containedResources,
+			String idValue)
+	{
+		Object retVal = null;
+		for (IResource resource : containedResources)
+		{
+			if ((resource.getClass().equals(resourceClass)) &&
+				(resource.getIdElement().getIdPart().equalsIgnoreCase(idValue)))
+			{
+				retVal = resource;
+				break;
+			}
+		}
+		
+		return retVal;
 	}
 }
