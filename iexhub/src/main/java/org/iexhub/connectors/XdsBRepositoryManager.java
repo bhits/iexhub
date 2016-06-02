@@ -15,34 +15,19 @@
  *******************************************************************************/
 package org.iexhub.connectors;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.InetAddress;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
-import java.util.UUID;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathFactory;
-
 import XdsBDocumentRepository.ihe.iti.xds_b._2007.ProvideAndRegisterDocumentSetRequestType;
 import XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.lcm._3.SubmitObjectsRequest;
 import XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rim._3.*;
 import XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rs._3.RegistryResponseType;
 import XdsBDocumentRepository.org.iexhub.services.client.DocumentRepository_ServiceStub;
+import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.dstu2.composite.IdentifierDt;
+import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
+import ca.uhn.fhir.model.dstu2.resource.Contract;
+import ca.uhn.fhir.model.dstu2.resource.Contract.Actor;
+import ca.uhn.fhir.model.dstu2.resource.Patient;
+import ca.uhn.fhir.model.dstu2.resource.Practitioner;
+import ca.uhn.fhir.model.primitive.StringDt;
 import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.soap.SOAPFactory;
@@ -64,32 +49,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import XdsBDocumentRepository.ihe.iti.xds_b._2007.ProvideAndRegisterDocumentSetRequestType;
-import XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.lcm._3.SubmitObjectsRequest;
-import XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rim._3.AssociationType1;
-import XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rim._3.ClassificationType;
-import XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rim._3.ExternalIdentifierType;
-import XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rim._3.ExtrinsicObjectType;
-import XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rim._3.InternationalStringType;
-import XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rim._3.LocalizedStringType;
-import XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rim._3.ObjectFactory;
-import XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rim._3.RegistryObjectListType;
-import XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rim._3.RegistryPackageType;
-import XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rim._3.SlotType1;
-import XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rim._3.ValueListType;
-import XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rs._3.RegistryResponseType;
-import XdsBDocumentRepository.org.iexhub.services.client.DocumentRepository_ServiceStub;
-import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.composite.ContainedDt;
-import ca.uhn.fhir.model.dstu2.composite.IdentifierDt;
-import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
-import ca.uhn.fhir.model.dstu2.resource.Contract;
-import ca.uhn.fhir.model.dstu2.resource.Contract.Actor;
-import ca.uhn.fhir.model.dstu2.resource.Organization;
-import ca.uhn.fhir.model.dstu2.resource.Patient;
-import ca.uhn.fhir.model.dstu2.resource.Practitioner;
-import ca.uhn.fhir.model.primitive.DateTimeDt;
-import ca.uhn.fhir.model.primitive.StringDt;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
@@ -99,9 +58,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Properties;
-import java.util.UUID;
+import java.util.*;
 
 
 /**
@@ -120,10 +77,10 @@ public class XdsBRepositoryManager
 	private static boolean testMode = false;
 
 	private static boolean logXdsBRequestMessages = false;
-	private static String logOutputPath = "c:/temp/";
+	private static String logOutputPath = "/temp/";
 	private static boolean logSyslogAuditMsgsLocally = false;
 
-    private static String keyStoreFile = "c:/temp/1264.jks";
+    private static String keyStoreFile = "/temp/1264.jks";
 	private static String keyStorePwd = "IEXhub";
 	private static String cipherSuites = "TLS_RSA_WITH_AES_128_CBC_SHA";
 	private static String httpsProtocols = "TLSv1";
@@ -1385,7 +1342,7 @@ public class XdsBRepositoryManager
 	}
 
 	/**
-	 * @param cdaDocument
+	 * @param contract
 	 * @param mimeType
 	 * @return
 	 * @throws Exception
