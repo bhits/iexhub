@@ -2,22 +2,22 @@
    <id value="patientId"/>
    <contained>
       <Organization xmlns="http://hl7.org/fhir">
-         <id value="researchOrgOID"/>
+         <id value="sourceOrgOID"/>
          <identifier>
             <system value="urn:oid:2.16.840.1.113883.4.6"/>
             <value value="NPI of source organization"/>
          </identifier>
-         <name value="Research Organization Name"/>
+         <name value="Source Organization Name"/>
          <address>
-            <line value="1 Research Drive"/>
-            <city value="Research City"/>
-            <state value="MA"/>
+            <line value="1 Source Drive"/>
+            <city value="Source City"/>
+            <state value="NY"/>
             <postalCode value="01221"/>
          </address>
          <contact>
             <name>
-               <family value="Researcher Family Name"/>
-               <given value="Researcher Given Name"/>
+               <family value="Contact Family Name"/>
+               <given value="Contact Given Name"/>
             </name>
             <telecom>
                <system value="phone"/>
@@ -64,6 +64,6 @@
       <postalCode value="12345"/>
    </address>
    <careProvider>
-      <reference value="#researchOrgOID"/>
+      <reference value="#sourceOrgOID"/>
    </careProvider>
 </Patient>

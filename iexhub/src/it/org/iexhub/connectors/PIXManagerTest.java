@@ -18,14 +18,13 @@
  */
 package org.iexhub.connectors;
 
-import static org.junit.Assert.*;
-
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.junit.*;
-
 import PIXManager.org.hl7.v3.MCCIIN000002UV01;
 import PIXManager.org.hl7.v3.PRPAIN201310UV02;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.junit.Test;
+
+import static org.junit.Assert.fail;
 
 /**
  * @author A. Sute
@@ -126,7 +125,7 @@ public class PIXManagerTest
 	}
 
 	/**
-	 * Test method for {@link org.iexhub.connectors.PIXManager#registerPatient(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
+	 * Test method for {@link org.iexhub.connectors.PIXManager\#registerPatient(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testRegisterPatient()
@@ -154,7 +153,7 @@ public class PIXManagerTest
 	}
 	
 	/**
-	 * Test method for {@link org.iexhub.connectors.PIXManager#registerPatient(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
+	 * Test method for {@link org.iexhub.connectors.PIXManager\#registerPatient(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testRegisterPatientTLS()

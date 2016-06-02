@@ -19,8 +19,22 @@
  */
 package org.iexhub.services;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.model.dstu2.composite.*;
+import ca.uhn.fhir.model.dstu2.resource.*;
+import ca.uhn.fhir.model.dstu2.resource.Organization.Contact;
+import ca.uhn.fhir.model.dstu2.valueset.*;
+import ca.uhn.fhir.model.primitive.DateDt;
+import ca.uhn.fhir.model.primitive.DateTimeDt;
+import ca.uhn.fhir.model.primitive.IdDt;
+import ca.uhn.fhir.rest.api.MethodOutcome;
+import ca.uhn.fhir.rest.client.IGenericClient;
+import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
+import org.apache.commons.io.FileUtils;
+import org.iexhub.exceptions.UnexpectedServerException;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,41 +44,10 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.io.FileUtils;
-import org.iexhub.exceptions.UnexpectedServerException;
-import org.junit.Test;
-//import org.apache.log4j.Logger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
-import ca.uhn.fhir.model.dstu2.composite.CodingDt;
-import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
-import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
-import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
-import ca.uhn.fhir.model.dstu2.resource.Basic;
-import ca.uhn.fhir.model.dstu2.resource.Composition;
-import ca.uhn.fhir.model.dstu2.resource.Contract;
-import ca.uhn.fhir.model.dstu2.resource.ListResource;
-import ca.uhn.fhir.model.dstu2.resource.Organization;
-import ca.uhn.fhir.model.dstu2.resource.Organization.Contact;
-import ca.uhn.fhir.model.dstu2.resource.Patient;
-import ca.uhn.fhir.model.dstu2.resource.Practitioner;
-import ca.uhn.fhir.model.dstu2.valueset.AddressTypeEnum;
-import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
-import ca.uhn.fhir.model.dstu2.valueset.ContactPointSystemEnum;
-import ca.uhn.fhir.model.dstu2.valueset.ContactPointUseEnum;
-import ca.uhn.fhir.model.dstu2.valueset.ContractTypeCodesEnum;
-import ca.uhn.fhir.model.dstu2.valueset.ListModeEnum;
-import ca.uhn.fhir.model.dstu2.valueset.ListStatusEnum;
-import ca.uhn.fhir.model.primitive.DateDt;
-import ca.uhn.fhir.model.primitive.DateTimeDt;
-import ca.uhn.fhir.model.primitive.IdDt;
-import ca.uhn.fhir.narrative.DefaultThymeleafNarrativeGenerator;
-import ca.uhn.fhir.rest.api.MethodOutcome;
-import ca.uhn.fhir.rest.client.IGenericClient;
-import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
+//import org.apache.log4j.Logger;
 
 /**
  * Contract Resource Test - used to create, find, search Privacy Consents
@@ -176,7 +159,7 @@ public class ContractResourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.iexhub.services.JaxRsContractRestProvider#find(@IdParam final
+	 * {@link org.iexhub.services.JaxRsContractRestProvider\#find(@IdParam final
 	 * IdDt id)}.
 	 */
 	@Test
@@ -202,7 +185,7 @@ public class ContractResourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.iexhub.services.JaxRsContractRestProvider#search(@IdParam
+	 * {@link org.iexhub.services.JaxRsContractRestProvider#search\(@IdParam
 	 * final IdDt id)}.
 	 */
 	@Test
@@ -230,7 +213,7 @@ public class ContractResourceTest {
 
 	/**
 	 * Test method for Basic Consent Content
-	 * {@link org.iexhub.services.JaxRsContractRestProvider#create(Patient patient, String theConditional)}
+	 * {@link org.iexhub.services.JaxRsContractRestProvider\#create(Patient patient, String theConditional)}
 	 * 
 	 * @author Ioana Singureanu
 	 */
@@ -273,7 +256,7 @@ public class ContractResourceTest {
 
 	/**
 	 * Test method for Basic Granular Content
-	 * {@link org.iexhub.services.JaxRsContractRestProvider#create(Patient patient, String theConditional)}
+	 * {@link org.iexhub.services.JaxRsContractRestProvider\#create(Patient patient, String theConditional)}
 	 * 
 	 * @author Ioana Singureanu
 	 */
