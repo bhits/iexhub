@@ -27,7 +27,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
@@ -75,15 +74,11 @@ import XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rim._3.ValueListTy
 import XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rs._3.RegistryResponseType;
 import XdsBDocumentRepository.org.iexhub.services.client.DocumentRepository_ServiceStub;
 import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.composite.ContainedDt;
 import ca.uhn.fhir.model.dstu2.composite.IdentifierDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Contract;
-import ca.uhn.fhir.model.dstu2.resource.Contract.Actor;
-import ca.uhn.fhir.model.dstu2.resource.Organization;
+import ca.uhn.fhir.model.dstu2.resource.Contract.Signer;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
-import ca.uhn.fhir.model.dstu2.resource.Practitioner;
-import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.StringDt;
 
 
@@ -1119,21 +1114,21 @@ public class XdsBRepositoryManager
 //					extrinsicObject.getExternalIdentifier().add(externalIdentifierPatientId);
 //				}
 				
-				ExternalIdentifierType externalIdentifierPatientId = new ExternalIdentifierType();
-				externalIdentifierPatientId.setId(UUID.randomUUID().toString());
-				externalIdentifierPatientId.setRegistryObject(documentId);
-				externalIdentifierPatientId.setIdentificationScheme(extrinsicObjectExternalIdentifierUniqueIdIdentificationScheme);
+				ExternalIdentifierType externalIdentifierDocumentId = new ExternalIdentifierType();
+				externalIdentifierDocumentId.setId(UUID.randomUUID().toString());
+				externalIdentifierDocumentId.setRegistryObject(documentId);
+				externalIdentifierDocumentId.setIdentificationScheme(extrinsicObjectExternalIdentifierUniqueIdIdentificationScheme);
 				
 				if (testMode)
 				{
 					DateTime testDocId = DateTime.now(DateTimeZone.UTC);
-					externalIdentifierPatientId.setValue(((Element)nodes.item(0)).getAttribute("root")
-							+ "."
+					externalIdentifierDocumentId.setValue(((Element)nodes.item(0)).getAttribute("root")
+							+ "^"
 							+ testDocId.getMillis());
 				}
 				else
 				{
-					externalIdentifierPatientId.setValue(((Element)nodes.item(0)).getAttribute("root")
+					externalIdentifierDocumentId.setValue(((Element)nodes.item(0)).getAttribute("root")
 							+ "^"
 							+ ((Element)nodes.item(0)).getAttribute("extension"));
 				}
@@ -1142,8 +1137,8 @@ public class XdsBRepositoryManager
 				localizedText = new LocalizedStringType();
 				localizedText.setValue(extrinsicObjectExternalIdentifierUniqueIdName);
 				text.getLocalizedString().add(localizedText);
-				externalIdentifierPatientId.setName(text);
-				extrinsicObject.getExternalIdentifier().add(externalIdentifierPatientId);
+				externalIdentifierDocumentId.setName(text);
+				extrinsicObject.getExternalIdentifier().add(externalIdentifierDocumentId);
 			}
 			
 			registryObjectList.getIdentifiable().add(objectFactory.createExtrinsicObject(extrinsicObject));
@@ -1340,6 +1335,7 @@ public class XdsBRepositoryManager
 	 * @throws Exception
 	 */
 	public RegistryResponseType provideAndRegisterDocumentSet(Contract contract,
+			byte[] xmlContent,
 			String mimeType)
 			throws Exception
 	{
@@ -1424,9 +1420,10 @@ public class XdsBRepositoryManager
 			slot = new SlotType1();
 			slot.setName("sourcePatientId");
 			valueList = new ValueListType();
+			String patientId = null;
 			for (IdentifierDt identifier : patient.getIdentifier())
 			{
-				String patientId = identifier.getValue()
+				patientId = identifier.getValue()
 					+ "^^^&"
 		    		+ identifier.getSystem()
 		    		+ "&ISO";
@@ -1519,20 +1516,18 @@ public class XdsBRepositoryManager
 			slot.setValueList(valueList);
 			extrinsicObject.getSlot().add(slot);
 
-			// Create classifications - start with document author(s)...
+			// Create classifications - start with document author(s) represented in the Contract as the Signer...
 			ArrayList<ClassificationType> documentAuthorClassifications = new ArrayList<ClassificationType>();
 			StringBuilder authorName = new StringBuilder();
 
-			if ((contract.getActor() != null) &&
-				(!contract.getActor().isEmpty()))
+			if ((contract.getSigner() != null) &&
+				(!contract.getSigner().isEmpty()))
 			{
-				for (Actor actor : contract.getActor())
+				for (Signer signer : contract.getSigner())
 				{
-					ResourceReferenceDt actorRef = actor.getEntity();
-					IBaseResource referencedActor = actorRef.getResource();
-					String referencedActorId = referencedActor.getIdElement().getIdPart();
-					Practitioner sourcePractitioner = (getContainedResource(Practitioner.class, contract.getContained().getContainedResources(), referencedActorId) == null) ? null
-							: (Practitioner)getContainedResource(Practitioner.class, contract.getContained().getContainedResources(), referencedActorId);
+					ResourceReferenceDt signerRef = signer.getParty();
+					IBaseResource referencedSigner = signerRef.getResource();
+					String referencedSignerId = referencedSigner.getIdElement().getIdPart();
 	
 					ClassificationType documentAuthorClassification = new ClassificationType();
 					documentAuthorClassification.setId(UUID.randomUUID().toString());
@@ -1544,19 +1539,19 @@ public class XdsBRepositoryManager
 	
 					// authorPerson rim:Slot
 					// Prefix
-					authorName.append(((sourcePractitioner.getName().getPrefixAsSingleString() != null) ? (sourcePractitioner.getName().getPrefixAsSingleString() + " ")
+					authorName.append(((patient.getName().get(0).getPrefixAsSingleString() != null) ? (patient.getName().get(0).getPrefixAsSingleString() + " ")
 							: ""));
 	
 					// Given name
-					authorName.append(((sourcePractitioner.getName().getGivenAsSingleString() != null) ? (sourcePractitioner.getName().getGivenAsSingleString() + " ")
+					authorName.append(((patient.getName().get(0).getGivenAsSingleString() != null) ? (patient.getName().get(0).getGivenAsSingleString() + " ")
 							: ""));
 		
 					// Family name
-					authorName.append(((sourcePractitioner.getName().getFamilyAsSingleString() != null) ? (sourcePractitioner.getName().getFamilyAsSingleString())
+					authorName.append(((patient.getName().get(0).getFamilyAsSingleString() != null) ? (patient.getName().get(0).getFamilyAsSingleString())
 							: ""));
 		
 					// Suffix
-					authorName.append(((sourcePractitioner.getName().getSuffixAsSingleString() != null) ? (" " + sourcePractitioner.getName().getSuffixAsSingleString())
+					authorName.append(((patient.getName().get(0).getSuffixAsSingleString() != null) ? (" " + patient.getName().get(0).getSuffixAsSingleString())
 							: ""));
 				
 					valueList = new ValueListType();
@@ -1568,19 +1563,354 @@ public class XdsBRepositoryManager
 					extrinsicObject.getClassification().add(documentAuthorClassification);
 				}
 			}
-//			else
-//			{
-//				// If contract actor is not present, then check for organization/name...
-//				ResourceReferenceDt organizationRef = contract.getAuthority().get(0);
-//				IBaseResource referencedOrganization = organizationRef.getResource();
-//				String referencedOrganizationId = referencedOrganization.getIdElement().getIdPart();
-//				Organization organization = (getContainedResource(Organization.class, contract.getContained().getContainedResources(), referencedOrganizationId) == null) ? null
-//						: (Organization)getContainedResource(Organization.class, contract.getContained().getContainedResources(), referencedOrganizationId);
-//				
-//				authorName.append(((organization.getName() != null) ? organization.getName()
-//						: ""));
-//			}
+			
+			// ClassCodes classification...
+			ClassificationType classification = new ClassificationType();
+			classification.setId(UUID.randomUUID().toString());
+			classification.setClassificationScheme(documentClassCodesClassificationScheme);
+			classification.setClassifiedObject(documentId);
+			classification.setNodeRepresentation("*");
+				
+			slot = new SlotType1();
+			slot.setName("codingScheme");
+
+			// Code system
+			valueList = new ValueListType();
+		    valueList.getValue().add("2.16.840.1.113883.6.1");
+			slot.setValueList(valueList);
+			classification.getSlot().add(slot);
+
+			// Display name
+			InternationalStringType text = new InternationalStringType();
+			LocalizedStringType localizedText = new LocalizedStringType();
+			localizedText.setValue("Privacy Policy Acknowledgement Document");
+			text.getLocalizedString().add(localizedText);
+			classification.setName(text);
+				
+			extrinsicObject.getClassification().add(classification);
+
+			// ConfidentialityCodes classification...
+			classification = new ClassificationType();
+			classification.setId(UUID.randomUUID().toString());
+			classification.setClassificationScheme(documentConfidentialityCodesClassificationScheme);
+			classification.setClassifiedObject(documentId);	
+			// Code
+			classification.setNodeRepresentation("N");
+				
+			slot = new SlotType1();
+			slot.setName("codingScheme");
+
+			// Code system
+			valueList = new ValueListType();
+		    valueList.getValue().add("2.16.840.1.113883.5.25");
+			slot.setValueList(valueList);
+			classification.getSlot().add(slot);
+
+			// Display name
+			InternationalStringType displayText = new InternationalStringType();
+			LocalizedStringType displayLocalizedText = new LocalizedStringType();
+			localizedText.setValue("Confidentiality Code");
+			text.getLocalizedString().add(localizedText);
+			classification.setName(text);
+				
+			extrinsicObject.getClassification().add(classification);
+
+			// FormatCodes classification...
+			classification = new ClassificationType();
+			classification.setId(UUID.randomUUID().toString());
+			classification.setClassificationScheme(documentFormatCodesClassificationScheme);
+			classification.setClassifiedObject(documentId);
+			classification.setNodeRepresentation(documentFormatCodesNodeRepresentation);
+			slot = new SlotType1();
+			slot.setName("codingScheme");
+			valueList = new ValueListType();
+		    valueList.getValue().add(documentFormatCodesCodingScheme);
+			slot.setValueList(valueList);
+			classification.getSlot().add(slot);
+			displayText = new InternationalStringType();
+			displayLocalizedText = new LocalizedStringType();
+			localizedText.setValue(documentFormatCodesName);
+			text.getLocalizedString().add(localizedText);
+			classification.setName(text);
+			extrinsicObject.getClassification().add(classification);
+
+			// HealthcareFacilityTypeCodes classification...
+			classification = new ClassificationType();
+			classification.setId(UUID.randomUUID().toString());
+			classification.setClassificationScheme(documentHealthcareFacilityTypeCodesClassificationScheme);
+			classification.setClassifiedObject(documentId);
+			classification.setNodeRepresentation(documentHealthcareFacilityTypeCodesNodeRepresentation);
+			slot = new SlotType1();
+			slot.setName("codingScheme");
+			valueList = new ValueListType();
+		    valueList.getValue().add(documentHealthcareFacilityTypeCodesCodingScheme);
+			slot.setValueList(valueList);
+			classification.getSlot().add(slot);
+			text = new InternationalStringType();
+			localizedText = new LocalizedStringType();
+			localizedText.setValue(documentHealthcareFacilityTypeCodesName);
+			text.getLocalizedString().add(localizedText);
+			classification.setName(text);
+			extrinsicObject.getClassification().add(classification);
+
+			// PracticeSettingCodes classification...
+			classification = new ClassificationType();
+			classification.setId(UUID.randomUUID().toString());
+			classification.setClassificationScheme(documentPracticeSettingCodesClassificationScheme);
+			classification.setClassifiedObject(documentId);
+			classification.setNodeRepresentation(documentPracticeSettingCodesNodeRepresentation);
+				
+			slot = new SlotType1();
+			slot.setName("codingScheme");
+				
+			valueList = new ValueListType();
+		    valueList.getValue().add(documentPracticeSettingCodesCodingScheme);
+			slot.setValueList(valueList);
+			classification.getSlot().add(slot);
+				
+			text = new InternationalStringType();
+			localizedText = new LocalizedStringType();
+			localizedText.setValue(documentPracticeSettingCodesDisplayName);
+			text.getLocalizedString().add(localizedText);
+			classification.setName(text);
+				
+			extrinsicObject.getClassification().add(classification);
+
+			// Type code classification...
+			classification = new ClassificationType();
+			classification.setId(UUID.randomUUID().toString());
+			classification.setClassificationScheme(documentContentTypeClassificationScheme);
+			classification.setClassifiedObject(documentId);
+			// Code
+			classification.setNodeRepresentation("57016-8");
+				
+			slot = new SlotType1();
+			slot.setName("codingScheme");
+
+			//  Code system
+			valueList = new ValueListType();
+		    valueList.getValue().add("2.16.840.1.113883.6.1");
+			slot.setValueList(valueList);
+			classification.getSlot().add(slot);
+
+			// Display name
+			text = new InternationalStringType();
+			localizedText = new LocalizedStringType();
+			localizedText.setValue("Privacy Policy Acknowledgement Document");
+			text.getLocalizedString().add(localizedText);
+			classification.setName(text);
+				
+			extrinsicObject.getClassification().add(classification);
+			
+			// Create rim:ExternalIdentifier(s) - first the XDSDocumentEntry.patientId value(s)...
+			ExternalIdentifierType externalIdentifierPatientId = new ExternalIdentifierType();
+			externalIdentifierPatientId.setId(UUID.randomUUID().toString());
+			externalIdentifierPatientId.setRegistryObject(documentId);
+			externalIdentifierPatientId.setIdentificationScheme(extrinsicObjectExternalIdentifierPatientIdIdentificationScheme);
+			externalIdentifierPatientId.setValue(patient.getIdentifier().get(0).getValue()
+					+ "^^^&"
+					+ patient.getIdentifier().get(0).getSystem()
+					+ "&ISO");
+			text = new InternationalStringType();
+			localizedText = new LocalizedStringType();
+			localizedText.setValue(extrinsicObjectExternalIdentifierPatientIdName);
+			text.getLocalizedString().add(localizedText);
+			externalIdentifierPatientId.setName(text);
+			extrinsicObject.getExternalIdentifier().add(externalIdentifierPatientId);
+			
+			// Now the XDSDocumentEntry.uniqueId value(s)...
+			ExternalIdentifierType externalIdentifierDocumentId = new ExternalIdentifierType();
+			externalIdentifierDocumentId.setId(UUID.randomUUID().toString());
+			externalIdentifierDocumentId.setRegistryObject(documentId);
+			externalIdentifierDocumentId.setIdentificationScheme(extrinsicObjectExternalIdentifierUniqueIdIdentificationScheme);
+				
+			if (testMode)
+			{
+				DateTime testDocId = DateTime.now(DateTimeZone.UTC);
+				externalIdentifierDocumentId.setValue(contract.getIdentifier().getSystem()
+						+ "^"
+						+ testDocId.getMillis());
+			}
+			else
+			{
+				externalIdentifierDocumentId.setValue(contract.getIdentifier().getSystem()
+						+ "^"
+						+ contract.getIdentifier().getValue());
+			}
+				
+			text = new InternationalStringType();
+			localizedText = new LocalizedStringType();
+			localizedText.setValue(extrinsicObjectExternalIdentifierUniqueIdName);
+			text.getLocalizedString().add(localizedText);
+			externalIdentifierDocumentId.setName(text);
+			extrinsicObject.getExternalIdentifier().add(externalIdentifierDocumentId);
+			
+			registryObjectList.getIdentifiable().add(objectFactory.createExtrinsicObject(extrinsicObject));
+			
+			// Create rim:RegistryPackage...
+			String submissionSetId = UUID.randomUUID().toString();
+			RegistryPackageType registryPackage = new RegistryPackageType();
+			registryPackage.setId(submissionSetId);
+
+			// Create rim:RegistryPackage/submissionTime attribute...
+			slot = new SlotType1();
+			slot.setName("submissionTime");
+			valueList = new ValueListType();
+			DateTime now = new DateTime(DateTimeZone.UTC);
+			StringBuilder timeBuilder = new StringBuilder();
+			timeBuilder.append(now.getYear());
+			timeBuilder.append((now.getMonthOfYear() < 10) ? ("0" + now.getMonthOfYear())
+					: now.getMonthOfYear());
+			timeBuilder.append((now.getDayOfMonth() < 10) ? ("0" + now.getDayOfMonth())
+					: now.getDayOfMonth());
+			timeBuilder.append((now.getHourOfDay() < 10) ? ("0" + now.getHourOfDay())
+					: now.getHourOfDay());
+			timeBuilder.append((now.getMinuteOfHour() < 10) ? ("0" + now.getMinuteOfHour())
+					: now.getMinuteOfHour());
+
+			valueList.getValue().add(timeBuilder.toString());
+			slot.setValueList(valueList);
+			registryPackage.getSlot().add(slot);
+			
+			// Recreate authorName classification(s) in rim:RegistryPackage...
+			for (ClassificationType registryClassification : documentAuthorClassifications)
+			{
+				ClassificationType newClassification = new ClassificationType();
+				newClassification.setId(UUID.randomUUID().toString());
+				newClassification.setClassificationScheme(registryPackageAuthorClassificationScheme);
+				newClassification.setClassifiedObject(submissionSetId);
+				newClassification.setNodeRepresentation("");
+				
+				if (!registryClassification.getSlot().isEmpty())
+				{
+					slot = new SlotType1();				
+					slot.setName(registryClassification.getSlot().get(0).getName());
+					slot.setValueList(registryClassification.getSlot().get(0).getValueList());
+					newClassification.getSlot().add(slot);
+				}
+				
+				registryPackage.getClassification().add(newClassification);
+			}
+			
+			// ContentTypeCodes classification...
+			classification = new ClassificationType();
+			classification.setId(UUID.randomUUID().toString());
+			classification.setClassificationScheme(registryPackageContentTypeCodesClassificationScheme);
+			classification.setClassifiedObject(submissionSetId);
+			// Code
+			classification.setNodeRepresentation("57016-8");
+				
+			slot = new SlotType1();
+			slot.setName("codingScheme");
+
+			// Code system
+			valueList = new ValueListType();
+		    valueList.getValue().add("2.16.840.1.113883.6.1");
+			slot.setValueList(valueList);
+			classification.getSlot().add(slot);
 					
+			// Display name
+			text = new InternationalStringType();
+			localizedText = new LocalizedStringType();
+			localizedText.setValue("Privacy Policy Acknowledgement Document");
+			text.getLocalizedString().add(localizedText);
+			classification.setName(text);
+					
+			registryPackage.getClassification().add(classification);					
+
+			// ExternalIdentifiers - first XDSSubmissionSet.uniqueId...
+			ExternalIdentifierType submissionSetUniqueId = new ExternalIdentifierType();
+			submissionSetUniqueId.setId(UUID.randomUUID().toString());
+			submissionSetUniqueId.setRegistryObject(submissionSetId);
+			submissionSetUniqueId.setIdentificationScheme(registryPackageSubmissionSetUniqueIdIdentificationScheme);
+			DateTime oidTimeValue = DateTime.now(DateTimeZone.UTC);
+			submissionSetUniqueId.setValue(submissionSetOid
+					+ "."
+					+ oidTimeValue.getMillis());
+			
+			text = new InternationalStringType();
+			localizedText = new LocalizedStringType();
+			localizedText.setValue(externalIdentifierSubmissionSetUniqueIdName);
+			text.getLocalizedString().add(localizedText);
+			submissionSetUniqueId.setName(text);
+			
+			registryPackage.getExternalIdentifier().add(submissionSetUniqueId);
+			
+			// Now XDSSubmissionSet.sourceId...
+			ExternalIdentifierType submissionSetSourceId = new ExternalIdentifierType();
+			submissionSetSourceId.setId(UUID.randomUUID().toString());
+			submissionSetSourceId.setRegistryObject(submissionSetId);
+			submissionSetSourceId.setIdentificationScheme(registryPackageSubmissionSetSourceIdIdentificationScheme);
+			submissionSetSourceId.setValue(iExHubDomainOid);
+			
+			text = new InternationalStringType();
+			localizedText = new LocalizedStringType();
+			localizedText.setValue(externalIdentifierSubmissionSetSourceIdName);
+			text.getLocalizedString().add(localizedText);
+			submissionSetSourceId.setName(text);
+
+			registryPackage.getExternalIdentifier().add(submissionSetSourceId);
+
+			// Now XDSSubmissionSet.patientId...
+			ExternalIdentifierType submissionSetPatientId = new ExternalIdentifierType();
+			submissionSetPatientId.setId(UUID.randomUUID().toString());
+			submissionSetPatientId.setRegistryObject(submissionSetId);
+			submissionSetPatientId.setIdentificationScheme(registryPackageSubmissionSetPatientIdIdentificationScheme);
+			submissionSetPatientId.setValue(patientId);
+
+			text = new InternationalStringType();
+			localizedText = new LocalizedStringType();
+			localizedText.setValue(externalIdentifierSubmissionSetPatientIdName);
+			text.getLocalizedString().add(localizedText);
+			submissionSetPatientId.setName(text);
+
+			registryPackage.getExternalIdentifier().add(submissionSetPatientId);
+			registryObjectList.getIdentifiable().add(objectFactory.createRegistryPackage(registryPackage));
+			
+			// Create SubmissionSet classification for RegistryObjectList...
+			ClassificationType submissionSetClassification = new ClassificationType();
+			submissionSetClassification.setId(UUID.randomUUID().toString());
+			submissionSetClassification.setClassifiedObject(submissionSetId);
+			submissionSetClassification.setClassificationNode(registryObjectListSubmissionSetClassificationNode);
+			registryObjectList.getIdentifiable().add(objectFactory.createClassification(submissionSetClassification));
+			
+			// Create SubmissionSet Association for RegistryObjectList...
+			AssociationType1 submissionSetAssociation = new AssociationType1();
+			submissionSetAssociation.setId(/*UUID.randomUUID().toString()*/ "as01");
+			submissionSetAssociation.setAssociationType("urn:oasis:names:tc:ebxml-regrep:AssociationType:HasMember");
+			submissionSetAssociation.setSourceObject(submissionSetId);
+			submissionSetAssociation.setTargetObject(documentId);
+			slot = new SlotType1();
+			slot.setName("SubmissionSetStatus");
+			valueList = new ValueListType();
+		    valueList.getValue().add("Original");
+			slot.setValueList(valueList);
+			submissionSetAssociation.getSlot().add(slot);
+			registryObjectList.getIdentifiable().add(objectFactory.createAssociation(submissionSetAssociation));
+			
+			submitObjectsRequest.setRegistryObjectList(registryObjectList);
+			documentSetRequest.setSubmitObjectsRequest(submitObjectsRequest);
+			
+			// Add document to message...
+			XdsBDocumentRepository.ihe.iti.xds_b._2007.ProvideAndRegisterDocumentSetRequestType.Document documentForMessage = new XdsBDocumentRepository.ihe.iti.xds_b._2007.ProvideAndRegisterDocumentSetRequestType.Document();
+			documentForMessage.setValue(xmlContent);
+			documentForMessage.setId(documentId);
+			documentSetRequest.getDocument().add(documentForMessage);
+			
+			logIti41AuditMsg(submissionSetId,
+					patientId);
+
+			if (logXdsBRequestMessages)
+			{
+				OMElement requestElement = repositoryStub.toOM(documentSetRequest, repositoryStub.optimizeContent(
+		                new javax.xml.namespace.QName("urn:ihe:iti:xds-b:2007",
+		                    "ProvideAndRegisterDocumentSetRequest")),
+		                new javax.xml.namespace.QName("urn:ihe:iti:xds-b:2007",
+		    				"ProvideAndRegisterDocumentSetRequest"));
+				Files.write(Paths.get(logOutputPath + documentId + "_ProvideAndRegisterDocumentSetRequest.xml"),
+						requestElement.toString().getBytes());
+			}
+
 			return repositoryStub.documentRepository_ProvideAndRegisterDocumentSetB(documentSetRequest);
 		}
 		catch (Exception e)

@@ -29,8 +29,6 @@ import org.apache.log4j.Logger;
 import org.iexhub.connectors.XdsBRepositoryManager;
 import org.iexhub.exceptions.ContractIdParamMissingException;
 import org.iexhub.exceptions.UnexpectedServerException;
-import org.iexhub.services.client.DocumentRegistry_ServiceStub.RegistryResponseType;
-
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.jaxrs.server.AbstractJaxRsResourceProvider;
 import ca.uhn.fhir.model.dstu2.resource.Contract;
@@ -47,7 +45,6 @@ import ca.uhn.fhir.rest.server.AddProfileTagEnum;
 import ca.uhn.fhir.rest.server.BundleInclusionRule;
 import ca.uhn.fhir.rest.server.Constants;
 import ca.uhn.fhir.rest.server.ETagSupportEnum;
-import ca.uhn.fhir.rest.server.FifoMemoryPagingProvider;
 import ca.uhn.fhir.rest.server.IPagingProvider;
 import ca.uhn.fhir.rest.server.interceptor.IServerInterceptor;
 
@@ -161,8 +158,14 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 
 		try
 		{
+			// Serialize document to XML...
+			IParser xmlParser = fhirCtxt.newXmlParser();
+			xmlParser.setPrettyPrint(true);
+			String xmlContent = xmlParser.encodeResourceToString(contract);
+			
 			// ITI-41 ProvideAndRegisterDocumentSet message...
 			XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rs._3.RegistryResponseType response = xdsBRepositoryManager.provideAndRegisterDocumentSet(contract,
+					xmlContent.getBytes(),
 					"text/xml");
 			
 			if (response.getRegistryErrorList().getRegistryError().isEmpty())
