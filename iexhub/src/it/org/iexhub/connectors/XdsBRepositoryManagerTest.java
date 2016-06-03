@@ -18,12 +18,18 @@
  */
 package org.iexhub.connectors;
 
-import static org.junit.Assert.*;
+import org.apache.log4j.Logger;
+import org.iexhub.exceptions.UnexpectedServerException;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
+
 import static java.nio.file.Files.readAllBytes;
 import static java.nio.file.Paths.get;
-
-import org.junit.Test;
-import org.apache.log4j.Logger;
+import static org.junit.Assert.fail;
 
 /**
  * XdsBRepositoryManagerTest
@@ -36,8 +42,11 @@ public class XdsBRepositoryManagerTest
     /** Logger */
     public static final Logger log = Logger.getLogger(XdsBRepositoryManagerTest.class);
 
-	private static final String xdsBRegistryEndpointURI = "http://ihexds.nist.gov:80/tf6/services/xdsregistryb";
-	private static final String xdsBRepositoryEndpointURI = "http://ihexds.nist.gov:80/tf6/services/xdsrepositoryb";
+	private static String propertiesFile = "/temp/IExHub.properties";
+    private static String xdsBRegistryEndpointURI = "http://ihexds.nist.gov:80/tf6/services/xdsregistryb";
+	private static String xdsBRepositoryEndpointURI = "http://ihexds.nist.gov:80/tf6/services/xdsrepositoryb";
+	private static String cdaFilename = "/temp/b2 Adam Everyman ToC-PlayWeb.xml";
+
 //	private static final String xdsBRegistryTLSEndpointURI = "	https://nist1:9085/tf6/services/xdsregistryb";
 //	private static final String xdsBRepositoryTLSEndpointURI = "https://nist1:9085/tf6/services/xdsrepositoryb";
 //	private static final String xdsBRegistryTLSEndpointURI = "https://philips50:8443/philips/services/xdsregistry";
@@ -49,17 +58,44 @@ public class XdsBRepositoryManagerTest
 //	private static final String xdsBRegistryTLSEndpointURI = "https://ith-icoserve12:1243/Registry/services/RegistryService";
 //	private static final String xdsBRegistryTLSEndpointURI = "https://merge11:443/iti18";
 //	private static final String xdsBRepositoryTLSEndpointURI = "https://10.242.43.13:5000/repository";
-	
+
+
+
 	private static XdsBRepositoryManager XdsBRepository = null;
 	/**
-	 * Test method for {@link org.iexhub.connectors.XdsBRepositoryManager#ProvideAndRegisterDocumentSet(java.lang.String, java.util.List)}.
+	 * Test method for {@link org.iexhub.connectors.XdsBRepositoryManager\#ProvideAndRegisterDocumentSet(java.lang.String, java.util.List)}.
 	 */
+
+	@Before
+	public void loadProperties(){
+		Properties props = new Properties();
+		try
+		{
+			props.load(new FileInputStream(propertiesFile));
+			xdsBRegistryEndpointURI = props.getProperty("XdsBRegistryEndpointURI");
+			xdsBRepositoryEndpointURI = props.getProperty("XdsBRepositoryEndpointURI");
+			cdaFilename = props.getProperty("CCDToPublish");
+		}
+		catch (IOException e)
+		{
+			log.error("Error encountered loading properties file, "
+					+ propertiesFile
+					+ ", "
+					+ e.getMessage());
+			throw new UnexpectedServerException("Error encountered loading properties file, "
+					+ propertiesFile
+					+ ", "
+					+ e.getMessage());
+		}
+	}
+
 	@Test
 	public void testProvideAndRegisterDocumentSet()
 	{
-		String cdaFilename = "c:/temp/b2 Adam Everyman ToC_IHERED-2332.xml";
+
 		try
 		{
+
 			log.info("Repository ProvideAndRegisterDocumentSet (ITI-41) unit test started...");
 			XdsBRepository = new XdsBRepositoryManager(xdsBRegistryEndpointURI,
 					xdsBRepositoryEndpointURI);
@@ -84,7 +120,7 @@ public class XdsBRepositoryManagerTest
 	}
 	
 	/**
-	 * Test method for {@link org.iexhub.connectors.XdsBRepositoryManager#ProvideAndRegisterDocumentSet(java.lang.String, java.util.List)}.
+	 * Test method for {@link org.iexhub.connectors.XdsBRepositoryManager\#ProvideAndRegisterDocumentSet(java.lang.String, java.util.List)}.
 	 */
 	@Test
 	public void testTLSProvideAndRegisterDocumentSet()

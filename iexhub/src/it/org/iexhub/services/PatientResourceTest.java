@@ -18,32 +18,33 @@
  */
 package org.iexhub.services;
 
-import static org.junit.Assert.*;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Properties;
-//import org.apache.log4j.Logger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.iexhub.exceptions.UnexpectedServerException;
-import org.junit.*;
-
-
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
 import ca.uhn.fhir.model.dstu2.resource.Organization;
 import ca.uhn.fhir.model.dstu2.resource.Organization.Contact;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
-import ca.uhn.fhir.model.dstu2.resource.Contract;
 import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
 import ca.uhn.fhir.model.primitive.DateDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.client.IGenericClient;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
+import org.iexhub.exceptions.UnexpectedServerException;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Properties;
+
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+//import org.apache.log4j.Logger;
 
 /**
  * FHIR Patient Resource Test
@@ -61,7 +62,7 @@ public class PatientResourceTest
 
 	
 	/**
-	 * Test method for {@link org.iexhub.services.JaxRsPatientRestProvider#find(@IdParam final IdDt id)}.
+	 * Test method for {@link org.iexhub.services.JaxRsPatientRestProvider\#find(@IdParam final IdDt id)}.
 	 */
 	@Test
 	public void testFindPatient()
@@ -112,7 +113,7 @@ public class PatientResourceTest
 	}
 
 	/**
-	 * Test method for {@link org.iexhub.services.JaxRsPatientRestProvider#search(@IdParam final IdDt id)}.
+	 * Test method for {@link org.iexhub.services.JaxRsPatientRestProvider#search\(@IdParam final IdDt id)}.
 	 */
 	@Test
 	public void testSearchPatient()
@@ -265,7 +266,7 @@ public class PatientResourceTest
 	}
 	
 	/**
-	 * Test method for {@link org.iexhub.connectors.PIXManager#registerPatient(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
+	 * Test method for {@link org.iexhub.connectors.PIXManager\#registerPatient(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}.
 	 */
 	@Test
 	public void testRegisterPatientTLS()

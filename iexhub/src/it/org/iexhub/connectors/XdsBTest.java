@@ -43,6 +43,7 @@ import org.iexhub.services.client.DocumentRegistry_ServiceStub.IdentifiableType;
 import org.iexhub.services.client.DocumentRegistry_ServiceStub.RegistryObjectListType;
 import org.iexhub.services.client.DocumentRepository_ServiceStub.DocumentResponse_type0;
 import org.iexhub.services.client.DocumentRepository_ServiceStub.RetrieveDocumentSetResponse;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -67,13 +68,43 @@ public class XdsBTest
 
 //    private static final String xdsBRepositoryUniqueId = "1.3.6.1.4.1.21367.13.40.226";		// Philips XDS.b repository ID
 //    private static final String xdsBRepositoryUniqueId = "1.3.6.1.4.1.21367.13.40.228";			// NIST RED repository ID
-	private static final String xdsBRepositoryUniqueId = "1.3.6.1.4.1.21367.13.40.216";
+	private static  String xdsBRepositoryUniqueId = "1.3.6.1.4.1.21367.13.40.216";
 //    private static final String xdsBRepositoryUniqueId = "1.3.6.1.4.1.21367.13.40.214";
 //	private static final String xdsBRepositoryUniqueId = "1.3.6.1.4.1.21367.13.40.210";    // OpenHIE
 	private static XdsB xdsB = null;
 	private static final SOAPFactory soapFactory = OMAbstractFactory.getSOAP12Factory();
 
 	private static String propertiesFile = "/temp/IExHub.properties";
+	private static String registryEndpointURI = "http://ihexds.nist.gov:80/tf6/services/xdsregistryb";
+	private static String repositoryEndpointURI = "http://ihexds.nist.gov:80/tf6/services/xdsrepositoryb";
+	private static String patientIdentifier = "'086666c2fd154f7^^^&1.3.6.1.4.1.21367.2005.13.20.3000&ISO'";
+
+	@Before
+	public void loadProperties(){
+		Properties props = new Properties();
+		try
+		{
+			props.load(new FileInputStream(propertiesFile));
+			registryEndpointURI = props.getProperty("XdsBRegistryEndpointURI");
+			repositoryEndpointURI = props.getProperty("XdsBRepositoryEndpointURI");
+			patientIdentifier = props.getProperty("PatientIdToRetrieve");
+			xdsBRepositoryUniqueId = props.getProperty("XdsBRepositoryUniqueId");
+			Boolean.parseBoolean(props.getProperty("DebugSSL"));
+			props.getProperty("SyslogServerHost");
+			Integer.parseInt(props.getProperty("SyslogServerPort"));
+		}
+		catch (IOException e)
+		{
+			log.error("Error encountered loading properties file, "
+					+ propertiesFile
+					+ ", "
+					+ e.getMessage());
+			throw new UnexpectedServerException("Error encountered loading properties file, "
+					+ propertiesFile
+					+ ", "
+					+ e.getMessage());
+		}
+	}
 
 	/**
 	 * Query Registry
@@ -169,28 +200,6 @@ public class XdsBTest
 	public void testRegistryStoredQuery()
 	{
 		Properties props = new Properties();
-		String registryEndpointURI = null;
-		String repositoryEndpointURI = null;
-		try
-		{
-			props.load(new FileInputStream(propertiesFile));
-			Boolean.parseBoolean(props.getProperty("DebugSSL"));
-			registryEndpointURI = props.getProperty("XdsBRegistryEndpointURI");
-			repositoryEndpointURI = props.getProperty("XdsBRepositoryEndpointURI");
-			props.getProperty("SyslogServerHost");
-			Integer.parseInt(props.getProperty("SyslogServerPort"));
-		}
-		catch (IOException e)
-		{
-			log.error("Error encountered loading properties file, "
-					+ propertiesFile
-					+ ", "
-					+ e.getMessage());
-			throw new UnexpectedServerException("Error encountered loading properties file, "
-					+ propertiesFile
-					+ ", "
-					+ e.getMessage());
-		}
 
 		try
 		{
@@ -230,7 +239,7 @@ public class XdsBTest
 //			String patientIdentifier = "IHEBLUE-2332^^^&1.3.6.1.4.1.21367.13.20.3000&ISO^PI";
 //			String patientIdentifier = "IHEBLUE-1019^^^&1.3.6.1.4.1.21367.13.20.3000&ISO";
 //			String patientIdentifier = "IHEGREEN-2376^^^&1.3.6.1.4.1.21367.13.20.2000&ISO";
-			String patientIdentifier = "940140b7-7c8b-4491-90f4-4819ded969bf^^^&1.3.6.1.4.1.21367.13.20.3000&ISO";
+			//String patientIdentifier = "940140b7-7c8b-4491-90f4-4819ded969bf^^^&1.3.6.1.4.1.21367.13.20.3000&ISO";
 			String startDate = null;
 			String endDate = null;
 
@@ -351,34 +360,12 @@ public class XdsBTest
 	@Test
 	public void testRetrieveDocumentSet()
 	{
-		Properties props = new Properties();
-		String registryEndpointURI = null;
-		String repositoryEndpointURI = null;
-		try
-		{
-			props.load(new FileInputStream(propertiesFile));
-			registryEndpointURI = props.getProperty("XdsBRegistryEndpointURI");
-			repositoryEndpointURI = props.getProperty("XdsBRepositoryEndpointURI");
-		}
-		catch (IOException e)
-		{
-			log.error("Error encountered loading properties file, "
-					+ propertiesFile
-					+ ", "
-					+ e.getMessage());
-			throw new UnexpectedServerException("Error encountered loading properties file, "
-					+ propertiesFile
-					+ ", "
-					+ e.getMessage());
-		}
-
 		try
 		{
 			log.info("Repository document set retrieval query (ITI-43) unit test started...");
 			xdsB = new XdsB(registryEndpointURI,
 					repositoryEndpointURI);
 			
-			String patientIdentifier = "'086666c2fd154f7^^^&1.3.6.1.4.1.21367.2005.13.20.3000&ISO'";
 			String startDate = null;
 			String endDate = null;
 
@@ -406,7 +393,7 @@ public class XdsBTest
 						String mimeType = docResponseArray[0].getMimeType().getLongName();
 						if (mimeType.compareToIgnoreCase("text/xml") == 0)
 						{
-							String filename = /*"test/"*/ "c:/temp/Output/" + document.getDocumentUniqueId().getLongName() + ".xml";
+							String filename = "/temp/Output/" + document.getDocumentUniqueId().getLongName() + ".xml";
 							DataHandler dh = document.getDocument();
 							File file = new File(filename);
 							FileOutputStream fileOutStream = new FileOutputStream(file);

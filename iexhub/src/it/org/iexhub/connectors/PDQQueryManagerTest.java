@@ -18,13 +18,12 @@
  */
 package org.iexhub.connectors;
 
-import static org.junit.Assert.*;
+import PDQSupplier.org.hl7.v3.PRPAIN201306UV02;
+import org.junit.Test;
 
 import java.util.UUID;
 
-import org.junit.Test;
-
-import PDQSupplier.org.hl7.v3.PRPAIN201306UV02;
+import static org.junit.Assert.fail;
 
 /**
  * @author A. Sute
