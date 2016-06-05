@@ -179,7 +179,8 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 					xmlContent.getBytes(),
 					"text/xml");
 			
-			if (response.getRegistryErrorList().getRegistryError().isEmpty())
+			if ((response.getRegistryErrorList() == null) || (response.getRegistryErrorList().getRegistryError().isEmpty()))
+				
 			{
 				result = new MethodOutcome().setCreated(true);
 			}
