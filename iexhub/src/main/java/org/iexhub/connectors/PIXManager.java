@@ -15,6 +15,30 @@
  *******************************************************************************/
 package org.iexhub.connectors;
 
+import PIXManager.org.hl7.v3.*;
+import PIXManager.org.iexhub.services.client.PIXManager_ServiceStub;
+import ca.uhn.fhir.model.dstu2.composite.*;
+import ca.uhn.fhir.model.dstu2.resource.Organization;
+import ca.uhn.fhir.model.dstu2.resource.Organization.Contact;
+import ca.uhn.fhir.model.dstu2.resource.Patient;
+import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
+import ca.uhn.fhir.model.primitive.StringDt;
+import org.apache.axiom.om.OMElement;
+import org.apache.axis2.AxisFault;
+import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
+import org.iexhub.exceptions.FamilyNameParamMissingException;
+import org.iexhub.exceptions.PatientIdParamMissingException;
+import org.iexhub.exceptions.UnexpectedServerException;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+import org.productivity.java.syslog4j.Syslog;
+import org.productivity.java.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig;
+
+import javax.xml.bind.JAXBElement;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -24,35 +48,6 @@ import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.Properties;
 import java.util.UUID;
-
-import javax.xml.bind.JAXBElement;
-
-import org.apache.axiom.om.OMElement;
-import org.apache.axis2.AxisFault;
-import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
-import org.iexhub.exceptions.*;
-
-import PIXManager.org.hl7.v3.*;
-import PIXManager.org.iexhub.services.client.PIXManager_ServiceStub;
-import ca.uhn.fhir.model.dstu2.composite.AddressDt;
-import ca.uhn.fhir.model.dstu2.composite.ContactPointDt;
-import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
-import ca.uhn.fhir.model.dstu2.composite.IdentifierDt;
-import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
-import ca.uhn.fhir.model.dstu2.resource.Organization;
-import ca.uhn.fhir.model.dstu2.resource.Organization.Contact;
-import ca.uhn.fhir.model.dstu2.resource.Patient;
-import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
-import ca.uhn.fhir.model.primitive.StringDt;
-
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
-import org.productivity.java.syslog4j.Syslog;
-import org.productivity.java.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig;
 
 
 /**
@@ -846,9 +841,13 @@ public class PIXManager
 		{
 			for (ContactPointDt contactPoint : fhirPatientResource.getTelecom())
 			{
-				TEL contactPartyTelecom = new TEL();
-				contactPartyTelecom.setValue(contactPoint.getValue());
-				patientPerson.getTelecom().add(contactPartyTelecom);
+				// Add if telecom value is present only
+				if( contactPoint.getValue() != null
+						&& !contactPoint.getValue().isEmpty()) {
+					TEL contactPartyTelecom = new TEL();
+					contactPartyTelecom.setValue(contactPoint.getValue());
+					patientPerson.getTelecom().add(contactPartyTelecom);
+				}
 			}
 		}
 		
