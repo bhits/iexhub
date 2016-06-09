@@ -777,12 +777,13 @@ public class PIXManager
 		// Create Patient...
 		PRPAMT201301UV02Patient patient = new PRPAMT201301UV02Patient();
 		patient.getClassCode().add("PAT");
-		// Use MRN send by MHC app to create id instead of new random value
-		/*II constructedPatientId = new II();
+		
+		// Use MRN sent by MHC app to create ID...
+		II constructedPatientId = new II();
 		constructedPatientId.setRoot(PIXManager.patientIdAssigningAuthority);
-		constructedPatientId.setExtension(UUID.randomUUID().toString());
+		constructedPatientId.setExtension(patientId);
 		constructedPatientId.setAssigningAuthorityName(PIXManager.iExHubAssigningAuthority);
-		patient.getId().add(constructedPatientId);*/
+		patient.getId().add(constructedPatientId);
 		
 		CS patientStatusCode = new CS();
 		patientStatusCode.setCode("active");
@@ -796,33 +797,22 @@ public class PIXManager
 		{
 			for (IdentifierDt fhirId : fhirPatientResource.getIdentifier())
 			{
-				// Caller application(MHC APP) and Iexhub should have same patientIdAssigningAuthority value
-				if(fhirId.getSystem().equals(PIXManager.patientIdAssigningAuthority)){
-					II constructedPatientId = new II();
-					constructedPatientId.setRoot(PIXManager.patientIdAssigningAuthority);
-					constructedPatientId.setExtension(fhirId.getValue());
-					constructedPatientId.setAssigningAuthorityName(PIXManager.iExHubAssigningAuthority);
-					//Set patient id using MRN send by the Caller app
-					patientId = constructedPatientId.getExtension();
-					patient.getId().add(constructedPatientId);
-				} else {
-					PRPAMT201301UV02OtherIDs asOtherId = new PRPAMT201301UV02OtherIDs();
-					asOtherId.getClassCode().add("SD");
-					II otherId = new II();
-					otherId.setRoot(fhirId.getSystemElement().getValueAsString());
-					otherId.setExtension(fhirId.getValue());
-					asOtherId.getId().add(otherId);
+				PRPAMT201301UV02OtherIDs asOtherId = new PRPAMT201301UV02OtherIDs();
+				asOtherId.getClassCode().add("SD");
+				II otherId = new II();
+				otherId.setRoot(fhirId.getSystemElement().getValueAsString());
+				otherId.setExtension(fhirId.getValue());
+				asOtherId.getId().add(otherId);
 
-					COCTMT150002UV01Organization scopingOrg = new COCTMT150002UV01Organization();
-					scopingOrg.setClassCode("ORG");
-					scopingOrg.setDeterminerCode("INSTANCE");
-					II scopingOrgId = new II();
-					scopingOrgId.setRoot(fhirId.getSystemElement().getValueAsString());
-					scopingOrg.getId().add(scopingOrgId);
-					asOtherId.setScopingOrganization(scopingOrg);
+				COCTMT150002UV01Organization scopingOrg = new COCTMT150002UV01Organization();
+				scopingOrg.setClassCode("ORG");
+				scopingOrg.setDeterminerCode("INSTANCE");
+				II scopingOrgId = new II();
+				scopingOrgId.setRoot(fhirId.getSystemElement().getValueAsString());
+				scopingOrg.getId().add(scopingOrgId);
+				asOtherId.setScopingOrganization(scopingOrg);
 
-					patientPerson.getAsOtherIDs().add(asOtherId);
-				}
+				patientPerson.getAsOtherIDs().add(asOtherId);
 			}
 		}
 		
