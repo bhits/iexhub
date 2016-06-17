@@ -303,6 +303,7 @@ public class PrivacyConsentTest {
 					subjectPatientResource = (Patient) cr;
 					HumanNameDt n = subjectPatientResource.getName().get(0);
 					assertTrue(n.getFamily().get(0).getValue().equalsIgnoreCase("Patient Family Name"));
+					break;
 				}
 			}
 			//subjectPatientResource.getContained().getContainedResources().add(sourceOrganizationResource);
@@ -310,14 +311,7 @@ public class PrivacyConsentTest {
 			//sourceIdRef.setReference("#"+sourceOrganizationId);
 			//subjectPatientResource.getCareProvider().add(sourceIdRef);
 			
-			String xmlEncodedPatient = ctxt.newXmlParser().setPrettyPrint(true).encodeResourceToString(subjectPatientResource);
-			try {
-				FileUtils.writeStringToFile(new File(testResourcesPath + "/XML/" + "PatientSubject.xml"),
-						xmlEncodedPatient);
-			} catch (IOException e) {
-
-				fail("Write Patient resource to XML:" + e.getMessage());
-			}
+			
 		}
 
 	}

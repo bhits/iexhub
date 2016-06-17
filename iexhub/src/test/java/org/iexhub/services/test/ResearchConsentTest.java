@@ -262,6 +262,7 @@ public class ResearchConsentTest {
 					subjectPatientResource = (Patient) cr;
 					HumanNameDt n = subjectPatientResource.getName().get(0);
 					assertTrue(n.getFamily().get(0).getValue().equalsIgnoreCase("Patient Family Name"));
+					break;
 				}
 			}
 			//subjectPatientResource.getContained().getContainedResources().add(sourceOrganizationResource);
