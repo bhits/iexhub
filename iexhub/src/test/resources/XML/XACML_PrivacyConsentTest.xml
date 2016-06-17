@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Policy xmlns="urn:oasis:names:tc:xacml:2.0:policy:schema:os"
+        PolicyId="Consent GUID"
+        RuleCombiningAlgId="urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:permit-overrides">
+   <Description>
+				Sample consent output transformed from FHIR Consent</Description>
+   <Target/>
+   <Rule Effect="Permit" RuleId="primary-group-rule">
+      <Target>
+         <!-- Fixed regardless of consent -->
+         <Resources>
+            <Resource>
+               <!--  Removed this condition because it list the document types to "Summarization of Episode of Care"
+               <ResourceMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+                  <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">34133-9</AttributeValue>
+                  <ResourceAttributeDesignator AttributeId="urn:oasis:names:tc:xacml:1.0:resource:typeCode"
+                                               DataType="http://www.w3.org/2001/XMLSchema#string"/>
+               </ResourceMatch>
+               -->
+               <ResourceMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+                  <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">urn:oasis:names:tc:ebxml-regrep:StatusType:Approved</AttributeValue>
+                  <ResourceAttributeDesignator AttributeId="xacml:status"
+                                               DataType="http://www.w3.org/2001/XMLSchema#string"/>
+               </ResourceMatch>
+            </Resource>
+         </Resources>
+         <!-- Fixed "Actiones" element:  "xdsquery" and "xdsretrieve" are specific to C2S-->
+         <Actions>
+            <Action>
+               <ActionMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+                  <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">xdsquery</AttributeValue>
+                  <ActionAttributeDesignator AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id"
+                                             DataType="http://www.w3.org/2001/XMLSchema#string"/>
+               </ActionMatch>
+            </Action>
+            <Action>
+               <ActionMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+                  <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">xdsretrieve</AttributeValue>
+                  <ActionAttributeDesignator AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id"
+                                             DataType="http://www.w3.org/2001/XMLSchema#string"/>
+               </ActionMatch>
+            </Action>
+         </Actions>
+      </Target>
+      <Condition>
+         <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:and">
+            <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:or">
+               <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+                  <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-one-and-only">
+                     <SubjectAttributeDesignator MustBePresent="false"
+                                                 AttributeId="urn:oasis:names:tc:xacml:1.0:subject-category:intermediary-subject"
+                                                 DataType="http://www.w3.org/2001/XMLSchema#string"/>
+                  </Apply>
+                  <!-- Authoring Provider -->
+                  <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">SOURCE_PROVIDER_NPI</AttributeValue>
+               </Apply>
+            </Apply>
+            <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:or">
+               <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+                  <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-one-and-only">
+                     <SubjectAttributeDesignator MustBePresent="false"
+                                                 AttributeId="urn:oasis:names:tc:xacml:1.0:subject-category:recipient-subject"
+                                                 DataType="http://www.w3.org/2001/XMLSchema#string"/>
+                  </Apply>
+                  <!-- Receiving Provider - one per recipient provider -->
+                  <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">RECEIVING_PROVODER_NPI</AttributeValue>
+               </Apply>
+            </Apply>
+            <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:or">
+               <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+                  <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-one-and-only">
+                     <SubjectAttributeDesignator MustBePresent="false"
+                                                 AttributeId="urn:oasis:names:tc:xspa:1.0:subject:purposeofuse"
+                                                 DataType="http://www.w3.org/2001/XMLSchema#string"/>
+                  </Apply>
+                  <!-- Purpose of consent/intended use of the data "TREAT" for "treatment", one per consent -->
+                  <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">TREAT</AttributeValue>
+               </Apply>
+            </Apply>
+            <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:dateTime-greater-than-or-equal">
+               <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:dateTime-one-and-only">
+                  <EnvironmentAttributeDesignator MustBePresent="false"
+                                                  AttributeId="urn:oasis:names:tc:xacml:1.0:environment:current-dateTime"
+                                                  DataType="http://www.w3.org/2001/XMLSchema#dateTime"/>
+               </Apply>
+               <!-- Start date -->
+               <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#dateTime">2014-09-09T00:00:00-0400</AttributeValue>
+            </Apply>
+            <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:dateTime-less-than-or-equal">
+               <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:dateTime-one-and-only">
+                  <EnvironmentAttributeDesignator MustBePresent="false"
+                                                  AttributeId="urn:oasis:names:tc:xacml:1.0:environment:current-dateTime"
+                                                  DataType="http://www.w3.org/2001/XMLSchema#dateTime"/>
+               </Apply>
+               <!-- Expiration date. In case of revocation, this date is the date of revocation -->
+               <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#dateTime">2015-09-08T23:59:59-0400</AttributeValue>
+            </Apply>
+         </Apply>
+      </Condition>
+   </Rule>
+   <!-- Similar to the "legal" consent, this list identifies the protected information permitted for disclosure. 
+      Each type of informatiaon has a value set defining that type of information (e.g. substance abuse related, HIV related). 
+      Unless listed here, protected information will be redacted. What constitutes protected information may differ from site-to-site.
+      42 CFR will be applicable in all cases.
+   -->
+   <Rule Effect="Permit" RuleId="Protected-Data-To-Be-Shared"/>
+   <Obligations>
+        <Obligation ObligationId="urn:samhsa:names:tc:consent2share:1.0:obligation:redact-document-section-code"
+                  FulfillOn="Permit">
+         <AttributeAssignment AttributeId="urn:oasis:names:tc:xacml:3.0:example:attribute:text"
+                              DataType="http://www.w3.org/2001/XMLSchema#string">ETH</AttributeAssignment>
+      </Obligation>
+      <Obligation ObligationId="urn:samhsa:names:tc:consent2share:1.0:obligation:redact-document-section-code"
+                  FulfillOn="Permit">
+         <AttributeAssignment AttributeId="urn:oasis:names:tc:xacml:3.0:example:attribute:text"
+                              DataType="http://www.w3.org/2001/XMLSchema#string">HIV</AttributeAssignment>
+      </Obligation>      
+   </Obligations>
+</Policy>

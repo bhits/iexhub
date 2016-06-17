@@ -1,0 +1,237 @@
+<Contract xmlns="http://hl7.org/fhir">
+   <id value="consentGUID"/>   
+      <contained>
+      <Patient xmlns="http://hl7.org/fhir">
+         <id value="patientId"/>
+         <identifier>
+            <system value="urn:oid:2.16.840.1.113883.4.1"/>
+            <value value="123-45-6789"/>
+         </identifier>
+         <identifier>
+            <system value="urn:oid:2.16.840.1.113883.3.72.5.9.1"/>
+            <value value="patientId"/>
+         </identifier>
+         <name>
+            <family value="Patient Family Name"/>
+            <given value="Patient Given Name"/>
+         </name>
+         <telecom>
+            <system value="phone"/>
+            <value value="555-1212"/>
+            <use value="home"/>
+         </telecom>
+         <telecom>
+            <system value="email"/>
+            <value value="patient@home.org"/>
+            <use value="home"/>
+         </telecom>
+         <gender value="female"/>
+         <birthDate value="1966-10-22"/>
+         <address>
+            <type value="postal"/>
+            <line value="Patient Address Line"/>
+            <city value="City"/>
+            <state value="NY"/>
+            <postalCode value="12345"/>
+         </address>
+         <careProvider>
+            <reference value="#sourceOrgOID"/>
+         </careProvider>
+      </Patient>
+   </contained>
+   <contained>
+      <Organization xmlns="http://hl7.org/fhir">
+         <id value="sourceOrgOID"/>
+         <identifier>
+            <system value="urn:oid:2.16.840.1.113883.4.6"/>
+            <value value="NPI of source organization"/>
+         </identifier>
+         <name value="Source Organization Name"/>
+         <address>
+            <line value="1 Source Drive"/>
+            <city value="Source City"/>
+            <state value="NY"/>
+            <postalCode value="01221"/>
+         </address>
+         <contact>
+            <name>
+               <family value="Contact Family Name"/>
+               <given value="Contact Given Name"/>
+            </name>
+            <telecom>
+               <system value="phone"/>
+               <value value="408-555-1212"/>
+               <use value="work"/>
+            </telecom>
+            <telecom>
+               <system value="email"/>
+               <value value="contact@sourceorgnization.org"/>
+               <use value="work"/>
+            </telecom>
+         </contact>
+      </Organization>
+   </contained>
+   <contained>
+      <Practitioner xmlns="http://hl7.org/fhir">
+         <id value="sourcePractitionerNPI"/>
+         <identifier>
+            <system value="urn:oid:2.16.840.1.113883.4.6"/>
+            <value value="NPI of source provider"/>
+         </identifier>
+         <name>
+            <family value="Source Practitioner Last Name"/>
+            <given value="Source Practitioner Given Name"/>
+            <suffix value="MD"/>
+         </name>
+         <telecom>
+            <system value="phone"/>
+            <value value="212-555-1212"/>
+         </telecom>
+         <telecom>
+            <system value="email"/>
+            <value value="contact@sourceorgnization.org"/>
+            <use value="work"/>
+         </telecom>
+         <address>
+            <line value="Source Practitioner Address Line"/>
+            <city value="City"/>
+            <state value="NY"/>
+            <postalCode value="98765"/>
+         </address>
+      </Practitioner>
+   </contained>
+   <contained>
+      <List xmlns="http://hl7.org/fhir">
+         <id value="includedListOfDataTypes"/>
+         <title value="List of included data types"/>
+         <code>
+            <coding>
+               <system value="http://hl7.org/fhir/v3/SetOperator"/>
+               <code value="I"/>
+            </coding>
+            <text value="Include"/>
+         </code>
+         <status value="current"/>
+         <mode value="snapshot"/>
+         <entry>
+            <item>
+               <reference value="#item1"/>
+            </item>
+         </entry>         
+         <entry>
+            <item>
+               <reference value="#item2"/>
+            </item>
+         </entry>
+      </List>
+   </contained>
+  
+   <contained>
+      <Basic xmlns="http://hl7.org/fhir">
+         <id value="item1"/>
+         <code>
+            <coding>
+               <system value="urn:oid:2.16.840.1.113883.5.25"/>
+               <code value="ETH"/>
+            </coding>
+            <text value="Substance Abuse Related Data"/>
+         </code>
+      </Basic>
+   </contained>
+   <contained>
+      <Basic xmlns="http://hl7.org/fhir">
+         <id value="item2"/>
+         <code>
+            <coding>
+               <system value="urn:oid:2.16.840.1.113883.5.25"/>
+               <code value="HIV"/>
+            </coding>
+            <text value="HIV/AIDS Related Data"/>
+         </code>
+      </Basic>
+   </contained>
+   <contained>
+      <Practitioner xmlns="http://hl7.org/fhir">
+         <id value="recipientPractitionerNPI"/>
+         <identifier>
+            <system value="urn:oid:2.16.840.1.113883.4.6"/>
+            <value value="NPI of recipient provider"/>
+         </identifier>
+         <name>
+            <family value="Recipient Practitioner Last Name"/>
+            <given value="Recipient Practitioner Given Name"/>
+            <prefix value="Ms."/>
+            <suffix value="MD"/>
+         </name>
+         <telecom>
+            <system value="phone"/>
+            <value value="212-000-1212"/>
+            <use value="work"/>
+         </telecom>
+         <telecom>
+            <system value="email"/>
+            <value value="recipient@destination.org"/>
+            <use value="work"/>
+         </telecom>
+         <address>
+            <line value="Recipient Practitioner Address Line"/>
+            <city value="City"/>
+            <state value="NY"/>
+            <postalCode value="98765"/>
+         </address>
+      </Practitioner>
+   </contained>
+   <identifier>
+      <system value="urn:oid:2.16.840.1.113883.3.72.5.9.1"/>
+      <value value="consent GUID generated by application"/>
+   </identifier>
+   <issued value="2016-06-02T11:54:06-04:00"/>
+   <subject>
+      <reference value="#patientId"/>
+   </subject>
+   <authority>
+      <reference value="#sourceOrgOID"/>
+   </authority>
+   <type>
+      <coding>
+         <system value="http://hl7.org/fhir/contracttypecodes"/>
+         <code value="disclosure"/>
+      </coding>
+   </type>
+   <actionReason>
+      <coding>
+         <system value="http://hl7.org/fhir/contractsubtypecodes"/>
+         <code value="TREAT"/>
+      </coding>
+   </actionReason>
+   <actor>
+      <entity>
+         <reference value="#sourcePractitionerNPI"/>
+      </entity>
+   </actor>
+   <signer>
+      <type>
+         <system value="http://hl7.org/fhir/contractsignertypecodes"/>
+         <code value="1.2.840.10065.1.12.1.7"/>
+      </type>
+      <party>
+         <reference value="#patientId"/>
+      </party>
+      <signature value="Patient Given Name Patient Family Name"/>
+   </signer>
+   <term>
+      <applies>
+         <start value="2015-10-10"/>
+         <end value="2016-10-10"/>
+      </applies>
+      <subject>
+         <reference value="#includedListOfDataTypes"/>
+      </subject>
+      <actor>
+         <entity>
+            <reference value="#recipientPractitionerNPI"/>
+         </entity>
+      </actor>
+      <text value="description of the consent terms"/>
+   </term>
+</Contract>
