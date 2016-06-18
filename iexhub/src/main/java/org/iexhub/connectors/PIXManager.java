@@ -90,6 +90,7 @@ public class PIXManager
 	private static String iExHubAssigningAuthority = "ISO";
 	private static String iExHubSenderDeviceId = "1.3.6.1.4.1.21367.13.10.215";
 	private static String patientIdAssigningAuthority = "1.3.6.1.4.1.21367.13.20.200";
+	private static String uriPrefix = "urn:oid:";
 
 	private static PIXManager_ServiceStub pixManagerStub = null;
 	private static final ObjectFactory objectFactory = new ObjectFactory();
@@ -808,7 +809,8 @@ public class PIXManager
 					{
 						throw new PatientIdParamMissingException("Patient ID system missing");
 					}
-					constructedPatientId.setRoot(fhirId.getSystem());
+					constructedPatientId.setRoot((fhirId.getSystem().toLowerCase().startsWith(uriPrefix)) ? fhirId.getSystem().replace(uriPrefix, "")
+							: fhirId.getSystem());
 					constructedPatientId.setExtension(fhirId.getValue());
 					constructedPatientId.setAssigningAuthorityName(PIXManager.iExHubAssigningAuthority);
 					patient.getId().add(constructedPatientId);
