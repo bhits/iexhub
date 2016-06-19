@@ -21,10 +21,8 @@ import XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rim._3.*;
 import XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rs._3.RegistryResponseType;
 import XdsBDocumentRepository.org.iexhub.services.client.DocumentRepository_ServiceStub;
 import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.composite.IdentifierDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Contract;
-import ca.uhn.fhir.model.dstu2.resource.Contract.Signer;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.primitive.StringDt;
 import org.apache.axiom.om.OMAbstractFactory;
@@ -1356,9 +1354,8 @@ public class XdsBRepositoryManager
 			RegistryObjectListType registryObjectList = new RegistryObjectListType();
 
 			// Create ExtrinsicObject...
-			String documentId = UUID.randomUUID().toString();
 			ExtrinsicObjectType extrinsicObject = new ExtrinsicObjectType();
-			extrinsicObject.setId(documentId);
+			extrinsicObject.setId(contract.getIdentifier().getValue());
 			extrinsicObject.setMimeType(mimeType);
 			extrinsicObject.setObjectType("urn:uuid:7edca82f-054d-47f2-a032-9b2a5b5186c1");
 
@@ -1529,7 +1526,7 @@ public class XdsBRepositoryManager
 			ClassificationType documentAuthorClassification = new ClassificationType();
 			documentAuthorClassification.setId(UUID.randomUUID().toString());
 			documentAuthorClassification.setClassificationScheme(documentAuthorClassificationScheme);
-			documentAuthorClassification.setClassifiedObject(documentId);
+			documentAuthorClassification.setClassifiedObject(contract.getIdentifier().getValue());
 			documentAuthorClassification.setNodeRepresentation("");
 			slot = new SlotType1();
 			slot.setName("authorPerson");
@@ -1563,7 +1560,7 @@ public class XdsBRepositoryManager
 			ClassificationType classification = new ClassificationType();
 			classification.setId(UUID.randomUUID().toString());
 			classification.setClassificationScheme(documentClassCodesClassificationScheme);
-			classification.setClassifiedObject(documentId);
+			classification.setClassifiedObject(contract.getIdentifier().getValue());
 			classification.setNodeRepresentation("*");
 				
 			slot = new SlotType1();
@@ -1588,7 +1585,7 @@ public class XdsBRepositoryManager
 			classification = new ClassificationType();
 			classification.setId(UUID.randomUUID().toString());
 			classification.setClassificationScheme(documentConfidentialityCodesClassificationScheme);
-			classification.setClassifiedObject(documentId);	
+			classification.setClassifiedObject(contract.getIdentifier().getValue());
 			// Code
 			classification.setNodeRepresentation("N");
 				
@@ -1614,7 +1611,7 @@ public class XdsBRepositoryManager
 			classification = new ClassificationType();
 			classification.setId(UUID.randomUUID().toString());
 			classification.setClassificationScheme(documentFormatCodesClassificationScheme);
-			classification.setClassifiedObject(documentId);
+			classification.setClassifiedObject(contract.getIdentifier().getValue());
 			classification.setNodeRepresentation(documentFormatCodesNodeRepresentation);
 			slot = new SlotType1();
 			slot.setName("codingScheme");
@@ -1633,7 +1630,7 @@ public class XdsBRepositoryManager
 			classification = new ClassificationType();
 			classification.setId(UUID.randomUUID().toString());
 			classification.setClassificationScheme(documentHealthcareFacilityTypeCodesClassificationScheme);
-			classification.setClassifiedObject(documentId);
+			classification.setClassifiedObject(contract.getIdentifier().getValue());
 			classification.setNodeRepresentation(documentHealthcareFacilityTypeCodesNodeRepresentation);
 			slot = new SlotType1();
 			slot.setName("codingScheme");
@@ -1652,7 +1649,7 @@ public class XdsBRepositoryManager
 			classification = new ClassificationType();
 			classification.setId(UUID.randomUUID().toString());
 			classification.setClassificationScheme(documentPracticeSettingCodesClassificationScheme);
-			classification.setClassifiedObject(documentId);
+			classification.setClassifiedObject(contract.getIdentifier().getValue());
 			classification.setNodeRepresentation(documentPracticeSettingCodesNodeRepresentation);
 				
 			slot = new SlotType1();
@@ -1675,7 +1672,7 @@ public class XdsBRepositoryManager
 			classification = new ClassificationType();
 			classification.setId(UUID.randomUUID().toString());
 			classification.setClassificationScheme(documentContentTypeClassificationScheme);
-			classification.setClassifiedObject(documentId);
+			classification.setClassifiedObject(contract.getIdentifier().getValue());
 			// Code
 			classification.setNodeRepresentation("57016-8");
 				
@@ -1700,7 +1697,7 @@ public class XdsBRepositoryManager
 			// Create rim:ExternalIdentifier(s) - first the XDSDocumentEntry.patientId value(s)...
 			ExternalIdentifierType externalIdentifierPatientId = new ExternalIdentifierType();
 			externalIdentifierPatientId.setId(UUID.randomUUID().toString());
-			externalIdentifierPatientId.setRegistryObject(documentId);
+			externalIdentifierPatientId.setRegistryObject(contract.getIdentifier().getValue());
 			externalIdentifierPatientId.setIdentificationScheme(extrinsicObjectExternalIdentifierPatientIdIdentificationScheme);
 			externalIdentifierPatientId.setValue(/*"'" +*/ referencedId
 					+ "^^^&"
@@ -1717,7 +1714,7 @@ public class XdsBRepositoryManager
 			// Now the XDSDocumentEntry.uniqueId value(s)...
 			ExternalIdentifierType externalIdentifierDocumentId = new ExternalIdentifierType();
 			externalIdentifierDocumentId.setId(UUID.randomUUID().toString());
-			externalIdentifierDocumentId.setRegistryObject(documentId);
+			externalIdentifierDocumentId.setRegistryObject(contract.getIdentifier().getValue());
 			externalIdentifierDocumentId.setIdentificationScheme(extrinsicObjectExternalIdentifierUniqueIdIdentificationScheme);
 				
 			if (testMode)
@@ -1875,7 +1872,7 @@ public class XdsBRepositoryManager
 			submissionSetAssociation.setId(/*UUID.randomUUID().toString()*/ "as01");
 			submissionSetAssociation.setAssociationType("urn:oasis:names:tc:ebxml-regrep:AssociationType:HasMember");
 			submissionSetAssociation.setSourceObject(submissionSetId);
-			submissionSetAssociation.setTargetObject(documentId);
+			submissionSetAssociation.setTargetObject(contract.getIdentifier().getValue());
 			slot = new SlotType1();
 			slot.setName("SubmissionSetStatus");
 			valueList = new ValueListType();
@@ -1890,7 +1887,7 @@ public class XdsBRepositoryManager
 			// Add document to message...
 			XdsBDocumentRepository.ihe.iti.xds_b._2007.ProvideAndRegisterDocumentSetRequestType.Document documentForMessage = new XdsBDocumentRepository.ihe.iti.xds_b._2007.ProvideAndRegisterDocumentSetRequestType.Document();
 			documentForMessage.setValue(xmlContent);
-			documentForMessage.setId(documentId);
+			documentForMessage.setId(contract.getIdentifier().getValue());
 			documentSetRequest.getDocument().add(documentForMessage);
 			
 			logIti41AuditMsg(submissionSetId,
@@ -1903,7 +1900,7 @@ public class XdsBRepositoryManager
 		                    "ProvideAndRegisterDocumentSetRequest")),
 		                new javax.xml.namespace.QName("urn:ihe:iti:xds-b:2007",
 		    				"ProvideAndRegisterDocumentSetRequest"));
-				Files.write(Paths.get(logOutputPath + documentId + "_ProvideAndRegisterDocumentSetRequest.xml"),
+				Files.write(Paths.get(logOutputPath + contract.getIdentifier().getValue() + "_ProvideAndRegisterDocumentSetRequest.xml"),
 						requestElement.toString().getBytes());
 			}
 

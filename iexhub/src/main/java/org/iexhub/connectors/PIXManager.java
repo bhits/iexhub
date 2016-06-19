@@ -660,8 +660,6 @@ public class PIXManager
 						: ((fhirPatientResource.getGender().compareToIgnoreCase(AdministrativeGenderEnum.FEMALE.getCode()) == 0) ? "F"
 								: ((fhirPatientResource.getGender().compareToIgnoreCase(AdministrativeGenderEnum.OTHER.getCode()) == 0) ? "UN"
 										: ""));
-//		String patientId = (fhirPatientResource.getId() != null) ? fhirPatientResource.getId().getValueAsString()
-//				: null;
 		
 		if ((fhirPatientResource.getName().get(0).getFamilyAsSingleString() == null) ||
 			(fhirPatientResource.getName().get(0).getFamilyAsSingleString().length() == 0))
@@ -779,14 +777,6 @@ public class PIXManager
 		// Create Patient...
 		PRPAMT201301UV02Patient patient = new PRPAMT201301UV02Patient();
 		patient.getClassCode().add("PAT");
-		
-		// Use MRN sent by MHC app to create ID...
-//		II constructedPatientId = new II();
-//		constructedPatientId.setRoot(PIXManager.patientIdAssigningAuthority);
-//		constructedPatientId.setExtension(patientId);
-//		constructedPatientId.setAssigningAuthorityName(PIXManager.iExHubAssigningAuthority);
-//		patient.getId().add(constructedPatientId);
-		
 		CS patientStatusCode = new CS();
 		patientStatusCode.setCode("active");
 		patient.setStatusCode(patientStatusCode);
