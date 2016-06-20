@@ -22,6 +22,7 @@ import ca.uhn.fhir.model.dstu2.resource.Organization;
 import ca.uhn.fhir.model.dstu2.resource.Organization.Contact;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
+import ca.uhn.fhir.model.dstu2.valueset.IdentifierUseEnum;
 import ca.uhn.fhir.model.primitive.StringDt;
 import org.apache.axiom.om.OMElement;
 import org.apache.axis2.AxisFault;
@@ -89,6 +90,7 @@ public class PIXManager
 	private static String iExHubAssigningAuthority = "ISO";
 	private static String iExHubSenderDeviceId = "1.3.6.1.4.1.21367.13.10.215";
 	private static String patientIdAssigningAuthority = "1.3.6.1.4.1.21367.13.20.200";
+	private static String uriPrefix = "urn:oid:";
 
 	private static PIXManager_ServiceStub pixManagerStub = null;
 	private static final ObjectFactory objectFactory = new ObjectFactory();
@@ -658,8 +660,6 @@ public class PIXManager
 						: ((fhirPatientResource.getGender().compareToIgnoreCase(AdministrativeGenderEnum.FEMALE.getCode()) == 0) ? "F"
 								: ((fhirPatientResource.getGender().compareToIgnoreCase(AdministrativeGenderEnum.OTHER.getCode()) == 0) ? "UN"
 										: ""));
-		String patientId = (fhirPatientResource.getId() != null) ? fhirPatientResource.getId().getValueAsString()
-				: null;
 		
 		if ((fhirPatientResource.getName().get(0).getFamilyAsSingleString() == null) ||
 			(fhirPatientResource.getName().get(0).getFamilyAsSingleString().length() == 0))
@@ -777,14 +777,6 @@ public class PIXManager
 		// Create Patient...
 		PRPAMT201301UV02Patient patient = new PRPAMT201301UV02Patient();
 		patient.getClassCode().add("PAT");
-		
-		// Use MRN sent by MHC app to create ID...
-		II constructedPatientId = new II();
-		constructedPatientId.setRoot(PIXManager.patientIdAssigningAuthority);
-		constructedPatientId.setExtension(patientId);
-		constructedPatientId.setAssigningAuthorityName(PIXManager.iExHubAssigningAuthority);
-		patient.getId().add(constructedPatientId);
-		
 		CS patientStatusCode = new CS();
 		patientStatusCode.setCode("active");
 		patient.setStatusCode(patientStatusCode);
@@ -793,26 +785,45 @@ public class PIXManager
 		PRPAMT201301UV02Person patientPerson = new PRPAMT201301UV02Person();
 		
 		// Other ID's specified...
+		II constructedPatientId = null;
 		if (fhirPatientResource.getIdentifier() != null)
 		{
 			for (IdentifierDt fhirId : fhirPatientResource.getIdentifier())
 			{
-				PRPAMT201301UV02OtherIDs asOtherId = new PRPAMT201301UV02OtherIDs();
-				asOtherId.getClassCode().add("SD");
-				II otherId = new II();
-				otherId.setRoot(fhirId.getSystemElement().getValueAsString());
-				otherId.setExtension(fhirId.getValue());
-				asOtherId.getId().add(otherId);
-
-				COCTMT150002UV01Organization scopingOrg = new COCTMT150002UV01Organization();
-				scopingOrg.setClassCode("ORG");
-				scopingOrg.setDeterminerCode("INSTANCE");
-				II scopingOrgId = new II();
-				scopingOrgId.setRoot(fhirId.getSystemElement().getValueAsString());
-				scopingOrg.getId().add(scopingOrgId);
-				asOtherId.setScopingOrganization(scopingOrg);
-
-				patientPerson.getAsOtherIDs().add(asOtherId);
+				if ((fhirId.getUse() != null) &&
+					(fhirId.getUse().equals(IdentifierUseEnum.OFFICIAL.getCode())))
+				{
+					// This is the official identifier
+					constructedPatientId = new II();
+					if ((fhirId.getSystem() == null) || (fhirId.getSystem().length() == 0))
+					{
+						throw new PatientIdParamMissingException("Patient ID system missing");
+					}
+					constructedPatientId.setRoot((fhirId.getSystem().toLowerCase().startsWith(uriPrefix)) ? fhirId.getSystem().replace(uriPrefix, "")
+							: fhirId.getSystem());
+					constructedPatientId.setExtension(fhirId.getValue());
+					constructedPatientId.setAssigningAuthorityName(PIXManager.iExHubAssigningAuthority);
+					patient.getId().add(constructedPatientId);
+				}
+				else
+				{
+					PRPAMT201301UV02OtherIDs asOtherId = new PRPAMT201301UV02OtherIDs();
+					asOtherId.getClassCode().add("SD");
+					II otherId = new II();
+					otherId.setRoot(fhirId.getSystemElement().getValueAsString());
+					otherId.setExtension(fhirId.getValue());
+					asOtherId.getId().add(otherId);
+	
+					COCTMT150002UV01Organization scopingOrg = new COCTMT150002UV01Organization();
+					scopingOrg.setClassCode("ORG");
+					scopingOrg.setDeterminerCode("INSTANCE");
+					II scopingOrgId = new II();
+					scopingOrgId.setRoot(fhirId.getSystemElement().getValueAsString());
+					scopingOrg.getId().add(scopingOrgId);
+					asOtherId.setScopingOrganization(scopingOrg);
+	
+					patientPerson.getAsOtherIDs().add(asOtherId);
+				}
 			}
 		}
 		
@@ -1016,7 +1027,7 @@ public class PIXManager
 		
 		pRPA_IN201301UV02.setControlActProcess(controlAct);
 
-		logIti44AuditMsg(patientId + "^^^&" + PIXManager.iExHubDomainOid + "&" + PIXManager.iExHubAssigningAuthority);
+		logIti44AuditMsg(constructedPatientId.getExtension() + "^^^&" + constructedPatientId.getRoot() + "&" + PIXManager.iExHubAssigningAuthority);
 
 		UUID logMsgId = null;
 		if (logPixRequestMessages)
