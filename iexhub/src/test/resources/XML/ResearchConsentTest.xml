@@ -190,7 +190,7 @@
       <system value="urn:oid:2.16.840.1.113883.3.72.5.9.1"/>
       <value value="consent GUID"/>
    </identifier>
-   <issued value="2016-06-02T11:54:07-04:00"/>
+   <issued value="2016-06-27T17:04:24-04:00"/>
    <subject>
       <reference value="#patientId"/>
       <display value="Research Participant"/>
