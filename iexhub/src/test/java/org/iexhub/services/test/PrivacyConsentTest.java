@@ -21,6 +21,7 @@ import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.dstu2.composite.AttachmentDt;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.CodingDt;
 import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
@@ -29,6 +30,7 @@ import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Basic;
 import ca.uhn.fhir.model.dstu2.resource.Composition;
 import ca.uhn.fhir.model.dstu2.resource.Contract;
+import ca.uhn.fhir.model.dstu2.resource.Contract.Rule;
 import ca.uhn.fhir.model.dstu2.resource.ListResource;
 import ca.uhn.fhir.model.dstu2.resource.Organization;
 import ca.uhn.fhir.model.dstu2.resource.Organization.Contact;
@@ -41,9 +43,11 @@ import ca.uhn.fhir.model.dstu2.valueset.ContactPointUseEnum;
 import ca.uhn.fhir.model.dstu2.valueset.ContractTypeCodesEnum;
 import ca.uhn.fhir.model.dstu2.valueset.ListModeEnum;
 import ca.uhn.fhir.model.dstu2.valueset.ListStatusEnum;
+import ca.uhn.fhir.model.primitive.Base64BinaryDt;
 import ca.uhn.fhir.model.primitive.DateDt;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
+import ca.uhn.fhir.model.primitive.XhtmlDt;
 import ca.uhn.fhir.narrative.DefaultThymeleafNarrativeGenerator;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.client.IGenericClient;
@@ -58,13 +62,14 @@ public class PrivacyConsentTest {
 	private static String recipientPractitionerId = "recipientPractitionerNPI";
 	private static String testResourcesPath = "src/test/resources/";
 	private static FhirContext ctxt = new FhirContext();
+	private static Contract consentAsContract;
 
 	private static String uriPrefix = "urn:oid:";
 	private static String iExHubDomainOid = "2.16.840.1.113883.3.72.5.9.1";
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-
+		
 	}
 
 	@AfterClass
@@ -73,6 +78,8 @@ public class PrivacyConsentTest {
 
 	@Before
 	public void setUp() throws Exception {
+		// Consent as contract
+		consentAsContract = new Contract();
 	}
 
 	@After
@@ -80,7 +87,7 @@ public class PrivacyConsentTest {
 	}
 
 	@Test
-	public void test() {
+	public void test() throws IOException {
 		String currentTest = "PrivacyConsentTest";
 		// FHIR objects used to create a Consent
 		Patient testPatientResource = new Patient();
@@ -88,8 +95,7 @@ public class PrivacyConsentTest {
 		Contact organizationContactResource = new Contact();
 		Practitioner sourcePractitionerResource = new Practitioner();
 		Practitioner recipientPractitionerResource = new Practitioner();
-		// Consent as contract
-		Contract contract = new Contract();
+		
 		// create the testPatient resource to be embedded into a contract
 		testPatientResource.setId(new IdDt(patientId));
 		testPatientResource.addName().addFamily("Patient Family Name").addGiven("Patient Given Name");
@@ -152,43 +158,43 @@ public class PrivacyConsentTest {
 				.setSystem(ContactPointSystemEnum.EMAIL).setValue("recipient@destination.org");
 		// populate contract
 		// set the id as a concatenated "OID.consentId"
-		contract.setId(new IdDt(iExHubDomainOid + "." + consentId));
-		contract.getIdentifier().setSystem(uriPrefix + iExHubDomainOid)
+		consentAsContract.setId(new IdDt(iExHubDomainOid + "." + consentId));
+		consentAsContract.getIdentifier().setSystem(uriPrefix + iExHubDomainOid)
 				.setValue("consent GUID");
-		contract.getType().setValueAsEnum(ContractTypeCodesEnum.DISCLOSURE);
-		contract.getActionReason().add(new CodeableConceptDt("http://hl7.org/fhir/contractsubtypecodes", "TREAT"));
+		consentAsContract.getType().setValueAsEnum(ContractTypeCodesEnum.DISCLOSURE);
+		consentAsContract.getActionReason().add(new CodeableConceptDt("http://hl7.org/fhir/contractsubtypecodes", "TREAT"));
 		DateTimeDt issuedDateTime = new DateTimeDt();
 		issuedDateTime.setValue(Calendar.getInstance().getTime());
-		contract.setIssued(issuedDateTime);
+		consentAsContract.setIssued(issuedDateTime);
 		// specify the covered entity authorized to disclose
 		// add source resource and authority reference
-		contract.getContained().getContainedResources().add(sourceOrganizationResource);
-		contract.addAuthority().setReference("#" + sourceOrganizationId);
+		consentAsContract.getContained().getContainedResources().add(sourceOrganizationResource);
+		consentAsContract.addAuthority().setReference("#" + sourceOrganizationId);
 		// This is required if the organization was not already added as a
 		// "contained" resource reference by the Patient
 		// contract.getContained().getContainedResources().add(sourceOrganizationResource);
 		// specify the provider who authored the data
-		contract.addActor().getEntity().setReference("#" + sourcePractitionerId);
-		contract.getContained().getContainedResources().add(sourcePractitionerResource);
+		consentAsContract.addActor().getEntity().setReference("#" + sourcePractitionerId);
+		consentAsContract.getContained().getContainedResources().add(sourcePractitionerResource);
 		// specify the patient identified in the consent
 		// add local reference to patient
 		ResourceReferenceDt patientReference = new ResourceReferenceDt("#" + patientId);
-		contract.getSubject().add(patientReference);
-		contract.getSignerFirstRep()
+		consentAsContract.getSubject().add(patientReference);
+		consentAsContract.getSignerFirstRep()
 				.setType(new CodingDt("http://hl7.org/fhir/contractsignertypecodes", "1.2.840.10065.1.12.1.7"));
-		contract.getSignerFirstRep().setSignature(testPatientResource.getNameFirstRep().getNameAsSingleString());
-		contract.getSignerFirstRep().setParty(patientReference);
+		consentAsContract.getSignerFirstRep().setSignature(testPatientResource.getNameFirstRep().getNameAsSingleString());
+		consentAsContract.getSignerFirstRep().setParty(patientReference);
 		// add test patient as a contained resource rather than externalreference
-		contract.getContained().getContainedResources().add(testPatientResource);
+		consentAsContract.getContained().getContainedResources().add(testPatientResource);
 		// set terms of consent and intended recipient(s)
 		PeriodDt applicablePeriod = new PeriodDt();
 		applicablePeriod.setEnd(new DateTimeDt("2016-10-10"));
 		applicablePeriod.setStart(new DateTimeDt("2015-10-10"));
-		contract.getTermFirstRep().setApplies(applicablePeriod);
+		consentAsContract.getTermFirstRep().setApplies(applicablePeriod);
 		// list all recipients
-		contract.getTermFirstRep().addActor().getEntity().setReference("#" + recipientPractitionerId);
-		contract.getContained().getContainedResources().add(recipientPractitionerResource);
-		contract.getTermFirstRep().setText("description of the consent terms");
+		consentAsContract.getTermFirstRep().addActor().getEntity().setReference("#" + recipientPractitionerId);
+		consentAsContract.getContained().getContainedResources().add(recipientPractitionerResource);
+		consentAsContract.getTermFirstRep().setText("description of the consent terms");
 		// add granular preferences
 		String includedDataListId = "includedListOfDataTypes";
 		ListResource list = new ListResource();
@@ -247,17 +253,27 @@ public class PrivacyConsentTest {
 		substanceAbuseRelatedEntry.setItem(itemReference3);
 		list.addEntry(substanceAbuseRelatedEntry);
 		// add list to contract
-		contract.getTerm().get(0).getSubject().setReference("#" + includedDataListId);
-		contract.getContained().getContainedResources().add(list);
+		consentAsContract.getTerm().get(0).getSubject().setReference("#" + includedDataListId);
+		consentAsContract.getContained().getContainedResources().add(list);
 		// add items as Basic resources
-		contract.getContained().getContainedResources().add(basicItem1);
-		contract.getContained().getContainedResources().add(basicItem2);
-		contract.getContained().getContainedResources().add(basicItem3);
+		consentAsContract.getContained().getContainedResources().add(basicItem1);
+		consentAsContract.getContained().getContainedResources().add(basicItem2);
+		consentAsContract.getContained().getContainedResources().add(basicItem3);
+		// Add the XACML policy
+		Rule xacmlPolicyRule = new Rule();
+		String xacmlPolicyStr = "<xacml/>";
+		xacmlPolicyStr = FileUtils.readFileToString(new File(testResourcesPath + "/XML/XACML_PrivacyConsentTest.xml")); //$NON-NLS-1$
+		//Base64BinaryDt xacmlPolicyXml64 =  new Base64BinaryDt(xacmlPolicyStr.getBytes());	
+		AttachmentDt xacmlAttachment = new AttachmentDt();
+		xacmlAttachment.setData(xacmlPolicyStr.getBytes());
+		xacmlPolicyRule.setContent(xacmlAttachment);
+		//xacmlPolicy.setContent("");
+		consentAsContract.addRule(xacmlPolicyRule);
 		// Use the narrative generator
 		// @TODO: add generator Thymeleaf templates
 		// ctxt.setNarrativeGenerator(new DefaultThymeleafNarrativeGenerator());
 		// Create XML and JSON files including generated narrative XHTML
-		String xmlEncodedGranularConsent = ctxt.newXmlParser().setPrettyPrint(true).encodeResourceToString(contract);
+		String xmlEncodedGranularConsent = ctxt.newXmlParser().setPrettyPrint(true).encodeResourceToString(consentAsContract);
 		try {
 			FileUtils.writeStringToFile(new File(testResourcesPath + "/XML/" + currentTest + ".xml"),
 					xmlEncodedGranularConsent);
@@ -265,7 +281,7 @@ public class PrivacyConsentTest {
 
 			fail("Write resource to XML:" + e.getMessage());
 		}
-		String jsonEncodedGranularConsent = ctxt.newJsonParser().setPrettyPrint(true).encodeResourceToString(contract);
+		String jsonEncodedGranularConsent = ctxt.newJsonParser().setPrettyPrint(true).encodeResourceToString(consentAsContract);
 		try {
 			FileUtils.writeStringToFile(new File(testResourcesPath + "/JSON/" + currentTest + ".json"),
 					jsonEncodedGranularConsent);
@@ -306,12 +322,16 @@ public class PrivacyConsentTest {
 					break;
 				}
 			}
+			//read XACML from Contract.Rule
+			Rule xacmlFromFileRule = consentFromFile.getRule().get(0);
+			AttachmentDt xacmlPolicyAttachment = (AttachmentDt)xacmlFromFileRule.getContent();
+			byte[] xacmlPoicyByteArray =  xacmlPolicyAttachment.getData() ; 
+			System.out.println(new String(xacmlPoicyByteArray));
 			//subjectPatientResource.getContained().getContainedResources().add(sourceOrganizationResource);
 			//ResourceReferenceDt sourceIdRef = new ResourceReferenceDt();
 			//sourceIdRef.setReference("#"+sourceOrganizationId);
 			//subjectPatientResource.getCareProvider().add(sourceIdRef);
-			
-			
+
 		}
 
 	}

@@ -196,8 +196,6 @@ public class ResearchConsentTest {
 		// use list item flag to specify a category and the item to specify an
 		// instance (e.g. DocumentReference)
 		CodeableConceptDt researchStudy = new CodeableConceptDt("urn:oid:2.16.840.1.113883.6.1", "LOINC_TBD");
-		researchStudy.setText("");
-		// dischargeSummaryCode
 		researchStudy.setText("Human Nature Research Study");
 		Basic basicItem1 = new Basic();
 		basicItem1.setId(new IdDt("item1"));

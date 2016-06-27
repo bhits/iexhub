@@ -7,7 +7,7 @@
    <Target/>
    <Rule Effect="Permit" RuleId="primary-group-rule">
       <Target>
-         <!-- Fixed regardless of consent -->
+        <!-- Fixed regardless of consent -->
          <Resources>
             <Resource>
                <!--  Removed this condition because it list the document types to "Summarization of Episode of Care"
@@ -24,7 +24,7 @@
                </ResourceMatch>
             </Resource>
          </Resources>
-         <!-- Fixed "Actiones" element:  "xdsquery" and "xdsretrieve" are specific to C2S-->
+         <!-- Fixed "Actions" element:  "xdsquery" and "xdsretrieve" are specific to C2S-->
          <Actions>
             <Action>
                <ActionMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
