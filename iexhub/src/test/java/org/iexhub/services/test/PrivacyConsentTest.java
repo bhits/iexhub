@@ -2,20 +2,35 @@ package org.iexhub.services.test;
 
 import static org.junit.Assert.*;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.transform.stream.StreamResult;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
 import org.apache.commons.io.FileUtils;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 
@@ -69,7 +84,7 @@ public class PrivacyConsentTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		
+
 	}
 
 	@AfterClass
@@ -95,7 +110,7 @@ public class PrivacyConsentTest {
 		Contact organizationContactResource = new Contact();
 		Practitioner sourcePractitionerResource = new Practitioner();
 		Practitioner recipientPractitionerResource = new Practitioner();
-		
+
 		// create the testPatient resource to be embedded into a contract
 		testPatientResource.setId(new IdDt(patientId));
 		testPatientResource.addName().addFamily("Patient Family Name").addGiven("Patient Given Name");
@@ -115,8 +130,9 @@ public class PrivacyConsentTest {
 		// set id to be used to reference the providerOrganization as an inline
 		// resource
 		sourceOrganizationResource.setId(new IdDt(sourceOrganizationId));
-		//system 2.16.840.1.113883.4.6
-		sourceOrganizationResource.addIdentifier().setSystem(uriPrefix + "2.16.840.1.113883.4.6").setValue("NPI of source organization");
+		// system 2.16.840.1.113883.4.6
+		sourceOrganizationResource.addIdentifier().setSystem(uriPrefix + "2.16.840.1.113883.4.6")
+				.setValue("NPI of source organization");
 		sourceOrganizationResource.setName("Source Organization Name");
 		sourceOrganizationResource.addAddress().addLine("1 Source Drive").setCity("Source City").setState("NY")
 				.setPostalCode("01221");
@@ -137,7 +153,8 @@ public class PrivacyConsentTest {
 
 		// authoring practitioner
 		sourcePractitionerResource.setId(new IdDt(sourcePractitionerId));
-		sourcePractitionerResource.addIdentifier().setSystem(uriPrefix + "2.16.840.1.113883.4.6").setValue("NPI of source provider");
+		sourcePractitionerResource.addIdentifier().setSystem(uriPrefix + "2.16.840.1.113883.4.6")
+				.setValue("NPI of source provider");
 		sourcePractitionerResource.getName().addFamily("Source Practitioner Last Name")
 				.addGiven("Source Practitioner Given Name").addSuffix("MD");
 		sourcePractitionerResource.addAddress().addLine("Source Practitioner Address Line").setCity("City")
@@ -147,7 +164,8 @@ public class PrivacyConsentTest {
 				.setValue("contact@sourceorgnization.org");
 		// recipient practitioner
 		recipientPractitionerResource.setId(new IdDt(recipientPractitionerId));
-		recipientPractitionerResource.addIdentifier().setSystem(uriPrefix + "2.16.840.1.113883.4.6").setValue("NPI of recipient provider");
+		recipientPractitionerResource.addIdentifier().setSystem(uriPrefix + "2.16.840.1.113883.4.6")
+				.setValue("NPI of recipient provider");
 		recipientPractitionerResource.getName().addFamily("Recipient Practitioner Last Name")
 				.addGiven("Recipient Practitioner Given Name").addSuffix("MD").addPrefix("Ms.");
 		recipientPractitionerResource.addAddress().addLine("Recipient Practitioner Address Line").setCity("City")
@@ -159,10 +177,10 @@ public class PrivacyConsentTest {
 		// populate contract
 		// set the id as a concatenated "OID.consentId"
 		consentAsContract.setId(new IdDt(iExHubDomainOid + "." + consentId));
-		consentAsContract.getIdentifier().setSystem(uriPrefix + iExHubDomainOid)
-				.setValue("consent GUID");
+		consentAsContract.getIdentifier().setSystem(uriPrefix + iExHubDomainOid).setValue("consent GUID");
 		consentAsContract.getType().setValueAsEnum(ContractTypeCodesEnum.DISCLOSURE);
-		consentAsContract.getActionReason().add(new CodeableConceptDt("http://hl7.org/fhir/contractsubtypecodes", "TREAT"));
+		consentAsContract.getActionReason()
+				.add(new CodeableConceptDt("http://hl7.org/fhir/contractsubtypecodes", "TREAT"));
 		DateTimeDt issuedDateTime = new DateTimeDt();
 		issuedDateTime.setValue(Calendar.getInstance().getTime());
 		consentAsContract.setIssued(issuedDateTime);
@@ -182,9 +200,11 @@ public class PrivacyConsentTest {
 		consentAsContract.getSubject().add(patientReference);
 		consentAsContract.getSignerFirstRep()
 				.setType(new CodingDt("http://hl7.org/fhir/contractsignertypecodes", "1.2.840.10065.1.12.1.7"));
-		consentAsContract.getSignerFirstRep().setSignature(testPatientResource.getNameFirstRep().getNameAsSingleString());
+		consentAsContract.getSignerFirstRep()
+				.setSignature(testPatientResource.getNameFirstRep().getNameAsSingleString());
 		consentAsContract.getSignerFirstRep().setParty(patientReference);
-		// add test patient as a contained resource rather than externalreference
+		// add test patient as a contained resource rather than
+		// externalreference
 		consentAsContract.getContained().getContainedResources().add(testPatientResource);
 		// set terms of consent and intended recipient(s)
 		PeriodDt applicablePeriod = new PeriodDt();
@@ -211,10 +231,10 @@ public class PrivacyConsentTest {
 		ListResource.Entry dischargeSummaryEntry = new ListResource.Entry();
 		// use list item flag to specify a category and the item to specify an
 		// instance (e.g. DocumentReference)
-		CodeableConceptDt dischargeSummaryCode = new CodeableConceptDt("urn:oid:2.16.840.1.113883.6.1", "18842-5");
+		CodeableConceptDt dischargeSummaryCode = new CodeableConceptDt("urn:oid:2.16.840.1.113883.5.25", "SDV");
 		// dischargeSummaryCode
-		dischargeSummaryCode.setText("Discharge Summary");
-		//dischargeSummaryEntry.setFlag(dischargeSummaryCode);
+		dischargeSummaryCode.setText("Sexual and domestic violence related");
+		// dischargeSummaryEntry.setFlag(dischargeSummaryCode);
 		Basic basicItem1 = new Basic();
 		basicItem1.setId(new IdDt("item1"));
 		basicItem1.setCode(dischargeSummaryCode);
@@ -227,9 +247,9 @@ public class PrivacyConsentTest {
 		// "34133-9" LOINC term is currently used as the Clinical Document
 		// code for both the Care Record Summary (CRS) and Continuity of Care
 		// Document (CCD).
-		CodeableConceptDt summaryNoteCode = new CodeableConceptDt("urn:oid:2.16.840.1.113883.6.1", "34133-9");
-		summaryNoteCode.setText("Summarization of Episode Note");
-		//summaryNoteEntry.setFlag(summaryNoteCode);
+		CodeableConceptDt summaryNoteCode = new CodeableConceptDt("urn:oid:2.16.840.1.113883.5.25", "PSY");
+		summaryNoteCode.setText("Psychiatry Related Data");
+		// summaryNoteEntry.setFlag(summaryNoteCode);
 		summaryNoteEntry.setDeleted(false);
 		Basic basicItem2 = new Basic();
 		basicItem2.setId("item2");
@@ -244,7 +264,7 @@ public class PrivacyConsentTest {
 		ListResource.Entry substanceAbuseRelatedEntry = new ListResource.Entry();
 		CodeableConceptDt substanceAbuseRelatedCode = new CodeableConceptDt("urn:oid:2.16.840.1.113883.5.25", "ETH");
 		substanceAbuseRelatedCode.setText("Substance Abuse Related Data");
-		//substanceAbuseRelatedEntry.setFlag(substanceAbuseRelatedCode);
+		// substanceAbuseRelatedEntry.setFlag(substanceAbuseRelatedCode);
 		Basic basicItem3 = new Basic();
 		basicItem3.setId("item3");
 		basicItem3.setCode(substanceAbuseRelatedCode);
@@ -259,29 +279,55 @@ public class PrivacyConsentTest {
 		consentAsContract.getContained().getContainedResources().add(basicItem1);
 		consentAsContract.getContained().getContainedResources().add(basicItem2);
 		consentAsContract.getContained().getContainedResources().add(basicItem3);
-		// Add the XACML policy
-		Rule xacmlPolicyRule = new Rule();
-		String xacmlPolicyStr = "<xacml/>";
-		xacmlPolicyStr = FileUtils.readFileToString(new File(testResourcesPath + "/XML/XACML_PrivacyConsentTest.xml")); //$NON-NLS-1$
-		//Base64BinaryDt xacmlPolicyXml64 =  new Base64BinaryDt(xacmlPolicyStr.getBytes());	
-		AttachmentDt xacmlAttachment = new AttachmentDt();
-		xacmlAttachment.setData(xacmlPolicyStr.getBytes());
-		xacmlPolicyRule.setContent(xacmlAttachment);
-		//xacmlPolicy.setContent("");
-		consentAsContract.addRule(xacmlPolicyRule);
+
 		// Use the narrative generator
 		// @TODO: add generator Thymeleaf templates
 		// ctxt.setNarrativeGenerator(new DefaultThymeleafNarrativeGenerator());
 		// Create XML and JSON files including generated narrative XHTML
-		String xmlEncodedGranularConsent = ctxt.newXmlParser().setPrettyPrint(true).encodeResourceToString(consentAsContract);
-		try {
-			FileUtils.writeStringToFile(new File(testResourcesPath + "/XML/" + currentTest + ".xml"),
-					xmlEncodedGranularConsent);
-		} catch (IOException e) {
+		String xmlEncodedGranularConsent = ctxt.newXmlParser().setPrettyPrint(true)
+				.encodeResourceToString(consentAsContract);
 
-			fail("Write resource to XML:" + e.getMessage());
+		File xmlEncodedGranularConsentFile = new File(testResourcesPath + "/XML/" + currentTest + ".xml");
+		try {
+			FileUtils.writeStringToFile(xmlEncodedGranularConsentFile, xmlEncodedGranularConsent);
+		} catch (IOException e) {
+			fail("Write Consent resource to XML:" + e.getMessage());
 		}
-		String jsonEncodedGranularConsent = ctxt.newJsonParser().setPrettyPrint(true).encodeResourceToString(consentAsContract);
+		// transform consent to XACML and add XACML to the Contract.Rule
+		File xformFile = new File(testResourcesPath + "/XSLT/" + "FHIR2XACML.xsl");
+		TransformerFactory factory = TransformerFactory.newInstance();
+		Source xform = new StreamSource(xformFile);
+		Transformer transformer;
+		try {
+			transformer = factory.newTransformer(xform);
+			//transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+			transformer.setOutputProperty(OutputKeys.METHOD, "xml");	
+			Source consentResourceSource = new StreamSource(xmlEncodedGranularConsentFile);
+			File testXacmlFile = new File(testResourcesPath + "/XML/xacml.xml");
+	        transformer.transform(consentResourceSource, new StreamResult(testXacmlFile));
+	        String xacmlPolicyStr = FileUtils.readFileToString(testXacmlFile, "UTF-8");
+			// Add the XACML policy to Consent resource
+			Rule xacmlPolicyRule = new Rule();
+			AttachmentDt xacmlAttachment = new AttachmentDt();
+			xacmlAttachment.setData(xacmlPolicyStr.getBytes());
+			xacmlPolicyRule.setContent(xacmlAttachment);
+			consentAsContract.addRule(xacmlPolicyRule);
+
+		} catch (Exception e1) {
+			fail("Create XACML policy from Consent: " + e1.getMessage());
+			e1.printStackTrace();
+
+		}
+		// write Consent + XACML
+		xmlEncodedGranularConsent = ctxt.newXmlParser().setPrettyPrint(true).encodeResourceToString(consentAsContract);
+		try {
+			FileUtils.writeStringToFile(xmlEncodedGranularConsentFile, xmlEncodedGranularConsent);
+		} catch (IOException e) {
+			fail("Write resource to XML + XACML:" + e.getMessage());
+		}
+
+		String jsonEncodedGranularConsent = ctxt.newJsonParser().setPrettyPrint(true)
+				.encodeResourceToString(consentAsContract);
 		try {
 			FileUtils.writeStringToFile(new File(testResourcesPath + "/JSON/" + currentTest + ".json"),
 					jsonEncodedGranularConsent);
@@ -322,15 +368,15 @@ public class PrivacyConsentTest {
 					break;
 				}
 			}
-			//read XACML from Contract.Rule
+			// read XACML from Contract.Rule
 			Rule xacmlFromFileRule = consentFromFile.getRule().get(0);
-			AttachmentDt xacmlPolicyAttachment = (AttachmentDt)xacmlFromFileRule.getContent();
-			byte[] xacmlPoicyByteArray =  xacmlPolicyAttachment.getData() ; 
-			System.out.println(new String(xacmlPoicyByteArray));
-			//subjectPatientResource.getContained().getContainedResources().add(sourceOrganizationResource);
-			//ResourceReferenceDt sourceIdRef = new ResourceReferenceDt();
-			//sourceIdRef.setReference("#"+sourceOrganizationId);
-			//subjectPatientResource.getCareProvider().add(sourceIdRef);
+			AttachmentDt xacmlPolicyAttachment = (AttachmentDt) xacmlFromFileRule.getContent();
+			byte[] xacmlPolicyByteArray = xacmlPolicyAttachment.getData();
+			System.out.println(new String(xacmlPolicyByteArray));
+			// subjectPatientResource.getContained().getContainedResources().add(sourceOrganizationResource);
+			// ResourceReferenceDt sourceIdRef = new ResourceReferenceDt();
+			// sourceIdRef.setReference("#"+sourceOrganizationId);
+			// subjectPatientResource.getCareProvider().add(sourceIdRef);
 
 		}
 
