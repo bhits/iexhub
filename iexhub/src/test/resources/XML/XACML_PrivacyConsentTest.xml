@@ -3,7 +3,7 @@
         PolicyId="Consent GUID"
         RuleCombiningAlgId="urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:permit-overrides">
    <Description>
-				Sample consent output transformed from FHIR Consent</Description>
+      Sample consent output transformed from FHIR Consent</Description>
    <Target/>
    <Rule Effect="Permit" RuleId="primary-group-rule">
       <Target>
@@ -98,14 +98,14 @@
          </Apply>
       </Condition>
    </Rule>
-   <!-- Similar to the "legal" consent, this list identifies the protected information permitted for disclosure. 
-      Each type of informatiaon has a value set defining that type of information (e.g. substance abuse related, HIV related). 
+   <!-- Similar to the "legal" consent, this list identifies the protected information permitted for disclosure.
+      Each type of informatiaon has a value set defining that type of information (e.g. substance abuse related, HIV related).
       Unless listed here, protected information will be redacted. What constitutes protected information may differ from site-to-site.
       42 CFR will be applicable in all cases.
    -->
    <Rule Effect="Permit" RuleId="Protected-Data-To-Be-Shared"/>
    <Obligations>
-        <Obligation ObligationId="urn:samhsa:names:tc:consent2share:1.0:obligation:redact-document-section-code"
+      <Obligation ObligationId="urn:samhsa:names:tc:consent2share:1.0:obligation:redact-document-section-code"
                   FulfillOn="Permit">
          <AttributeAssignment AttributeId="urn:oasis:names:tc:xacml:3.0:example:attribute:text"
                               DataType="http://www.w3.org/2001/XMLSchema#string">ETH</AttributeAssignment>
@@ -114,6 +114,6 @@
                   FulfillOn="Permit">
          <AttributeAssignment AttributeId="urn:oasis:names:tc:xacml:3.0:example:attribute:text"
                               DataType="http://www.w3.org/2001/XMLSchema#string">HIV</AttributeAssignment>
-      </Obligation>      
+      </Obligation>
    </Obligations>
 </Policy>

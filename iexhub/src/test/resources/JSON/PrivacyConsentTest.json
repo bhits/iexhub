@@ -353,7 +353,11 @@
         "system":"urn:oid:2.16.840.1.113883.3.72.5.9.1",
         "value":"consent GUID"
     },
+<<<<<<< HEAD
     "issued":"2016-06-27T23:36:30-04:00",
+=======
+    "issued":"2016-06-27T17:04:23-04:00",
+>>>>>>> 4fe707ef1574a11df350119da10aa7daa617cf13
     "subject":[
         {
             "reference":"#patientId"
