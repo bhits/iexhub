@@ -1,6 +1,6 @@
 package org.iexhub.services.test;
 
-<<<<<<< HEAD
+
 import static org.junit.Assert.*;
 
 import java.io.ByteArrayOutputStream;
@@ -68,29 +68,7 @@ import ca.uhn.fhir.narrative.DefaultThymeleafNarrativeGenerator;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.client.IGenericClient;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
-=======
-import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.composite.*;
-import ca.uhn.fhir.model.dstu2.resource.*;
-import ca.uhn.fhir.model.dstu2.resource.Contract.Rule;
-import ca.uhn.fhir.model.dstu2.resource.Organization.Contact;
-import ca.uhn.fhir.model.dstu2.valueset.*;
-import ca.uhn.fhir.model.primitive.DateDt;
-import ca.uhn.fhir.model.primitive.DateTimeDt;
-import ca.uhn.fhir.model.primitive.IdDt;
-import org.apache.commons.io.FileUtils;
-import org.hl7.fhir.instance.model.api.IBaseResource;
-import org.junit.*;
-import org.junit.Test;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
->>>>>>> 4fe707ef1574a11df350119da10aa7daa617cf13
+;
 
 public class PrivacyConsentTest {
 	// FHIR resource identifiers for contained objects
@@ -201,17 +179,12 @@ public class PrivacyConsentTest {
 		// populate contract
 		// set the id as a concatenated "OID.consentId"
 		consentAsContract.setId(new IdDt(iExHubDomainOid + "." + consentId));
-<<<<<<< HEAD
+
 		consentAsContract.getIdentifier().setSystem(uriPrefix + iExHubDomainOid).setValue("consent GUID");
 		consentAsContract.getType().setValueAsEnum(ContractTypeCodesEnum.DISCLOSURE);
 		consentAsContract.getActionReason()
 				.add(new CodeableConceptDt("http://hl7.org/fhir/contractsubtypecodes", "TREAT"));
-=======
-		consentAsContract.getIdentifier().setSystem(uriPrefix + iExHubDomainOid)
-				.setValue("consent GUID");
-		consentAsContract.getType().setValueAsEnum(ContractTypeCodesEnum.DISCLOSURE);
-		consentAsContract.getActionReason().add(new CodeableConceptDt("http://hl7.org/fhir/contractsubtypecodes", "TREAT"));
->>>>>>> 4fe707ef1574a11df350119da10aa7daa617cf13
+
 		DateTimeDt issuedDateTime = new DateTimeDt();
 		issuedDateTime.setValue(Calendar.getInstance().getTime());
 		consentAsContract.setIssued(issuedDateTime);
@@ -231,17 +204,13 @@ public class PrivacyConsentTest {
 		consentAsContract.getSubject().add(patientReference);
 		consentAsContract.getSignerFirstRep()
 				.setType(new CodingDt("http://hl7.org/fhir/contractsignertypecodes", "1.2.840.10065.1.12.1.7"));
-<<<<<<< HEAD
+
 		consentAsContract.getSignerFirstRep()
 				.setSignature(testPatientResource.getNameFirstRep().getNameAsSingleString());
 		consentAsContract.getSignerFirstRep().setParty(patientReference);
 		// add test patient as a contained resource rather than
-		// externalreference
-=======
-		consentAsContract.getSignerFirstRep().setSignature(testPatientResource.getNameFirstRep().getNameAsSingleString());
-		consentAsContract.getSignerFirstRep().setParty(patientReference);
-		// add test patient as a contained resource rather than externalreference
->>>>>>> 4fe707ef1574a11df350119da10aa7daa617cf13
+		// external reference
+
 		consentAsContract.getContained().getContainedResources().add(testPatientResource);
 		// set terms of consent and intended recipient(s)
 		PeriodDt applicablePeriod = new PeriodDt();
@@ -316,32 +285,14 @@ public class PrivacyConsentTest {
 		consentAsContract.getContained().getContainedResources().add(basicItem1);
 		consentAsContract.getContained().getContainedResources().add(basicItem2);
 		consentAsContract.getContained().getContainedResources().add(basicItem3);
-<<<<<<< HEAD
 
-=======
-		// Add the XACML policy
-		Rule xacmlPolicyRule = new Rule();
-		String xacmlPolicyStr = "<xacml/>";
-		xacmlPolicyStr = FileUtils.readFileToString(new File(testResourcesPath + "/XML/XACML_PrivacyConsentTest.xml")); //$NON-NLS-1$
-		//Base64BinaryDt xacmlPolicyXml64 =  new Base64BinaryDt(xacmlPolicyStr.getBytes());
-		AttachmentDt xacmlAttachment = new AttachmentDt();
-		xacmlAttachment.setData(xacmlPolicyStr.getBytes());
-		xacmlPolicyRule.setContent(xacmlAttachment);
-		//xacmlPolicy.setContent("");
-		consentAsContract.addRule(xacmlPolicyRule);
->>>>>>> 4fe707ef1574a11df350119da10aa7daa617cf13
 		// Use the narrative generator
 		// @TODO: add generator Thymeleaf templates
 		// ctxt.setNarrativeGenerator(new DefaultThymeleafNarrativeGenerator());
 		// Create XML and JSON files including generated narrative XHTML
-<<<<<<< HEAD
 		String xmlEncodedGranularConsent = ctxt.newXmlParser().setPrettyPrint(true)
 				.encodeResourceToString(consentAsContract);
-
 		File xmlEncodedGranularConsentFile = new File(testResourcesPath + "/XML/" + currentTest + ".xml");
-=======
-		String xmlEncodedGranularConsent = ctxt.newXmlParser().setPrettyPrint(true).encodeResourceToString(consentAsContract);
->>>>>>> 4fe707ef1574a11df350119da10aa7daa617cf13
 		try {
 			FileUtils.writeStringToFile(xmlEncodedGranularConsentFile, xmlEncodedGranularConsent);
 		} catch (IOException e) {
@@ -366,13 +317,11 @@ public class PrivacyConsentTest {
 			xacmlAttachment.setData(xacmlPolicyStr.getBytes());
 			xacmlPolicyRule.setContent(xacmlAttachment);
 			consentAsContract.addRule(xacmlPolicyRule);
-
 		} catch (Exception e1) {
 			fail("Create XACML policy from Consent: " + e1.getMessage());
 			e1.printStackTrace();
-
 		}
-<<<<<<< HEAD
+
 		// write Consent + XACML
 		xmlEncodedGranularConsent = ctxt.newXmlParser().setPrettyPrint(true).encodeResourceToString(consentAsContract);
 		try {
@@ -383,9 +332,7 @@ public class PrivacyConsentTest {
 
 		String jsonEncodedGranularConsent = ctxt.newJsonParser().setPrettyPrint(true)
 				.encodeResourceToString(consentAsContract);
-=======
-		String jsonEncodedGranularConsent = ctxt.newJsonParser().setPrettyPrint(true).encodeResourceToString(consentAsContract);
->>>>>>> 4fe707ef1574a11df350119da10aa7daa617cf13
+
 		try {
 			FileUtils.writeStringToFile(new File(testResourcesPath + "/JSON/" + currentTest + ".json"),
 					jsonEncodedGranularConsent);
@@ -426,7 +373,7 @@ public class PrivacyConsentTest {
 					break;
 				}
 			}
-<<<<<<< HEAD
+
 			// read XACML from Contract.Rule
 			Rule xacmlFromFileRule = consentFromFile.getRule().get(0);
 			AttachmentDt xacmlPolicyAttachment = (AttachmentDt) xacmlFromFileRule.getContent();
@@ -436,17 +383,6 @@ public class PrivacyConsentTest {
 			// ResourceReferenceDt sourceIdRef = new ResourceReferenceDt();
 			// sourceIdRef.setReference("#"+sourceOrganizationId);
 			// subjectPatientResource.getCareProvider().add(sourceIdRef);
-=======
-			//read XACML from Contract.Rule
-			Rule xacmlFromFileRule = consentFromFile.getRule().get(0);
-			AttachmentDt xacmlPolicyAttachment = (AttachmentDt)xacmlFromFileRule.getContent();
-			byte[] xacmlPoicyByteArray =  xacmlPolicyAttachment.getData() ;
-			System.out.println(new String(xacmlPoicyByteArray));
-			//subjectPatientResource.getContained().getContainedResources().add(sourceOrganizationResource);
-			//ResourceReferenceDt sourceIdRef = new ResourceReferenceDt();
-			//sourceIdRef.setReference("#"+sourceOrganizationId);
-			//subjectPatientResource.getCareProvider().add(sourceIdRef);
->>>>>>> 4fe707ef1574a11df350119da10aa7daa617cf13
 
 		}
 
