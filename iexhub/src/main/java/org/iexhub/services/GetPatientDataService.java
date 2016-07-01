@@ -29,10 +29,7 @@ import static java.nio.file.Files.readAllBytes;
 import static java.nio.file.Paths.get;
 
 import javax.activation.DataHandler;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -67,6 +64,8 @@ import org.iexhub.services.client.DocumentRegistry_ServiceStub.RegistryError_typ
 import org.iexhub.services.client.DocumentRegistry_ServiceStub.RegistryObjectListType;
 import org.iexhub.services.client.DocumentRepository_ServiceStub.DocumentResponse_type0;
 import org.iexhub.services.client.DocumentRepository_ServiceStub.RetrieveDocumentSetResponse;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.openhealthtools.mdht.mdmi.Mdmi;
 import org.openhealthtools.mdht.mdmi.MdmiConfig;
 import org.openhealthtools.mdht.mdmi.MdmiMessage;
@@ -198,7 +197,6 @@ public class GetPatientDataService
 			{
 				MultivaluedMap<String, String> headerParams = headers.getRequestHeaders();
 				String ssoAuth = headerParams.getFirst("ssoauth");
-
 				log.info("HTTP headers successfully retrieved");
 				
 				// Extract patient ID, query start date, and query end date.  Expected format from the client is
@@ -511,7 +509,300 @@ public class GetPatientDataService
 //		return Response.status(Response.Status.OK).entity(patientDataResponse).type(MediaType.APPLICATION_JSON).build();
 		return Response.status(Response.Status.OK).entity(jsonOutput.toString()).type(MediaType.APPLICATION_JSON).build();
 	}
-	
+
+
+	@GET
+	@Produces({MediaType.APPLICATION_JSON})
+	@Path("/ccd")
+	public Response getCCD(@Context HttpHeaders headers)
+	{
+		log.info("Entered getPatientData service");
+
+		boolean tls = false;
+		if (props == null)
+		{
+			try
+			{
+				props = new Properties();
+				props.load(new FileInputStream(propertiesFile));
+				tls = (props.getProperty("XdsBRegistryEndpointURI") == null) ? false
+						: ((props.getProperty("XdsBRegistryEndpointURI").toLowerCase().contains("https") ? true
+						: false));
+				GetPatientDataService.testMode = (props.getProperty("TestMode") == null) ? GetPatientDataService.testMode
+						: Boolean.parseBoolean(props.getProperty("TestMode"));
+				GetPatientDataService.testJSONDocumentPathname = (props.getProperty("TestJSONDocumentPathname") == null) ? GetPatientDataService.testJSONDocumentPathname
+						: props.getProperty("TestJSONDocumentPathname");
+				GetPatientDataService.cdaToJsonTransformXslt = (props.getProperty("CDAToJSONTransformXSLT") == null) ? GetPatientDataService.cdaToJsonTransformXslt
+						: props.getProperty("CDAToJSONTransformXSLT");
+				GetPatientDataService.iExHubDomainOid = (props.getProperty("IExHubDomainOID") == null) ? GetPatientDataService.iExHubDomainOid
+						: props.getProperty("IExHubDomainOID");
+				GetPatientDataService.iExHubAssigningAuthority = (props.getProperty("IExHubAssigningAuthority") == null) ? GetPatientDataService.iExHubAssigningAuthority
+						: props.getProperty("IExHubAssigningAuthority");
+				GetPatientDataService.xdsBRepositoryUniqueId = (props.getProperty("XdsBRepositoryUniqueId") == null) ? GetPatientDataService.xdsBRepositoryUniqueId
+						: props.getProperty("XdsBRepositoryUniqueId");
+			}
+			catch (IOException e)
+			{
+				log.error("Error encountered loading properties file, "
+						+ propertiesFile
+						+ ", "
+						+ e.getMessage());
+				throw new UnexpectedServerException("Error encountered loading properties file, "
+						+ propertiesFile
+						+ ", "
+						+ e.getMessage());
+			}
+		}
+
+		String retVal = "";
+		GetPatientDataResponse patientDataResponse = new GetPatientDataResponse();
+		StringBuilder jsonOutput = new StringBuilder();
+		JSONObject jsonDocuments =  new JSONObject();
+		JSONArray jsonDocList = new JSONArray();
+
+		if (!testMode)
+		{
+			try
+			{
+				if (xdsB == null)
+				{
+					log.info("Instantiating XdsB connector...");
+					xdsB = new XdsB(null,
+							null,
+							tls);
+					log.info("XdsB connector successfully started");
+				}
+			}
+			catch (Exception e)
+			{
+				log.error("Error encountered instantiating XdsB connector, "
+						+ e.getMessage());
+				throw new UnexpectedServerException("Error - " + e.getMessage());
+			}
+
+			try
+			{
+				MultivaluedMap<String, String> headerParams = headers.getRequestHeaders();
+				String ssoAuth = headerParams.getFirst("ssoauth");
+
+				log.info("HTTP headers successfully retrieved");
+				// Extract patient ID, query start date, and query end date.  Expected format from the client is
+				//   "PatientId={0}&LastName={1}&FirstName={2}&MiddleName={3}&DateOfBirth={4}&PatientGender={5}&MotherMaidenName={6}&AddressStreet={7}&AddressCity={8}&AddressState={9}&AddressPostalCode={10}&OtherIDsScopingOrganization={11}&StartDate={12}&EndDate={13}"
+				String[] splitPatientId = ssoAuth.split("&LastName=");
+				String patientId = (splitPatientId[0].split("=").length == 2) ? splitPatientId[0].split("=")[1] : null;
+
+				String[] parts = splitPatientId[1].split("&");
+				String lastName = (parts[0].length() > 0) ? parts[0] : null;
+				String firstName = (parts[1].split("=").length == 2) ? parts[1].split("=")[1] : null;
+				String middleName = (parts[2].split("=").length == 2) ? parts[2].split("=")[1] : null;
+				String dateOfBirth = (parts[3].split("=").length == 2) ? parts[3].split("=")[1] : null;
+				String gender = (parts[4].split("=").length == 2) ? parts[4].split("=")[1] : null;
+				String motherMaidenName = (parts[5].split("=").length == 2) ? parts[5].split("=")[1] : null;
+				String addressStreet = (parts[6].split("=").length == 2) ? parts[6].split("=")[1] : null;
+				String addressCity = (parts[7].split("=").length == 2) ? parts[7].split("=")[1] : null;
+				String addressState = (parts[8].split("=").length == 2) ? parts[8].split("=")[1] : null;
+				String addressPostalCode = (parts[9].split("=").length == 2) ? parts[9].split("=")[1] : null;
+				String otherIDsScopingOrganization = (parts[10].split("=").length == 2) ? parts[10].split("=")[1] : null;
+				String startDate = (parts[11].split("=").length == 2) ? parts[11].split("=")[1] : null;
+				String endDate = (parts[12].split("=").length == 2) ? parts[12].split("=")[1] : null;
+
+				log.info("HTTP headers successfully parsed, now calling XdsB registry...");
+
+				// Determine if a complete patient ID (including OID and ISO specification) was provided.  If not, then append IExHubDomainOid
+				//   and IExAssigningAuthority...
+				if (!patientId.contains("^^^&"))
+				{
+					patientId = "'" + patientId + "^^^&" + GetPatientDataService.iExHubDomainOid + "&" + GetPatientDataService.iExHubAssigningAuthority + "'";
+				}
+
+//				if (!patientId.startsWith("'"))
+//				{
+//					patientId = "'" + patientId;
+//				}
+//
+//				if (!patientId.endsWith("'"))
+//				{
+//					patientId += "'";
+//				}
+
+				AdhocQueryResponse registryResponse = xdsB.registryStoredQuery(patientId,
+						(startDate != null) ? DateFormat.getDateInstance().format(startDate) : null,
+						(endDate != null) ? DateFormat.getDateInstance().format(endDate) : null);
+
+				log.info("Call to XdsB registry successful");
+
+				// Determine if registry server returned any errors...
+				if ((registryResponse.getRegistryErrorList() != null) &&
+						(registryResponse.getRegistryErrorList().getRegistryError().length > 0))
+				{
+
+					for (RegistryError_type0 error : registryResponse.getRegistryErrorList().getRegistryError())
+					{
+						StringBuilder errorText = new StringBuilder();
+						if (error.getErrorCode() != null)
+						{
+							errorText.append("Error code=" + error.getErrorCode() + "\n");
+						}
+						if (error.getCodeContext() != null)
+						{
+							errorText.append("Error code context=" + error.getCodeContext() + "\n");
+						}
+
+						// Error code location (i.e., stack trace) only to be logged to IExHub error file
+						patientDataResponse.getErrorMsgs().add(errorText.toString());
+
+						if (error.getLocation() != null)
+						{
+							errorText.append("Error location=" + error.getLocation());
+						}
+
+						log.error(errorText.toString());
+					}
+				}
+
+				// Try to retrieve documents...
+				RegistryObjectListType registryObjectList = registryResponse.getRegistryObjectList();
+				IdentifiableType[] documentObjects = registryObjectList.getIdentifiable();
+				if ((documentObjects != null) &&
+						(documentObjects.length > 0))
+				{
+					log.info("Documents found in the registry, retrieving them from the repository...");
+
+					HashMap<String, String> documents = new HashMap<String, String>();
+					for (IdentifiableType identifiable : documentObjects)
+					{
+						if (identifiable.getClass().equals(ExtrinsicObjectType.class))
+						{
+							// Determine if the "home" attribute (homeCommunityId in XCA parlance) is present...
+							String home = ((((ExtrinsicObjectType)identifiable).getHome() != null) && (((ExtrinsicObjectType)identifiable).getHome().getPath().length() > 0)) ? ((ExtrinsicObjectType)identifiable).getHome().getPath()
+									: null;
+
+							ExternalIdentifierType[] externalIdentifiers = ((ExtrinsicObjectType)identifiable).getExternalIdentifier();
+
+							// Find the ExternalIdentifier that has the "XDSDocumentEntry.uniqueId" value...
+							String uniqueId = null;
+							for (ExternalIdentifierType externalIdentifier : externalIdentifiers)
+							{
+								String val = externalIdentifier.getName().getInternationalStringTypeSequence()[0].getLocalizedString().getValue().getFreeFormText();
+								if ((val != null) &&
+										(val.compareToIgnoreCase("XDSDocumentEntry.uniqueId") == 0))
+								{
+									log.info("Located XDSDocumentEntry.uniqueId ExternalIdentifier, uniqueId="
+											+ uniqueId);
+									uniqueId = externalIdentifier.getValue().getLongName();
+									break;
+								}
+							}
+
+							if (uniqueId != null)
+							{
+								documents.put(uniqueId,
+										home);
+								log.info("Document ID added: "
+										+ uniqueId
+										+ ", homeCommunityId: "
+										+ home);
+							}
+						}
+						else
+						{
+							String home = ((identifiable.getHome() != null) && (identifiable.getHome().getPath().length() > 0)) ? identifiable.getHome().getPath()
+									: null;
+							documents.put(identifiable.getId().getPath(),
+									home);
+							log.info("Document ID added: "
+									+ identifiable.getId().getPath()
+									+ ", homeCommunityId: "
+									+ home);
+						}
+					}
+
+					log.info("Invoking XdsB repository connector retrieval...");
+					RetrieveDocumentSetResponse documentSetResponse = xdsB.retrieveDocumentSet(xdsBRepositoryUniqueId,
+							documents,
+							patientId);
+					log.info("XdsB repository connector retrieval succeeded");
+
+					// Invoke appropriate map(s) to process documents in documentSetResponse...
+					if (documentSetResponse.getRetrieveDocumentSetResponse().getRetrieveDocumentSetResponseTypeSequence_type0() != null)
+					{
+						DocumentResponse_type0[] docResponseArray = documentSetResponse.getRetrieveDocumentSetResponse().getRetrieveDocumentSetResponseTypeSequence_type0().getDocumentResponse();
+						if (docResponseArray != null)
+						{
+//							jsonOutput.append("{\"Documents\":[");
+//							boolean first = true;
+							try
+							{
+								for (DocumentResponse_type0 document : docResponseArray)
+								{
+//									if (!first)
+//									{
+//										jsonOutput.append(",");
+//									}
+//									first = false;
+
+									log.info("Processing document ID="
+											+ document.getDocumentUniqueId().getLongName());
+
+									String mimeType = docResponseArray[0].getMimeType().getLongName();
+									if (mimeType.compareToIgnoreCase("text/xml") == 0)
+									{
+										String filename = "test/" + document.getDocumentUniqueId().getLongName() + ".xml";
+										log.info("Persisting document to filesystem, filename="
+												+ filename);
+										DataHandler dh = document.getDocument();
+										jsonDocList.put(dh.getContent().toString());
+									}
+									else
+									{
+										patientDataResponse.getErrorMsgs().add("Document retrieved is not XML - document ID="
+												+ document.getDocumentUniqueId().getLongName());
+									}
+								}
+							}
+							catch (Exception e)
+							{
+								log.error("Error encountered, "
+										+ e.getMessage());
+								throw e;
+							}
+						}
+					}
+
+//					if (jsonOutput.length() > 0)
+//					{
+//						jsonOutput.append("]}");
+//					}
+				}
+			}
+			catch (Exception e)
+			{
+				log.error("Error encountered, "
+						+ e.getMessage());
+				throw new UnexpectedServerException("Error - " + e.getMessage());
+			}
+		}
+		else
+		{
+			// Return canned document for sprint #16 demo.  Sprint #17 will return JSON created by MDMI map (code below outside of this block).
+			try
+			{
+				retVal = FileUtils.readFileToString(new File(GetPatientDataService.testJSONDocumentPathname));
+				return Response.status(Response.Status.OK).entity(retVal).type(MediaType.APPLICATION_JSON).build();
+			}
+			catch (Exception e)
+			{
+				throw new UnexpectedServerException("Error - " + e.getMessage());
+			}
+		}
+
+		jsonDocuments.put("documents", jsonDocList);
+
+		System.out.println(jsonDocuments);
+//		return Response.status(Response.Status.OK).entity(patientDataResponse).type(MediaType.APPLICATION_JSON).build();
+		return Response.status(Response.Status.OK).entity(jsonDocuments).type(MediaType.APPLICATION_JSON).build();
+	}
+
 	private String invokeMap(String sourceFilename)
 	{
 		String trgMap = "test/PatientPortalMap.xmi";
