@@ -64,6 +64,7 @@ import org.iexhub.services.client.DocumentRegistry_ServiceStub.RegistryError_typ
 import org.iexhub.services.client.DocumentRegistry_ServiceStub.RegistryObjectListType;
 import org.iexhub.services.client.DocumentRepository_ServiceStub.DocumentResponse_type0;
 import org.iexhub.services.client.DocumentRepository_ServiceStub.RetrieveDocumentSetResponse;
+import org.iexhub.services.dto.DocumentsResponseDto;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.openhealthtools.mdht.mdmi.Mdmi;
@@ -512,8 +513,8 @@ public class GetPatientDataService
 
 
 	@GET
-	@Produces({MediaType.APPLICATION_JSON})
 	@Path("/ccd")
+	@Produces({MediaType.APPLICATION_JSON})
 	public Response getCCD(@Context HttpHeaders headers)
 	{
 		log.info("Entered getPatientData service");
@@ -543,23 +544,15 @@ public class GetPatientDataService
 			}
 			catch (IOException e)
 			{
-				log.error("Error encountered loading properties file, "
-						+ propertiesFile
-						+ ", "
-						+ e.getMessage());
-				throw new UnexpectedServerException("Error encountered loading properties file, "
-						+ propertiesFile
-						+ ", "
-						+ e.getMessage());
+				log.error("Error encountered loading properties file, "+ propertiesFile + ", " + e.getMessage());
+				throw new UnexpectedServerException("Error encountered loading properties file, " + propertiesFile + ", " + e.getMessage());
 			}
 		}
 
 		String retVal = "";
 		GetPatientDataResponse patientDataResponse = new GetPatientDataResponse();
-		StringBuilder jsonOutput = new StringBuilder();
-		JSONObject jsonDocuments =  new JSONObject();
-		JSONArray jsonDocList = new JSONArray();
-
+		DocumentsResponseDto documentsResponseDto = new DocumentsResponseDto();
+		ArrayList<String> documentsAsStr = new ArrayList<>();
 		if (!testMode)
 		{
 			try
@@ -567,16 +560,13 @@ public class GetPatientDataService
 				if (xdsB == null)
 				{
 					log.info("Instantiating XdsB connector...");
-					xdsB = new XdsB(null,
-							null,
-							tls);
+					xdsB = new XdsB(null,null, tls);
 					log.info("XdsB connector successfully started");
 				}
 			}
 			catch (Exception e)
 			{
-				log.error("Error encountered instantiating XdsB connector, "
-						+ e.getMessage());
+				log.error("Error encountered instantiating XdsB connector, " + e.getMessage());
 				throw new UnexpectedServerException("Error - " + e.getMessage());
 			}
 
@@ -615,16 +605,6 @@ public class GetPatientDataService
 					patientId = "'" + patientId + "^^^&" + GetPatientDataService.iExHubDomainOid + "&" + GetPatientDataService.iExHubAssigningAuthority + "'";
 				}
 
-//				if (!patientId.startsWith("'"))
-//				{
-//					patientId = "'" + patientId;
-//				}
-//
-//				if (!patientId.endsWith("'"))
-//				{
-//					patientId += "'";
-//				}
-
 				AdhocQueryResponse registryResponse = xdsB.registryStoredQuery(patientId,
 						(startDate != null) ? DateFormat.getDateInstance().format(startDate) : null,
 						(endDate != null) ? DateFormat.getDateInstance().format(endDate) : null);
@@ -632,30 +612,23 @@ public class GetPatientDataService
 				log.info("Call to XdsB registry successful");
 
 				// Determine if registry server returned any errors...
-				if ((registryResponse.getRegistryErrorList() != null) &&
-						(registryResponse.getRegistryErrorList().getRegistryError().length > 0))
-				{
+				if ((registryResponse.getRegistryErrorList() != null) && (registryResponse.getRegistryErrorList().getRegistryError().length > 0)) {
 
-					for (RegistryError_type0 error : registryResponse.getRegistryErrorList().getRegistryError())
-					{
+					for (RegistryError_type0 error : registryResponse.getRegistryErrorList().getRegistryError()) {
 						StringBuilder errorText = new StringBuilder();
-						if (error.getErrorCode() != null)
-						{
+						if (error.getErrorCode() != null) {
 							errorText.append("Error code=" + error.getErrorCode() + "\n");
 						}
-						if (error.getCodeContext() != null)
-						{
+						if (error.getCodeContext() != null) {
 							errorText.append("Error code context=" + error.getCodeContext() + "\n");
 						}
 
 						// Error code location (i.e., stack trace) only to be logged to IExHub error file
 						patientDataResponse.getErrorMsgs().add(errorText.toString());
 
-						if (error.getLocation() != null)
-						{
+						if (error.getLocation() != null) {
 							errorText.append("Error location=" + error.getLocation());
 						}
-
 						log.error(errorText.toString());
 					}
 				}
@@ -663,9 +636,7 @@ public class GetPatientDataService
 				// Try to retrieve documents...
 				RegistryObjectListType registryObjectList = registryResponse.getRegistryObjectList();
 				IdentifiableType[] documentObjects = registryObjectList.getIdentifiable();
-				if ((documentObjects != null) &&
-						(documentObjects.length > 0))
-				{
+				if ((documentObjects != null) && (documentObjects.length > 0)) {
 					log.info("Documents found in the registry, retrieving them from the repository...");
 
 					HashMap<String, String> documents = new HashMap<String, String>();
@@ -684,9 +655,7 @@ public class GetPatientDataService
 							for (ExternalIdentifierType externalIdentifier : externalIdentifiers)
 							{
 								String val = externalIdentifier.getName().getInternationalStringTypeSequence()[0].getLocalizedString().getValue().getFreeFormText();
-								if ((val != null) &&
-										(val.compareToIgnoreCase("XDSDocumentEntry.uniqueId") == 0))
-								{
+								if ((val != null) && (val.compareToIgnoreCase("XDSDocumentEntry.uniqueId") == 0)) {
 									log.info("Located XDSDocumentEntry.uniqueId ExternalIdentifier, uniqueId="
 											+ uniqueId);
 									uniqueId = externalIdentifier.getValue().getLongName();
@@ -694,33 +663,21 @@ public class GetPatientDataService
 								}
 							}
 
-							if (uniqueId != null)
-							{
-								documents.put(uniqueId,
-										home);
-								log.info("Document ID added: "
-										+ uniqueId
-										+ ", homeCommunityId: "
-										+ home);
+							if (uniqueId != null) {
+								documents.put(uniqueId, home);
+								log.info("Document ID added: " + uniqueId + ", homeCommunityId: " + home);
 							}
 						}
 						else
 						{
-							String home = ((identifiable.getHome() != null) && (identifiable.getHome().getPath().length() > 0)) ? identifiable.getHome().getPath()
-									: null;
-							documents.put(identifiable.getId().getPath(),
-									home);
-							log.info("Document ID added: "
-									+ identifiable.getId().getPath()
-									+ ", homeCommunityId: "
-									+ home);
+							String home = ((identifiable.getHome() != null) && (identifiable.getHome().getPath().length() > 0)) ? identifiable.getHome().getPath() : null;
+							documents.put(identifiable.getId().getPath(), home);
+							log.info("Document ID added: " + identifiable.getId().getPath() + ", homeCommunityId: " + home);
 						}
 					}
 
 					log.info("Invoking XdsB repository connector retrieval...");
-					RetrieveDocumentSetResponse documentSetResponse = xdsB.retrieveDocumentSet(xdsBRepositoryUniqueId,
-							documents,
-							patientId);
+					RetrieveDocumentSetResponse documentSetResponse = xdsB.retrieveDocumentSet(xdsBRepositoryUniqueId, documents, patientId);
 					log.info("XdsB repository connector retrieval succeeded");
 
 					// Invoke appropriate map(s) to process documents in documentSetResponse...
@@ -729,50 +686,33 @@ public class GetPatientDataService
 						DocumentResponse_type0[] docResponseArray = documentSetResponse.getRetrieveDocumentSetResponse().getRetrieveDocumentSetResponseTypeSequence_type0().getDocumentResponse();
 						if (docResponseArray != null)
 						{
-//							jsonOutput.append("{\"Documents\":[");
-//							boolean first = true;
 							try
 							{
 								for (DocumentResponse_type0 document : docResponseArray)
 								{
-//									if (!first)
-//									{
-//										jsonOutput.append(",");
-//									}
-//									first = false;
-
 									log.info("Processing document ID="
 											+ document.getDocumentUniqueId().getLongName());
 
 									String mimeType = docResponseArray[0].getMimeType().getLongName();
 									if (mimeType.compareToIgnoreCase("text/xml") == 0)
 									{
-										String filename = "test/" + document.getDocumentUniqueId().getLongName() + ".xml";
-										log.info("Persisting document to filesystem, filename="
-												+ filename);
 										DataHandler dh = document.getDocument();
-										jsonDocList.put(dh.getContent().toString());
+										String documentStr = dh.getContent().toString();
+										documentsAsStr.add(documentStr);
 									}
 									else
 									{
-										patientDataResponse.getErrorMsgs().add("Document retrieved is not XML - document ID="
-												+ document.getDocumentUniqueId().getLongName());
+										patientDataResponse.getErrorMsgs().add("Document retrieved is not XML - document ID=" + document.getDocumentUniqueId().getLongName());
 									}
 								}
 							}
 							catch (Exception e)
 							{
-								log.error("Error encountered, "
-										+ e.getMessage());
+								log.error("Error encountered, "+ e.getMessage());
 								throw e;
 							}
 						}
 					}
-
-//					if (jsonOutput.length() > 0)
-//					{
-//						jsonOutput.append("]}");
-//					}
 				}
 			}
 			catch (Exception e)
@@ -795,12 +735,10 @@ public class GetPatientDataService
 				throw new UnexpectedServerException("Error - " + e.getMessage());
 			}
 		}
+		documentsResponseDto.setDocuments(documentsAsStr);
 
-		jsonDocuments.put("documents", jsonDocList);
 
-		System.out.println(jsonDocuments);
-//		return Response.status(Response.Status.OK).entity(patientDataResponse).type(MediaType.APPLICATION_JSON).build();
-		return Response.status(Response.Status.OK).entity(jsonDocuments).type(MediaType.APPLICATION_JSON).build();
+		return Response.status(Response.Status.OK).entity(documentsResponseDto).type(MediaType.APPLICATION_JSON).build();
 	}
 
 	private String invokeMap(String sourceFilename)
