@@ -186,7 +186,7 @@ public class ResearchConsentTest {
 		// Create XML and JSON files including generated narrative XHTML
 		String xmlEncodedGranularConsent = ctxt.newXmlParser().setPrettyPrint(true).encodeResourceToString(contract);
 		try {
-			FileUtils.writeStringToFile(new File(testResourcesPath + "/XML/" + currentTest + ".xml"),
+			FileUtils.writeStringToFile(new File(testResourcesPath + "/XML/temp/" + currentTest + ".xml"),
 					xmlEncodedGranularConsent);
 		} catch (IOException e) {
 
@@ -194,7 +194,7 @@ public class ResearchConsentTest {
 		}
 		String jsonEncodedGranularConsent = ctxt.newJsonParser().setPrettyPrint(true).encodeResourceToString(contract);
 		try {
-			FileUtils.writeStringToFile(new File(testResourcesPath + "/JSON/" + currentTest + ".json"),
+			FileUtils.writeStringToFile(new File(testResourcesPath + "/JSON/temp/" + currentTest + ".json"),
 					jsonEncodedGranularConsent);
 		} catch (IOException e) {
 			fail("Write resource to JSON:" + e.getMessage());
@@ -203,7 +203,7 @@ public class ResearchConsentTest {
 		String readContractString = "";
 		try {
 			readContractString = FileUtils
-					.readFileToString(new File(testResourcesPath + "/XML/" + currentTest + ".xml"), "UTF-8");
+					.readFileToString(new File(testResourcesPath + "/XML/temp/" + currentTest + ".xml"), "UTF-8");
 		} catch (IOException e) {
 			fail("Reading resource from file error:" + e.getMessage());
 		}

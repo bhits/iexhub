@@ -292,7 +292,7 @@ public class PrivacyConsentTest {
 		// Create XML and JSON files including generated narrative XHTML
 		String xmlEncodedGranularConsent = ctxt.newXmlParser().setPrettyPrint(true)
 				.encodeResourceToString(consentAsContract);
-		File xmlEncodedGranularConsentFile = new File(testResourcesPath + "/XML/" + currentTest + ".xml");
+		File xmlEncodedGranularConsentFile = new File(testResourcesPath + "/XML/temp/" + currentTest + ".xml");
 		try {
 			FileUtils.writeStringToFile(xmlEncodedGranularConsentFile, xmlEncodedGranularConsent);
 		} catch (IOException e) {
@@ -308,7 +308,7 @@ public class PrivacyConsentTest {
 			//transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 			transformer.setOutputProperty(OutputKeys.METHOD, "xml");	
 			Source consentResourceSource = new StreamSource(xmlEncodedGranularConsentFile);
-			File testXacmlFile = new File(testResourcesPath + "/XML/xacml.xml");
+			File testXacmlFile = new File(testResourcesPath + "/XML/temp/xacml.xml");
 	        transformer.transform(consentResourceSource, new StreamResult(testXacmlFile));
 	        String xacmlPolicyStr = FileUtils.readFileToString(testXacmlFile, "UTF-8");
 			// Add the XACML policy to Consent resource
@@ -334,7 +334,7 @@ public class PrivacyConsentTest {
 				.encodeResourceToString(consentAsContract);
 
 		try {
-			FileUtils.writeStringToFile(new File(testResourcesPath + "/JSON/" + currentTest + ".json"),
+			FileUtils.writeStringToFile(new File(testResourcesPath + "/JSON/temp/" + currentTest + ".json"),
 					jsonEncodedGranularConsent);
 		} catch (IOException e) {
 			fail("Write resource to JSON:" + e.getMessage());
@@ -343,7 +343,7 @@ public class PrivacyConsentTest {
 		String readContractString = "";
 		try {
 			readContractString = FileUtils
-					.readFileToString(new File(testResourcesPath + "/XML/" + currentTest + ".xml"), "UTF-8");
+					.readFileToString(new File(testResourcesPath + "/XML/temp/" + currentTest + ".xml"), "UTF-8");
 		} catch (IOException e) {
 			fail("Reading resource from file error:" + e.getMessage());
 		}
@@ -378,7 +378,7 @@ public class PrivacyConsentTest {
 			Rule xacmlFromFileRule = consentFromFile.getRule().get(0);
 			AttachmentDt xacmlPolicyAttachment = (AttachmentDt) xacmlFromFileRule.getContent();
 			byte[] xacmlPolicyByteArray = xacmlPolicyAttachment.getData();
-			System.out.println(new String(xacmlPolicyByteArray));
+			//System.out.println(new String(xacmlPolicyByteArray));
 			// subjectPatientResource.getContained().getContainedResources().add(sourceOrganizationResource);
 			// ResourceReferenceDt sourceIdRef = new ResourceReferenceDt();
 			// sourceIdRef.setReference("#"+sourceOrganizationId);
