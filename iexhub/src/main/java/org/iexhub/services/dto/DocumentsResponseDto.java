@@ -5,13 +5,13 @@ import java.util.ArrayList;
 
 public class DocumentsResponseDto {
 
-    private ArrayList<String> documents;
+    private ArrayList<PatientDocument> documents;
 
-    public ArrayList<String> getDocuments() {
+    public ArrayList<PatientDocument> getDocuments() {
         return this.documents;
     }
 
-    public void setDocuments(ArrayList<String> documents) {
+    public void setDocuments(ArrayList<PatientDocument> documents) {
         this.documents = documents;
     }
 }

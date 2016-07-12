@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,6 +66,7 @@ import org.iexhub.services.client.DocumentRegistry_ServiceStub.RegistryObjectLis
 import org.iexhub.services.client.DocumentRepository_ServiceStub.DocumentResponse_type0;
 import org.iexhub.services.client.DocumentRepository_ServiceStub.RetrieveDocumentSetResponse;
 import org.iexhub.services.dto.DocumentsResponseDto;
+import org.iexhub.services.dto.PatientDocument;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.openhealthtools.mdht.mdmi.Mdmi;
@@ -552,7 +554,8 @@ public class GetPatientDataService
 		String retVal = "";
 		GetPatientDataResponse patientDataResponse = new GetPatientDataResponse();
 		DocumentsResponseDto documentsResponseDto = new DocumentsResponseDto();
-		ArrayList<String> documentsAsStr = new ArrayList<>();
+		ArrayList<PatientDocument> patientDocuments = new ArrayList<PatientDocument>();
+
 		if (!testMode)
 		{
 			try
@@ -698,7 +701,9 @@ public class GetPatientDataService
 									{
 										DataHandler dh = document.getDocument();
 										String documentStr = dh.getContent().toString();
-										documentsAsStr.add(documentStr);
+										String documentName = document.getDocumentUniqueId().getLongName();
+										PatientDocument patientDocument = new PatientDocument(documentName,documentStr);
+										patientDocuments.add(patientDocument);
 									}
 									else
 									{
@@ -735,8 +740,7 @@ public class GetPatientDataService
 				throw new UnexpectedServerException("Error - " + e.getMessage());
 			}
 		}
-		documentsResponseDto.setDocuments(documentsAsStr);
-
+		documentsResponseDto.setDocuments(patientDocuments);
 
 		return Response.status(Response.Status.OK).entity(documentsResponseDto).type(MediaType.APPLICATION_JSON).build();
 	}
