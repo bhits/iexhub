@@ -15,27 +15,33 @@
  *******************************************************************************/
 package org.iexhub.services;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
-import static java.nio.file.Files.readAllBytes;
-import static java.nio.file.Paths.get;
+import jersey.repackaged.com.google.common.base.Equivalence;
+import jersey.repackaged.com.google.common.base.Predicate;
+import jersey.repackaged.com.google.common.collect.Collections2;
+import jersey.repackaged.com.google.common.collect.MapDifference;
+import jersey.repackaged.com.google.common.collect.Maps;
+import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
+import org.iexhub.connectors.XdsB;
+import org.iexhub.exceptions.*;
+import org.iexhub.services.client.DocumentRegistry_ServiceStub.*;
+import org.iexhub.services.client.DocumentRepository_ServiceStub.DocumentResponse_type0;
+import org.iexhub.services.client.DocumentRepository_ServiceStub.RetrieveDocumentSetResponse;
+import org.iexhub.services.dto.DocumentsResponseDto;
+import org.iexhub.services.dto.PatientDocument;
+import org.openhealthtools.mdht.mdmi.*;
+import org.openhealthtools.mdht.mdmi.model.MdmiBusinessElementReference;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import javax.activation.DataHandler;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.*;
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
@@ -46,39 +52,17 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.util.*;
 
-import jersey.repackaged.com.google.common.base.Equivalence;
-import jersey.repackaged.com.google.common.base.Predicate;
-import jersey.repackaged.com.google.common.collect.Collections2;
-import jersey.repackaged.com.google.common.collect.MapDifference;
-import jersey.repackaged.com.google.common.collect.Maps;
+import static java.nio.file.Files.readAllBytes;
+import static java.nio.file.Paths.get;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
-import org.iexhub.connectors.XdsB;
-import org.iexhub.exceptions.*;
-import org.iexhub.services.client.DocumentRegistry_ServiceStub.AdhocQueryResponse;
-import org.iexhub.services.client.DocumentRegistry_ServiceStub.ExternalIdentifierType;
-import org.iexhub.services.client.DocumentRegistry_ServiceStub.ExtrinsicObjectType;
-import org.iexhub.services.client.DocumentRegistry_ServiceStub.IdentifiableType;
-import org.iexhub.services.client.DocumentRegistry_ServiceStub.RegistryError_type0;
-import org.iexhub.services.client.DocumentRegistry_ServiceStub.RegistryObjectListType;
-import org.iexhub.services.client.DocumentRepository_ServiceStub.DocumentResponse_type0;
-import org.iexhub.services.client.DocumentRepository_ServiceStub.RetrieveDocumentSetResponse;
-import org.iexhub.services.dto.DocumentsResponseDto;
-import org.iexhub.services.dto.PatientDocument;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.openhealthtools.mdht.mdmi.Mdmi;
-import org.openhealthtools.mdht.mdmi.MdmiConfig;
-import org.openhealthtools.mdht.mdmi.MdmiMessage;
-import org.openhealthtools.mdht.mdmi.MdmiModelRef;
-import org.openhealthtools.mdht.mdmi.MdmiTransferInfo;
-import org.openhealthtools.mdht.mdmi.model.MdmiBusinessElementReference;
 //import org.openhealthtools.mdht.uml.cda.util.CDAUtil.ValidationHandler;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 /**
  * @author A. Sute
@@ -375,10 +359,33 @@ public class GetPatientDataService
 										DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 										Document doc = dBuilder.parse(new FileInputStream(filename));
 										XPath xPath = XPathFactory.newInstance().newXPath();
-										NodeList nodes = (NodeList)xPath.evaluate("/ClinicalDocument/templateId",
+
+										//set namespace to xpath
+										xPath.setNamespaceContext(new NamespaceContext() {
+											private final String uri = "urn:hl7-org:v3";
+											private final String prefix = "hl7";
+											@Override
+											public String getNamespaceURI(String prefix) {
+												return this.prefix.equals(prefix) ? uri : null;
+											}
+											@Override
+											public String getPrefix(String namespaceURI) {
+												return this.uri.equals(namespaceURI) ? this.prefix : null;
+											}
+											@Override
+											public Iterator getPrefixes(String namespaceURI) {
+												return null;
+											}
+										});
+
+										NodeList nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:templateId",
+												doc.getDocumentElement(),
+												XPathConstants.NODESET);
+
+/*										NodeList nodes = (NodeList)xPath.evaluate("/ClinicalDocument/templateId",
 										        doc.getDocumentElement(),
-										        XPathConstants.NODESET);
-	
+										        XPathConstants.NODESET);*/
+
 										boolean templateFound = false;
 										if (nodes.getLength() > 0)
 										{
