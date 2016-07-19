@@ -95,3 +95,5 @@ Thumbs.db
 *.zip
 *.log
 *.DS_Store
+/iexhub/src/test/resources/XML/temp
+/iexhub/src/test/resources/JSON/temp

@@ -18,33 +18,42 @@
  */
 package org.iexhub.connectors;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.text.DateFormat;
-import java.util.HashMap;
-import java.util.Properties;
-
-import javax.activation.DataHandler;
-
 import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.soap.SOAPFactory;
 import org.apache.log4j.Logger;
 import org.iexhub.exceptions.UnexpectedServerException;
-import org.iexhub.services.client.DocumentRegistry_ServiceStub.AdhocQueryResponse;
-import org.iexhub.services.client.DocumentRegistry_ServiceStub.ExternalIdentifierType;
-import org.iexhub.services.client.DocumentRegistry_ServiceStub.ExtrinsicObjectType;
-import org.iexhub.services.client.DocumentRegistry_ServiceStub.IdentifiableType;
-import org.iexhub.services.client.DocumentRegistry_ServiceStub.RegistryObjectListType;
+import org.iexhub.services.client.DocumentRegistry_ServiceStub.*;
 import org.iexhub.services.client.DocumentRepository_ServiceStub.DocumentResponse_type0;
 import org.iexhub.services.client.DocumentRepository_ServiceStub.RetrieveDocumentSetResponse;
 import org.junit.Before;
 import org.junit.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import javax.activation.DataHandler;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import java.io.*;
+import java.text.DateFormat;
+import java.util.HashMap;
+import java.util.Properties;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
 /**
  * @author A. Sute
@@ -496,4 +505,109 @@ public class XdsBTest
 			fail("Error - " + e.getMessage());
 		}
 	}
+
+	@Test
+	public void testRetrieveDocumentSetJson()
+	{
+		try
+		{
+			log.info("Repository document set retrieval query (ITI-43) unit test started...");
+			xdsB = new XdsB(registryEndpointURI,
+					repositoryEndpointURI);
+
+			String startDate = null;
+			String endDate = null;
+
+			HashMap<String, String> documents = queryRegistry(patientIdentifier, startDate, endDate);
+			assertFalse("Error - no documents found",
+					documents.isEmpty());
+
+			RetrieveDocumentSetResponse documentSetResponse = xdsB.retrieveDocumentSet(xdsBRepositoryUniqueId,
+					documents,
+					patientIdentifier);
+			log.info("XDS.b document set query response in log message immediately following...");
+			OMElement requestElement = documentSetResponse.getOMElement(RetrieveDocumentSetResponse.MY_QNAME,
+					soapFactory);
+			log.info(requestElement);
+
+			DocumentResponse_type0[] docResponseArray = documentSetResponse.getRetrieveDocumentSetResponse().getRetrieveDocumentSetResponseTypeSequence_type0().getDocumentResponse();
+			assertFalse("Error - no documents returned",
+					docResponseArray.length == 0);
+			if (docResponseArray != null)
+			{
+				try
+				{
+					for (DocumentResponse_type0 document : docResponseArray)
+					{
+						String mimeType = docResponseArray[0].getMimeType().getLongName();
+						if (mimeType.compareToIgnoreCase("text/xml") == 0)
+						{
+							String filename = "/temp/Output/" + document.getDocumentUniqueId().getLongName() + ".xml";
+							DataHandler dh = document.getDocument();
+							File file = new File(filename);
+							FileOutputStream fileOutStream = new FileOutputStream(file);
+							dh.writeTo(fileOutStream);
+							fileOutStream.close();
+
+							log.info("Document written to "
+									+ filename);
+						}
+					}
+				}
+				catch (Exception e)
+				{
+					throw e;
+				}
+			}
+
+			log.info("Repository document set retrieval query (ITI-43) unit test ending.");
+		}
+		catch (Exception e)
+		{
+			log.error("Error-" + e.getMessage());
+			fail("Error - " + e.getMessage());
+		}
+	}
+
+	@Test
+    public void testXslTransform() throws ParserConfigurationException, FileNotFoundException, SAXException, IOException, XPathExpressionException, TransformerException
+	{
+		String filename = "C:/temp/1.1.1^SallyShare CCDA1.xml";
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+		Document doc = dBuilder.parse(new FileInputStream(filename));
+		XPath xPath = XPathFactory.newInstance().newXPath();
+		NodeList nodes = (NodeList)xPath.evaluate("/ClinicalDocument/templateId",
+				doc.getDocumentElement(),
+				XPathConstants.NODESET);
+		boolean templateFound = false;
+		if (nodes.getLength() > 0)
+		{
+			for (int i = 0; i < nodes.getLength(); ++i)
+			{
+				String val = ((Element)nodes.item(i)).getAttribute("root");
+				if ((val != null) &&
+						(val.compareToIgnoreCase("2.16.840.1.113883.10.20.22.1.2") == 0))
+				{
+					DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+					factory.setNamespaceAware(true);
+					DocumentBuilder builder = factory.newDocumentBuilder();
+					Document mappedDoc = builder.parse(new File(/*"test/" + document.getDocumentUniqueId().getLongName() + "_TransformedToPatientPortalXML.xml"*/ filename));
+					DOMSource source = new DOMSource(mappedDoc);
+
+					TransformerFactory transformerFactory = TransformerFactory.newInstance();
+
+					Transformer transformer = transformerFactory.newTransformer(new StreamSource("c:/temp/CDA_to_JSON.xsl"));
+					String jsonFilename = "c:/temp/test.json";
+					File jsonFile = new File(jsonFilename);
+					FileOutputStream jsonFileOutStream = new FileOutputStream(jsonFile);
+					StreamResult result = new StreamResult(jsonFileOutStream);
+					transformer.transform(source,
+							result);
+					jsonFileOutStream.close();
+				}
+			}
+		}
+	}
+
 }

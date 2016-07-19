@@ -240,7 +240,7 @@
    </type>
    <actionReason>
       <coding>
-         <system value="http://hl7.org/fhir/contractsubtypecodes"/>
+         <system value="urn:oid:2.16.840.1.113883.1.11.20448"/>
          <code value="TREAT"/>
       </coding>
    </actionReason>

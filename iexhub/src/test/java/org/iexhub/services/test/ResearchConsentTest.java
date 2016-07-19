@@ -1,55 +1,25 @@
 package org.iexhub.services.test;
 
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import org.apache.commons.io.FileUtils;
-import org.hl7.fhir.instance.model.api.IBaseResource;
-
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
-import ca.uhn.fhir.model.dstu2.composite.CodingDt;
-import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
-import ca.uhn.fhir.model.dstu2.composite.IdentifierDt;
-import ca.uhn.fhir.model.dstu2.composite.NarrativeDt;
-import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
-import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
-import ca.uhn.fhir.model.dstu2.resource.Basic;
-import ca.uhn.fhir.model.dstu2.resource.Composition;
-import ca.uhn.fhir.model.dstu2.resource.Contract;
-import ca.uhn.fhir.model.dstu2.resource.ListResource;
-import ca.uhn.fhir.model.dstu2.resource.Organization;
+import ca.uhn.fhir.model.dstu2.composite.*;
+import ca.uhn.fhir.model.dstu2.resource.*;
 import ca.uhn.fhir.model.dstu2.resource.Organization.Contact;
-import ca.uhn.fhir.model.dstu2.resource.Patient;
-import ca.uhn.fhir.model.dstu2.resource.Practitioner;
-import ca.uhn.fhir.model.dstu2.valueset.AddressTypeEnum;
-import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
-import ca.uhn.fhir.model.dstu2.valueset.ContactPointSystemEnum;
-import ca.uhn.fhir.model.dstu2.valueset.ContactPointUseEnum;
-import ca.uhn.fhir.model.dstu2.valueset.ContractTypeCodesEnum;
-import ca.uhn.fhir.model.dstu2.valueset.ListModeEnum;
-import ca.uhn.fhir.model.dstu2.valueset.ListStatusEnum;
+import ca.uhn.fhir.model.dstu2.valueset.*;
 import ca.uhn.fhir.model.primitive.DateDt;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
-import ca.uhn.fhir.narrative.DefaultThymeleafNarrativeGenerator;
-import ca.uhn.fhir.rest.api.MethodOutcome;
-import ca.uhn.fhir.rest.client.IGenericClient;
-import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
+import org.apache.commons.io.FileUtils;
+import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.junit.*;
+import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class ResearchConsentTest {
 	// FHIR resource identifiers for contained objects
@@ -187,7 +157,7 @@ public class ResearchConsentTest {
 		CodeableConceptDt includeCodeValue = new CodeableConceptDt("http://hl7.org/fhir/v3/SetOperator", "I");
 		includeCodeValue.setText("Include");
 		list.setCode(includeCodeValue);
-		
+
 		list.setStatus(ListStatusEnum.CURRENT);
 		list.setMode(ListModeEnum.SNAPSHOT_LIST);
 
@@ -196,14 +166,12 @@ public class ResearchConsentTest {
 		// use list item flag to specify a category and the item to specify an
 		// instance (e.g. DocumentReference)
 		CodeableConceptDt researchStudy = new CodeableConceptDt("urn:oid:2.16.840.1.113883.6.1", "LOINC_TBD");
-		researchStudy.setText("");
-		// dischargeSummaryCode
 		researchStudy.setText("Human Nature Research Study");
 		Basic basicItem1 = new Basic();
 		basicItem1.setId(new IdDt("item1"));
 		basicItem1.setCode(researchStudy);
-		basicItem1.addIdentifier(new IdentifierDt("local system id","id for Human Nature study"));	
-		
+		basicItem1.addIdentifier(new IdentifierDt("local system id","id for Human Nature study"));
+
 		ResourceReferenceDt itemReference1  = new ResourceReferenceDt("#item1");
 		researchStudyEntry.setItem(itemReference1);
 		list.addEntry(researchStudyEntry);
@@ -218,7 +186,7 @@ public class ResearchConsentTest {
 		// Create XML and JSON files including generated narrative XHTML
 		String xmlEncodedGranularConsent = ctxt.newXmlParser().setPrettyPrint(true).encodeResourceToString(contract);
 		try {
-			FileUtils.writeStringToFile(new File(testResourcesPath + "/XML/" + currentTest + ".xml"),
+			FileUtils.writeStringToFile(new File(testResourcesPath + "/XML/temp/" + currentTest + ".xml"),
 					xmlEncodedGranularConsent);
 		} catch (IOException e) {
 
@@ -226,7 +194,7 @@ public class ResearchConsentTest {
 		}
 		String jsonEncodedGranularConsent = ctxt.newJsonParser().setPrettyPrint(true).encodeResourceToString(contract);
 		try {
-			FileUtils.writeStringToFile(new File(testResourcesPath + "/JSON/" + currentTest + ".json"),
+			FileUtils.writeStringToFile(new File(testResourcesPath + "/JSON/temp/" + currentTest + ".json"),
 					jsonEncodedGranularConsent);
 		} catch (IOException e) {
 			fail("Write resource to JSON:" + e.getMessage());
@@ -235,7 +203,7 @@ public class ResearchConsentTest {
 		String readContractString = "";
 		try {
 			readContractString = FileUtils
-					.readFileToString(new File(testResourcesPath + "/XML/" + currentTest + ".xml"), "UTF-8");
+					.readFileToString(new File(testResourcesPath + "/XML/temp/" + currentTest + ".xml"), "UTF-8");
 		} catch (IOException e) {
 			fail("Reading resource from file error:" + e.getMessage());
 		}
@@ -269,7 +237,7 @@ public class ResearchConsentTest {
 			//ResourceReferenceDt sourceIdRef = new ResourceReferenceDt();
 			//sourceIdRef.setReference("#"+sourceOrganizationId);
 			//subjectPatientResource.getCareProvider().add(sourceIdRef);
-			
+
 			String xmlEncodedPatient = ctxt.newXmlParser().setPrettyPrint(true).encodeResourceToString(subjectPatientResource);
 			try {
 				FileUtils.writeStringToFile(new File(testResourcesPath + "/XML/" + "PatientSubject.xml"),

@@ -271,7 +271,7 @@
       <system value="urn:oid:2.16.840.1.113883.3.72.5.9.1"/>
       <value value="consent GUID"/>
    </identifier>
-   <issued value="2016-06-28T00:13:02-04:00"/>
+   <issued value="2016-07-08T14:28:04-04:00"/>
    <subject>
       <reference value="#patientId"/>
    </subject>
