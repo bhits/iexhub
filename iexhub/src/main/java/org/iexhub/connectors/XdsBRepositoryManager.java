@@ -139,7 +139,9 @@ public class XdsBRepositoryManager
 	private static String externalIdentifierSubmissionSetSourceIdName = "XDSSubmissionSet.sourceId";
 	private static String externalIdentifierSubmissionSetPatientIdName = "XDSSubmissionSet.patientId";
 
-	
+	public XdsBRepositoryManager() {
+	}
+
 	/**
 	 * @param repositoryEndpointURI
 	 */

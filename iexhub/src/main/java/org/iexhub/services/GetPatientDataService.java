@@ -21,12 +21,17 @@ import jersey.repackaged.com.google.common.collect.Collections2;
 import jersey.repackaged.com.google.common.collect.MapDifference;
 import jersey.repackaged.com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
 import org.apache.log4j.Logger;
 import org.iexhub.connectors.XdsB;
+import org.iexhub.connectors.XdsBRepositoryManager;
 import org.iexhub.exceptions.*;
 import org.iexhub.services.client.DocumentRegistry_ServiceStub.*;
 import org.iexhub.services.client.DocumentRepository_ServiceStub.DocumentResponse_type0;
 import org.iexhub.services.client.DocumentRepository_ServiceStub.RetrieveDocumentSetResponse;
+import org.iexhub.services.dto.ClinicalDocumentRequest;
+import org.iexhub.services.dto.ClinicalDocumentResponse;
 import org.iexhub.services.dto.DocumentsResponseDto;
 import org.iexhub.services.dto.PatientDocument;
 import org.openhealthtools.mdht.mdmi.*;
@@ -36,10 +41,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import javax.activation.DataHandler;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
@@ -750,6 +752,33 @@ public class GetPatientDataService
 		documentsResponseDto.setDocuments(patientDocuments);
 
 		return Response.status(Response.Status.OK).entity(documentsResponseDto).type(MediaType.APPLICATION_JSON).build();
+	}
+
+	@POST
+	@Path("/publish")
+	@Produces({MediaType.APPLICATION_JSON})
+	public Response publishDocument(ClinicalDocumentRequest clinicalDocumentRequest)
+	{
+		Properties props = new Properties();
+
+		try
+		{
+			byte[] document = clinicalDocumentRequest.getDocument();
+			props.load(new FileInputStream(propertiesFile));
+			String xdsBRegistryEndpointURI = props.getProperty("XdsBRegistryEndpointURI");
+			String xdsBRepositoryEndpointURI = props.getProperty("XdsBRepositoryEndpointURI");
+			XdsBRepositoryManager XdsBRepository = new XdsBRepositoryManager(xdsBRegistryEndpointURI, xdsBRepositoryEndpointURI);
+			XdsBRepository.provideAndRegisterDocumentSet(document ,"text/xml" );
+		}
+		catch (Exception e)
+		{
+			String msg = "Error encounter while publishing document to HIE using property file: " + propertiesFile + ", " + e.getMessage();
+			log.error(msg);
+			System.out.println(msg);
+			throw new UnexpectedServerException(msg);
+		}
+
+		return Response.status(Response.Status.OK).entity(new ClinicalDocumentResponse(true)).type(MediaType.APPLICATION_JSON).build();
 	}
 
 	private String invokeMap(String sourceFilename)
