@@ -32,6 +32,8 @@ import ca.uhn.fhir.rest.client.IGenericClient;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
 import org.apache.commons.io.FileUtils;
 import org.iexhub.exceptions.UnexpectedServerException;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Properties;
+import java.util.UUID;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -73,7 +76,7 @@ public class ContractResourceTest {
 	private static Practitioner recipientPractitionerResource = new Practitioner();
 	// FHIR resource identifiers for inline/embedded objects
 	private static String consentId = "consentId";
-	private static String patientId = "ffc486eff2b04b8"; //"patientId";
+	private static String patientId = "ffc486eff2b04b8"; /*"ffc486eff2b0999";*/ //"patientId";
 	private static String sourceOrganizationId = "sourceOrgOID";
 	private static String sourcePractitionerId = "sourcePractitionerNPI";
 	private static String recipientPractitionerId = "recipientPractitionerNPI";
@@ -90,6 +93,8 @@ public class ContractResourceTest {
 			ContractResourceTest.fhirClientSocketTimeout = (properties
 					.getProperty("FHIRClientSocketTimeoutInMs") == null) ? ContractResourceTest.fhirClientSocketTimeout
 							: Integer.parseInt(properties.getProperty("FHIRClientSocketTimeoutInMs"));
+			ContractResourceTest.iExHubDomainOid = (properties.getProperty("IExHubDomainOID") == null) ? ContractResourceTest.iExHubDomainOid
+					: properties.getProperty("IExHubDomainOID");
 		} catch (IOException e) {
 			throw new UnexpectedServerException(
 					"Error encountered loading properties file, " + propertiesFile + ", " + e.getMessage());
@@ -102,7 +107,7 @@ public class ContractResourceTest {
 		testPatientResource.addName().addFamily("Patient Family Name").addGiven("Patient Given Name");
 		// set SSN value using coding system 2.16.840.1.113883.4.1
 //		testPatientResource.addIdentifier().setSystem(uriPrefix + "2.16.840.1.113883.4.1").setValue("123-45-6789");
-		testPatientResource.addIdentifier().setSystem(uriPrefix + "1.3.6.1.4.1.21367.2005.13.20.1000").setValue("ffc486eff2b04b8");
+//		testPatientResource.addIdentifier().setSystem(uriPrefix + "1.3.6.1.4.1.21367.2005.13.20.1000").setValue(patientId);
 		// set local patient id
 		testPatientResource.addIdentifier().setSystem(uriPrefix + iExHubDomainOid).setValue(patientId);
 		testPatientResource.setGender(AdministrativeGenderEnum.FEMALE);
@@ -204,8 +209,12 @@ public class ContractResourceTest {
 			IGenericClient client = ctxt.newRestfulGenericClient(serverBaseUrl);
 			client.registerInterceptor(loggingInterceptor);
 
-			ca.uhn.fhir.model.dstu2.resource.Bundle response = client.search().forResource(Contract.class)
-					// .where(Contract.)
+			IdentifierDt searchParam = new IdentifierDt(iExHubDomainOid/*"1.3.6.1.4.1.21367.2005.13.20.1000"*/,
+					patientId);
+			ca.uhn.fhir.model.dstu2.resource.Bundle response = client
+					.search()
+					.forResource(Contract.class)
+					.where(Patient.IDENTIFIER.exactly().identifier(searchParam))
 					.returnBundle(ca.uhn.fhir.model.dstu2.resource.Bundle.class).execute();
 
 			assertTrue("Error - unexpected return value for testSearchContract", response != null);
@@ -248,10 +257,53 @@ public class ContractResourceTest {
 
 			// create FHIR client
 			IGenericClient client = ctxt.newRestfulGenericClient(serverBaseUrl);
-			 client.registerInterceptor(loggingInterceptor);
-			//  invoke Contract service
-			 MethodOutcome outcome =  client.create().resource(contract).execute();
+			client.registerInterceptor(loggingInterceptor);
 			 
+			//  invoke Contract service
+			client.create().resource(contract).execute();
+		} catch (Exception e) {
+			fail( e.getMessage());
+		}
+	}
+
+	/**
+	 * Test method for Basic Consent Content update
+	 * {@link org.iexhub.services.JaxRsContractRestProvider\#create(Patient patient, String theConditional)}
+	 * 
+	 * @author A. Sute
+	 */
+	@Test
+	public void testUpdateBasicConsent() {
+
+		// Create a Privacy Consent as a Contract to be submitted as document
+		// using ITI-41
+		String currentTest = "BasicConsentUpdate";
+		try {
+			Logger logger = LoggerFactory.getLogger(ContractResourceTest.class);
+			LoggingInterceptor loggingInterceptor = new LoggingInterceptor();
+			loggingInterceptor.setLogRequestSummary(true);
+			loggingInterceptor.setLogRequestBody(true);
+			loggingInterceptor.setLogger(logger);
+
+			Contract contract = createBasicTestConsent(UUID.fromString("819efe60-d1bb-47b7-b5d6-ab5fa073eef0"));
+
+			// Use the narrative generator
+			// @TODO: add generator Thymeleaf templates
+			// ctxt.setNarrativeGenerator(new  DefaultThymeleafNarrativeGenerator());
+
+			String xmlEncodedGranularConsent = ctxt.newXmlParser().setPrettyPrint(true)
+					.encodeResourceToString(contract);
+			FileUtils.writeStringToFile(new File(testResourcesPath+"/XML/"+currentTest+".xml"), xmlEncodedGranularConsent);
+			String jsonEncodedGranularConsent = ctxt.newJsonParser().setPrettyPrint(true)
+					.encodeResourceToString(contract);
+			FileUtils.writeStringToFile(new File(testResourcesPath+"/JSON/"+currentTest+".json"), jsonEncodedGranularConsent);
+
+			// create FHIR client
+			IGenericClient client = ctxt.newRestfulGenericClient(serverBaseUrl);
+			client.registerInterceptor(loggingInterceptor);
+			
+			//  invoke Contract service
+			client.update().resource(contract).execute();
 		} catch (Exception e) {
 			fail( e.getMessage());
 		}
@@ -364,12 +416,24 @@ public class ContractResourceTest {
 	 * 
 	 * @return Contract containing a basic consent
 	 */
-	private Contract createBasicTestConsent() {
+	private Contract createBasicTestConsent()
+	{
+		return createBasicTestConsent(null);
+	}
+	
+	/**
+	 * createBasicTestConsent(UUID identifier)
+	 * 
+	 * @return Contract containing a basic consent
+	 */
+	private Contract createBasicTestConsent(UUID identifier)
+	{
 		Contract contract = new Contract();
-		// set the id as a concatenated "OID.consentId"
-		contract.setId(new IdDt(iExHubDomainOid+"."+consentId));
+		contract.getId().setValueAsString((identifier != null) ? identifier.toString()
+				: null);
+		DateTime testDocId = DateTime.now(DateTimeZone.UTC);
 		contract.getIdentifier().setSystem(uriPrefix + iExHubDomainOid)
-				.setValue("123456789");
+				.setValue("2.25." + Long.toString(testDocId.getMillis()));
 		contract.getType().setValueAsEnum(ContractTypeCodesEnum.DISCLOSURE);
 		contract.getActionReason().add(new CodeableConceptDt("http://hl7.org/fhir/contractsubtypecodes", "TREAT"));
 		DateTimeDt issuedDateTime = new DateTimeDt();

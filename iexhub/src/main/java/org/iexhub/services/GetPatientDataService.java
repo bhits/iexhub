@@ -41,7 +41,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import javax.activation.DataHandler;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.*;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
