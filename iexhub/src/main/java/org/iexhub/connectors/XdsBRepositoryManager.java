@@ -46,6 +46,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
@@ -508,8 +509,8 @@ public class XdsBRepositoryManager
 			ValueListType valueList = null;
 			SlotType1 slot = new SlotType1();
 			slot.setName("creationTime");
-			XPath xPath = XPathFactory.newInstance().newXPath();
-			NodeList nodes = (NodeList)xPath.evaluate("/ClinicalDocument/effectiveTime",
+			XPath xPath = getCustomXPath();
+			NodeList nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:effectiveTime",
 			        doc.getDocumentElement(),
 			        XPathConstants.NODESET);
 			if (nodes.getLength() > 0)
@@ -521,8 +522,8 @@ public class XdsBRepositoryManager
 			}
 			
 			// Create languageCode rim:Slot...
-			xPath = XPathFactory.newInstance().newXPath();
-			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/languageCode",
+			xPath = getCustomXPath();
+			nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:languageCode",
 			        doc.getDocumentElement(),
 			        XPathConstants.NODESET);
 			if (nodes.getLength() > 0)
@@ -536,8 +537,8 @@ public class XdsBRepositoryManager
 			}
 			
 			// Create serviceStartTime rim:Slot...
-			xPath = XPathFactory.newInstance().newXPath();
-			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/documentationOf/serviceEvent/effectiveTime/low",
+			xPath = getCustomXPath();
+			nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:documentationOf/hl7:serviceEvent/hl7:effectiveTime/hl7:low",
 			        doc.getDocumentElement(),
 			        XPathConstants.NODESET);
 			if (nodes.getLength() > 0)
@@ -551,8 +552,8 @@ public class XdsBRepositoryManager
 			}
 
 			// Create serviceStopTime rim:Slot...
-			xPath = XPathFactory.newInstance().newXPath();
-			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/documentationOf/serviceEvent/effectiveTime/high",
+			xPath = getCustomXPath();
+			nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:documentationOf/hl7:serviceEvent/hl7:effectiveTime/high",
 			        doc.getDocumentElement(),
 			        XPathConstants.NODESET);
 			if (nodes.getLength() > 0)
@@ -566,8 +567,8 @@ public class XdsBRepositoryManager
 			}
 
 			// Create sourcePatientId rim:Slot...
-			xPath = XPathFactory.newInstance().newXPath();
-			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/recordTarget/patientRole/id",
+			xPath = getCustomXPath();
+			nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:recordTarget/hl7:patientRole/hl7:id",
 			        doc.getDocumentElement(),
 			        XPathConstants.NODESET);
 			String patientId = null;
@@ -586,8 +587,8 @@ public class XdsBRepositoryManager
 			}
 
 			// Create sourcePatientInfo rim:Slot...
-			xPath = XPathFactory.newInstance().newXPath();
-			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/recordTarget/patientRole/patient/name/family",
+			xPath = getCustomXPath();
+			nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:recordTarget/hl7:patientRole/hl7:patient/hl7:name/hl7:family",
 			        doc.getDocumentElement(),
 			        XPathConstants.NODESET);
 			if (nodes.getLength() > 0)
@@ -603,8 +604,8 @@ public class XdsBRepositoryManager
 			    		+ ((Element)nodes.item(0)).getTextContent()
 			    		+ "^");
 			    
-				xPath = XPathFactory.newInstance().newXPath();
-				nodes = (NodeList)xPath.evaluate("/ClinicalDocument/recordTarget/patientRole/patient/name/given",
+				xPath = getCustomXPath();
+				nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:recordTarget/hl7:patientRole/hl7:patient/hl7:name/hl7:given",
 				        doc.getDocumentElement(),
 				        XPathConstants.NODESET);
 				if (nodes.getLength() > 0)
@@ -617,8 +618,8 @@ public class XdsBRepositoryManager
 					name.append("^^");
 				}
 				
-				xPath = XPathFactory.newInstance().newXPath();
-				nodes = (NodeList)xPath.evaluate("/ClinicalDocument/recordTarget/patientRole/patient/name/prefix",
+				xPath = getCustomXPath();
+				nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:recordTarget/hl7:patientRole/hl7:patient/hl7:name/hl7:prefix",
 				        doc.getDocumentElement(),
 				        XPathConstants.NODESET);
 				if (nodes.getLength() > 0)
@@ -631,8 +632,8 @@ public class XdsBRepositoryManager
 					name.append("^");
 				}
 
-				xPath = XPathFactory.newInstance().newXPath();
-				nodes = (NodeList)xPath.evaluate("/ClinicalDocument/recordTarget/patientRole/patient/name/suffix",
+				xPath = getCustomXPath();
+				nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:recordTarget/hl7:patientRole/hl7:patient/hl7:name/hl7:suffix",
 				        doc.getDocumentElement(),
 				        XPathConstants.NODESET);
 				if (nodes.getLength() > 0)
@@ -642,8 +643,8 @@ public class XdsBRepositoryManager
 
 				valueList.getValue().add(name.toString());
 
-				xPath = XPathFactory.newInstance().newXPath();
-				nodes = (NodeList)xPath.evaluate("/ClinicalDocument/recordTarget/patientRole/patient/birthTime",
+				xPath = getCustomXPath();
+				nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:recordTarget/hl7:patientRole/hl7:patient/hl7:birthTime",
 				        doc.getDocumentElement(),
 				        XPathConstants.NODESET);
 				if (nodes.getLength() > 0)
@@ -652,8 +653,8 @@ public class XdsBRepositoryManager
 				    		+ ((Element)nodes.item(0)).getAttribute("value"));
 				}
 
-				xPath = XPathFactory.newInstance().newXPath();
-				nodes = (NodeList)xPath.evaluate("/ClinicalDocument/recordTarget/patientRole/patient/administrativeGenderCode",
+				xPath = getCustomXPath();
+				nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:recordTarget/hl7:patientRole/hl7:patient/hl7:administrativeGenderCode",
 				        doc.getDocumentElement(),
 				        XPathConstants.NODESET);
 				if (nodes.getLength() > 0)
@@ -662,8 +663,8 @@ public class XdsBRepositoryManager
 				    		+ ((Element)nodes.item(0)).getAttribute("code"));
 				}
 
-				xPath = XPathFactory.newInstance().newXPath();
-				nodes = (NodeList)xPath.evaluate("/ClinicalDocument/recordTarget/patientRole/addr",
+				xPath = getCustomXPath();
+				nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:recordTarget/hl7:patientRole/hl7:addr",
 				        doc.getDocumentElement(),
 				        XPathConstants.NODESET);
 				if (nodes.getLength() > 0)
@@ -671,8 +672,8 @@ public class XdsBRepositoryManager
 					StringBuilder address = new StringBuilder();
 					address.append("PID-11|");
 					
-					xPath = XPathFactory.newInstance().newXPath();
-					nodes = (NodeList)xPath.evaluate("/ClinicalDocument/recordTarget/patientRole/addr/streetAddressLine",
+					xPath = getCustomXPath();
+					nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:recordTarget/hl7:patientRole/hl7:addr/hl7:streetAddressLine",
 					        doc.getDocumentElement(),
 					        XPathConstants.NODESET);
 					if (nodes.getLength() > 0)
@@ -685,8 +686,8 @@ public class XdsBRepositoryManager
 						address.append("^^");
 					}
 					
-					xPath = XPathFactory.newInstance().newXPath();
-					nodes = (NodeList)xPath.evaluate("/ClinicalDocument/recordTarget/patientRole/addr/city",
+					xPath = getCustomXPath();
+					nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:recordTarget/hl7:patientRole/hl7:addr/hl7:city",
 					        doc.getDocumentElement(),
 					        XPathConstants.NODESET);
 					if (nodes.getLength() > 0)
@@ -699,8 +700,8 @@ public class XdsBRepositoryManager
 						address.append("^");
 					}
 
-					xPath = XPathFactory.newInstance().newXPath();
-					nodes = (NodeList)xPath.evaluate("/ClinicalDocument/recordTarget/patientRole/addr/state",
+					xPath = getCustomXPath();
+					nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:recordTarget/hl7:patientRole/hl7:addr/hl7:state",
 					        doc.getDocumentElement(),
 					        XPathConstants.NODESET);
 					if (nodes.getLength() > 0)
@@ -713,8 +714,8 @@ public class XdsBRepositoryManager
 						address.append("^");
 					}
 
-					xPath = XPathFactory.newInstance().newXPath();
-					nodes = (NodeList)xPath.evaluate("/ClinicalDocument/recordTarget/patientRole/addr/postalCode",
+					xPath = getCustomXPath();
+					nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:recordTarget/hl7:patientRole/hl7:addr/hl7:postalCode",
 					        doc.getDocumentElement(),
 					        XPathConstants.NODESET);
 					if (nodes.getLength() > 0)
@@ -727,8 +728,8 @@ public class XdsBRepositoryManager
 						address.append("^");
 					}
 
-					xPath = XPathFactory.newInstance().newXPath();
-					nodes = (NodeList)xPath.evaluate("/ClinicalDocument/recordTarget/patientRole/addr/country",
+					xPath = getCustomXPath();
+					nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:recordTarget/hl7:patientRole/hl7:addr/hl7:country",
 					        doc.getDocumentElement(),
 					        XPathConstants.NODESET);
 					if (nodes.getLength() > 0)
@@ -777,8 +778,8 @@ public class XdsBRepositoryManager
 
 			// Create classifications - start with document author(s)...
 			ArrayList<ClassificationType> documentAuthorClassifications = new ArrayList<ClassificationType>();
-			xPath = XPathFactory.newInstance().newXPath();
-			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/author",
+			xPath = getCustomXPath();
+			nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:author",
 			        doc.getDocumentElement(),
 			        XPathConstants.NODESET);
 			if (nodes.getLength() > 0)
@@ -795,14 +796,14 @@ public class XdsBRepositoryManager
 
 					// authorPerson rim:Slot
 					StringBuilder authorName = new StringBuilder();
-					xPath = XPathFactory.newInstance().newXPath();
-					NodeList subNodes = (NodeList)xPath.evaluate("assignedAuthor/assignedPerson",
+					xPath = getCustomXPath();
+					NodeList subNodes = (NodeList)xPath.evaluate("hl7:assignedAuthor/hl7:assignedPerson",
 							nodes.item(i).getChildNodes(),
 							XPathConstants.NODESET);
 					if (subNodes.getLength() > 0)
 					{
-						xPath = XPathFactory.newInstance().newXPath();
-						NodeList assignedPersonSubNodes = (NodeList)xPath.evaluate("name/prefix",
+						xPath = getCustomXPath();
+						NodeList assignedPersonSubNodes = (NodeList)xPath.evaluate("hl7:name/hl7:prefix",
 								subNodes.item(0).getChildNodes(),
 								XPathConstants.NODESET);
 						if (assignedPersonSubNodes.getLength() > 0)
@@ -811,8 +812,8 @@ public class XdsBRepositoryManager
 									+ " ");
 						}
 
-						xPath = XPathFactory.newInstance().newXPath();
-						assignedPersonSubNodes = (NodeList)xPath.evaluate("name/given",
+						xPath = getCustomXPath();
+						assignedPersonSubNodes = (NodeList)xPath.evaluate("hl7:name/hl7:given",
 								subNodes.item(0).getChildNodes(),
 						        XPathConstants.NODESET);
 						if (assignedPersonSubNodes.getLength() > 0)
@@ -821,8 +822,8 @@ public class XdsBRepositoryManager
 									+ " ");
 						}
 	
-						xPath = XPathFactory.newInstance().newXPath();
-						assignedPersonSubNodes = (NodeList)xPath.evaluate("name/family",
+						xPath = getCustomXPath();
+						assignedPersonSubNodes = (NodeList)xPath.evaluate("hl7:name/hl7:family",
 								subNodes.item(0).getChildNodes(),
 						        XPathConstants.NODESET);
 						if (assignedPersonSubNodes.getLength() > 0)
@@ -830,8 +831,8 @@ public class XdsBRepositoryManager
 							authorName.append(((Element)assignedPersonSubNodes.item(0)).getTextContent());
 						}
 	
-						xPath = XPathFactory.newInstance().newXPath();
-						assignedPersonSubNodes = (NodeList)xPath.evaluate("name/suffix",
+						xPath = getCustomXPath();
+						assignedPersonSubNodes = (NodeList)xPath.evaluate("hl7:name/hl7:suffix",
 								subNodes.item(0).getChildNodes(),
 						        XPathConstants.NODESET);
 						if (assignedPersonSubNodes.getLength() > 0)
@@ -843,7 +844,7 @@ public class XdsBRepositoryManager
 					else
 					{
 						// If assignedAuthor is not present, then check for representedOrganization/name...
-						subNodes = (NodeList)xPath.evaluate("assignedAuthor/representedOrganization/name",
+						subNodes = (NodeList)xPath.evaluate("hl7:assignedAuthor/hl7:representedOrganization/hl7:name",
 								nodes.item(i).getChildNodes(),
 								XPathConstants.NODESET);
 						xPath = XPathFactory.newInstance().newXPath();
@@ -868,8 +869,8 @@ public class XdsBRepositoryManager
 			classification.setId(UUID.randomUUID().toString());
 			classification.setClassificationScheme(documentClassCodesClassificationScheme);
 			classification.setClassifiedObject(documentId);
-			xPath = XPathFactory.newInstance().newXPath();
-			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/code",
+			xPath =  getCustomXPath();
+			nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:code",
 			        doc.getDocumentElement(),
 			        XPathConstants.NODESET);
 			if (nodes.getLength() > 0)
@@ -907,8 +908,8 @@ public class XdsBRepositoryManager
 			classification.setId(UUID.randomUUID().toString());
 			classification.setClassificationScheme(documentConfidentialityCodesClassificationScheme);
 			classification.setClassifiedObject(documentId);
-			xPath = XPathFactory.newInstance().newXPath();
-			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/confidentialityCode",
+			xPath = getCustomXPath();
+			nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:confidentialityCode",
 			        doc.getDocumentElement(),
 			        XPathConstants.NODESET);
 			if (nodes.getLength() > 0)
@@ -984,8 +985,8 @@ public class XdsBRepositoryManager
 			classification.setId(UUID.randomUUID().toString());
 			classification.setClassificationScheme(documentPracticeSettingCodesClassificationScheme);
 			classification.setClassifiedObject(documentId);
-			xPath = XPathFactory.newInstance().newXPath();
-			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/code",
+			xPath = getCustomXPath();
+			nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:code",
 			        doc.getDocumentElement(),
 			        XPathConstants.NODESET);
 			if (nodes.getLength() > 0)
@@ -1023,8 +1024,8 @@ public class XdsBRepositoryManager
 			classification.setId(UUID.randomUUID().toString());
 			classification.setClassificationScheme(documentContentTypeClassificationScheme);
 			classification.setClassifiedObject(documentId);
-			xPath = XPathFactory.newInstance().newXPath();
-			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/code",
+			xPath = getCustomXPath();
+			nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:code",
 			        doc.getDocumentElement(),
 			        XPathConstants.NODESET);
 			if (nodes.getLength() > 0)
@@ -1058,8 +1059,8 @@ public class XdsBRepositoryManager
 			}
 			
 			// Create rim:ExternalIdentifier(s) - first the XDSDocumentEntry.patientId value(s)...
-			xPath = XPathFactory.newInstance().newXPath();
-			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/recordTarget/patientRole/id",
+			xPath =getCustomXPath();
+			nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:recordTarget/hl7:patientRole/hl7:id",
 			        doc.getDocumentElement(),
 			        XPathConstants.NODESET);
 			if (nodes.getLength() > 0)
@@ -1099,8 +1100,8 @@ public class XdsBRepositoryManager
 			}
 			
 			// Now the XDSDocumentEntry.uniqueId value(s)...
-			xPath = XPathFactory.newInstance().newXPath();
-			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/id",
+			xPath = getCustomXPath();
+			nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:id",
 			        doc.getDocumentElement(),
 			        XPathConstants.NODESET);
 			if (nodes.getLength() > 0)
@@ -1199,8 +1200,8 @@ public class XdsBRepositoryManager
 			classification.setId(UUID.randomUUID().toString());
 			classification.setClassificationScheme(registryPackageContentTypeCodesClassificationScheme);
 			classification.setClassifiedObject(submissionSetId);
-			xPath = XPathFactory.newInstance().newXPath();
-			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/code",
+			xPath =getCustomXPath();
+			nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:code",
 			        doc.getDocumentElement(),
 			        XPathConstants.NODESET);
 			if (nodes.getLength() > 0)
@@ -1930,5 +1931,28 @@ public class XdsBRepositoryManager
 		}
 
 		return retVal;
+	}
+
+	private XPath getCustomXPath(){
+		XPath xPath = XPathFactory.newInstance().newXPath();
+
+		//set namespace to xpath
+		xPath.setNamespaceContext(new NamespaceContext() {
+			private final String uri = "urn:hl7-org:v3";
+			private final String prefix = "hl7";
+			@Override
+			public String getNamespaceURI(String prefix) {
+				return this.prefix.equals(prefix) ? uri : null;
+			}
+			@Override
+			public String getPrefix(String namespaceURI) {
+				return this.uri.equals(namespaceURI) ? this.prefix : null;
+			}
+			@Override
+			public Iterator getPrefixes(String namespaceURI) {
+				return null;
+			}
+		});
+		return xPath;
 	}
 }

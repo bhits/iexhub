@@ -772,7 +772,7 @@ public class GetPatientDataService
 		}
 		catch (Exception e)
 		{
-			String msg = "Error encounter while publishing document to HIE using property file: " + propertiesFile + ", " + e.getMessage();
+			String msg = "Error encounter while publishing document to HIE: " + e.getMessage();
 			log.error(msg);
 			System.out.println(msg);
 			throw new UnexpectedServerException(msg);
