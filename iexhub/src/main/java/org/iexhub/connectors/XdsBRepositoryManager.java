@@ -1720,7 +1720,7 @@ public class XdsBRepositoryManager
 
 			//  Code system
 			valueList = new ValueListType();
-		    valueList.getValue().add(/*"2.16.840.1.113883.6.1"*/ "LOINC");
+		    valueList.getValue().add("2.16.840.1.113883.6.1");
 			slot.setValueList(valueList);
 			classification.getSlot().add(slot);
 
