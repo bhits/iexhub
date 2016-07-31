@@ -19,6 +19,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -30,32 +32,23 @@ import javax.ejb.Stateless;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathFactory;
-
 import org.apache.log4j.Logger;
 import org.iexhub.connectors.XdsB;
 import org.iexhub.connectors.XdsBRepositoryManager;
 import org.iexhub.exceptions.ContractIdParamMissingException;
 import org.iexhub.exceptions.UnexpectedServerException;
 import org.iexhub.services.client.DocumentRegistry_ServiceStub.AdhocQueryResponse;
+import org.iexhub.services.client.DocumentRegistry_ServiceStub.ClassificationType;
 import org.iexhub.services.client.DocumentRegistry_ServiceStub.ExternalIdentifierType;
 import org.iexhub.services.client.DocumentRegistry_ServiceStub.ExtrinsicObjectType;
 import org.iexhub.services.client.DocumentRegistry_ServiceStub.IdentifiableType;
 import org.iexhub.services.client.DocumentRegistry_ServiceStub.RegistryError_type0;
 import org.iexhub.services.client.DocumentRegistry_ServiceStub.RegistryObjectListType;
+import org.iexhub.services.client.DocumentRepository_ServiceStub;
 import org.iexhub.services.client.DocumentRepository_ServiceStub.DocumentResponse_type0;
 import org.iexhub.services.client.DocumentRepository_ServiceStub.RetrieveDocumentSetResponse;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.jaxrs.server.AbstractJaxRsResourceProvider;
-import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.IdentifierDt;
 import ca.uhn.fhir.model.dstu2.resource.Contract;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
@@ -96,6 +89,7 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 	private static String xdsBRegistryEndpointURI = null;
 	private static String xdsBRepositoryEndpointURI = null;
 	private static FhirContext fhirCtxt = new FhirContext();
+	private static String privacyConsentClassificationType = "uuid:f0306f51-975f-434e-a61c-c59651d33983";
 
 	/**
 	 * The HAPI paging provider for this server
@@ -251,11 +245,6 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 			// Determine if a complete patient ID (including OID and ISO specification) was provided.  If not, then append IExHubDomainOid
 			//   and IExAssigningAuthority...
 			String referencedId = identifier.getValue();
-//			ResourceReferenceDt consentSubjectRef = contract.getSubject().get(0);
-//			IBaseResource referencedSubject = consentSubjectRef.getResource();
-//			String referencedId = referencedSubject.getIdElement().getIdPart();
-//			Patient patient = (getContainedResource(Patient.class, contract.getContained().getContainedResources(), referencedId) == null) ? null
-//					: (Patient)getContainedResource(Patient.class, contract.getContained().getContainedResources(), referencedId);
 			if (!referencedId.contains("^^^&"))
 			{
 				referencedId = "'"
@@ -269,7 +258,8 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 			
 			AdhocQueryResponse registryResponse = xdsB.registryStoredQuery(referencedId,
 					null,
-					null);
+					null
+					/*"'57016-8'"*/);
 			
 			log.info("Call to XdsB registry successful");
 
@@ -302,6 +292,7 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 			}
 
 			// Try to retrieve documents...
+			boolean documentTypeFound = false;
 			RegistryObjectListType registryObjectList = registryResponse.getRegistryObjectList();
 			IdentifiableType[] documentObjects = registryObjectList.getIdentifiable();
 			if ((documentObjects != null) &&
@@ -309,159 +300,156 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 			{
 				log.info("Documents found in the registry, retrieving them from the repository...");
 				
-				HashMap<String, String> documents = new HashMap<String, String>();
+				HashMap<String, String> documentUniqueIds = new HashMap<String, String>();
+				HashMap<String, String> documentUuids = new HashMap<String, String>();
 				for (IdentifiableType identifiable : documentObjects)
 				{
 					if (identifiable.getClass().equals(ExtrinsicObjectType.class))
 					{
-						// Determine if the "home" attribute (homeCommunityId in XCA parlance) is present...
-						String home = ((((ExtrinsicObjectType)identifiable).getHome() != null) && (((ExtrinsicObjectType)identifiable).getHome().getPath().length() > 0)) ? ((ExtrinsicObjectType)identifiable).getHome().getPath()
-								: null;
-
-						ExternalIdentifierType[] externalIdentifiers = ((ExtrinsicObjectType)identifiable).getExternalIdentifier();
-						
-						// Find the ExternalIdentifier that has the "XDSDocumentEntry.uniqueId" value...
-						String uniqueId = null;
-						for (ExternalIdentifierType externalIdentifier : externalIdentifiers)
+						// Determine if this is the privacy consent document type...
+						ClassificationType[] classifications = ((ExtrinsicObjectType)identifiable).getClassification();
+						for (ClassificationType classification : classifications)
 						{
-							String val = externalIdentifier.getName().getInternationalStringTypeSequence()[0].getLocalizedString().getValue().getFreeFormText();
-							if ((val != null) &&
-								(val.compareToIgnoreCase("XDSDocumentEntry.uniqueId") == 0))
+							if (classification.getClassificationScheme().getReferenceURI().getPath().compareToIgnoreCase(privacyConsentClassificationType) == 0)
 							{
-								log.info("Located XDSDocumentEntry.uniqueId ExternalIdentifier, uniqueId="
-										+ uniqueId);
-								uniqueId = externalIdentifier.getValue().getLongName();
+								documentTypeFound = true;
 								break;
 							}
 						}
 						
-						if (uniqueId != null)
+						if (documentTypeFound)
 						{
-							documents.put(uniqueId,
+							// Determine if the "home" attribute (homeCommunityId in XCA parlance) is present...
+							String home = ((((ExtrinsicObjectType)identifiable).getHome() != null) && (((ExtrinsicObjectType)identifiable).getHome().getPath().length() > 0)) ? ((ExtrinsicObjectType)identifiable).getHome().getPath()
+									: null;
+	
+							ExternalIdentifierType[] externalIdentifiers = ((ExtrinsicObjectType)identifiable).getExternalIdentifier();
+							
+							// Find the ExternalIdentifier that has the "XDSDocumentEntry.uniqueId" value...
+							String uniqueId = null;
+							for (ExternalIdentifierType externalIdentifier : externalIdentifiers)
+							{
+								String val = externalIdentifier.getName().getInternationalStringTypeSequence()[0].getLocalizedString().getValue().getFreeFormText();
+								if ((val != null) &&
+									(val.compareToIgnoreCase("XDSDocumentEntry.uniqueId") == 0))
+								{
+									log.info("Located XDSDocumentEntry.uniqueId ExternalIdentifier, uniqueId="
+											+ uniqueId);
+									uniqueId = externalIdentifier.getValue().getLongName();
+									break;
+								}
+							}
+							
+							if (uniqueId != null)
+							{
+								documentUniqueIds.put(uniqueId,
+										home);
+								documentUuids.put(uniqueId,
+										((ExtrinsicObjectType)identifiable).getId().getPath().replace("uuid:", ""));
+								log.info("Document ID added: "
+										+ uniqueId
+										+ ", homeCommunityId: "
+										+ home
+										+", UUID: "
+										+ ((ExtrinsicObjectType)identifiable).getId().getPath().replace("uuid:", ""));
+							}
+						}
+						else
+						{
+							String home = ((identifiable.getHome() != null) && (identifiable.getHome().getPath().length() > 0)) ? identifiable.getHome().getPath()
+									: null;
+							documentUniqueIds.put(identifiable.getId().getPath(),
 									home);
 							log.info("Document ID added: "
-									+ uniqueId
+									+ identifiable.getId().getPath()
 									+ ", homeCommunityId: "
 									+ home);
 						}
 					}
-					else
-					{
-						String home = ((identifiable.getHome() != null) && (identifiable.getHome().getPath().length() > 0)) ? identifiable.getHome().getPath()
-								: null;
-						documents.put(identifiable.getId().getPath(),
-								home);
-						log.info("Document ID added: "
-								+ identifiable.getId().getPath()
-								+ ", homeCommunityId: "
-								+ home);
-					}
 				}
 				
-				log.info("Invoking XdsB repository connector retrieval...");
-				RetrieveDocumentSetResponse documentSetResponse = xdsB.retrieveDocumentSet(xdsBRepositoryUniqueId,
-						documents,
-						referencedId);
-				log.info("XdsB repository connector retrieval succeeded");
-
-				// Invoke appropriate map(s) to process documents in documentSetResponse...
-				if (documentSetResponse.getRetrieveDocumentSetResponse().getRetrieveDocumentSetResponseTypeSequence_type0() != null)
+				if (documentTypeFound)
 				{
-					DocumentResponse_type0[] docResponseArray = documentSetResponse.getRetrieveDocumentSetResponse().getRetrieveDocumentSetResponseTypeSequence_type0().getDocumentResponse();
-					if (docResponseArray != null)
+					log.info("Invoking XdsB repository connector retrieval...");
+					RetrieveDocumentSetResponse documentSetResponse = xdsB.retrieveDocumentSet(xdsBRepositoryUniqueId,
+							documentUniqueIds,
+							referencedId);
+					log.info("XdsB repository connector retrieval succeeded");
+	
+					if ((documentSetResponse.getRetrieveDocumentSetResponse().getRegistryResponse().getRegistryErrorList() != null) &&
+						(documentSetResponse.getRetrieveDocumentSetResponse().getRegistryResponse().getRegistryErrorList().getRegistryError().length > 0))
 					{
-						try
-						{
-							for (DocumentResponse_type0 document : docResponseArray)
+						for (DocumentRepository_ServiceStub.RegistryError_type0 error : documentSetResponse.getRetrieveDocumentSetResponse().getRegistryResponse().getRegistryErrorList().getRegistryError())
+						{ 
+							StringBuilder errorText = new StringBuilder();
+							if (error.getErrorCode() != null)
 							{
-								log.info("Processing document ID="
-										+ document.getDocumentUniqueId().getLongName());
-								
-								String mimeType = docResponseArray[0].getMimeType().getLongName();
-								if (mimeType.compareToIgnoreCase("text/xml") == 0)
+								errorText.append("Error code=" + error.getErrorCode() + "\n");
+							}
+							if (error.getCodeContext() != null)
+							{
+								errorText.append("Error code context=" + error.getCodeContext() + "\n");
+							}
+							
+							// Error code location (i.e., stack trace) only to be logged to IExHub error file
+	//						patientDataResponse.getErrorMsgs().add(errorText.toString());
+							
+							if (error.getLocation() != null)
+							{
+								errorText.append("Error location=" + error.getLocation());
+							}
+							
+							log.error(errorText.toString());
+						}
+					}
+					else
+					{
+						result = new ArrayList<Contract>();
+						
+						// Invoke appropriate map(s) to process documents in documentSetResponse...
+						if (documentSetResponse.getRetrieveDocumentSetResponse().getRetrieveDocumentSetResponseTypeSequence_type0() != null)
+						{
+							DocumentResponse_type0[] docResponseArray = documentSetResponse.getRetrieveDocumentSetResponse().getRetrieveDocumentSetResponseTypeSequence_type0().getDocumentResponse();
+							if (docResponseArray != null)
+							{
+								try
 								{
-									String filename = "test/" + document.getDocumentUniqueId().getLongName() + ".xml";
-									log.info("Persisting document to filesystem, filename="
-											+ filename);
-									DataHandler dh = document.getDocument();
-									File file = new File(filename);
-									FileOutputStream fileOutStream = new FileOutputStream(file);
-									dh.writeTo(fileOutStream);
-									fileOutStream.close();
-
-									DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-									DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-									Document doc = dBuilder.parse(new FileInputStream(filename));
-									XPath xPath = XPathFactory.newInstance().newXPath();
-									NodeList nodes = (NodeList)xPath.evaluate("/ClinicalDocument/templateId",
-									        doc.getDocumentElement(),
-									        XPathConstants.NODESET);
-
-									boolean templateFound = false;
-									if (nodes.getLength() > 0)
+									for (DocumentResponse_type0 document : docResponseArray)
 									{
-										log.info("Searching for /ClinicalDocument/templateId, document ID="
+										log.info("Processing document ID="
 												+ document.getDocumentUniqueId().getLongName());
 										
-										for (int i = 0; i < nodes.getLength(); ++i)
+										String mimeType = docResponseArray[0].getMimeType().getLongName();
+										if (mimeType.compareToIgnoreCase("text/xml") == 0)
 										{
-										    String val = ((Element)nodes.item(i)).getAttribute("root");
-										    if ((val != null) &&
-										    	(val.compareToIgnoreCase("2.16.840.1.113883.10.20.22.1.2") == 0))
-										    {
-										    	log.info("/ClinicalDocument/templateId node found, document ID="
-										    			+ document.getDocumentUniqueId().getLongName());
-										    	
-												log.info("Invoking XSL transform, document ID="
-														+ document.getDocumentUniqueId().getLongName());
+											String filename = "test/" + document.getDocumentUniqueId().getLongName() + ".xml";
+											log.info("Persisting document to filesystem, filename="
+													+ filename);
+											DataHandler dh = document.getDocument();
+											File file = new File(filename);
+											FileOutputStream fileOutStream = new FileOutputStream(file);
+											dh.writeTo(fileOutStream);
+											fileOutStream.close();
 
-										        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-										        factory.setNamespaceAware(true);
-										        DocumentBuilder builder = factory.newDocumentBuilder();
-										        Document mappedDoc = builder.parse(new File(/*"test/" + document.getDocumentUniqueId().getLongName() + "_TransformedToPatientPortalXML.xml"*/ filename));
-										        DOMSource source = new DOMSource(mappedDoc);
-										 
-//										        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-//										        
-//										        Transformer transformer = transformerFactory.newTransformer(new StreamSource(GetPatientDataService.cdaToJsonTransformXslt));
-//												String jsonFilename = "test/" + document.getDocumentUniqueId().getLongName() + ".json";
-//												File jsonFile = new File(jsonFilename);
-//												FileOutputStream jsonFileOutStream = new FileOutputStream(jsonFile);
-/*										        StreamResult result = new StreamResult(jsonFileOutStream);
-										        transformer.transform(source,
-										        		result);
-												jsonFileOutStream.close();
-
-												log.info("Successfully transformed CCDA to JSON, filename="
-														+ jsonFilename);
-												
-//										            patientDataResponse.getDocuments().add(new String(readAllBytes(get(jsonFilename))));
-												jsonOutput.append(new String(readAllBytes(get(jsonFilename))));
-												
-										    	templateFound = true; */
-										    }
+											IParser xmlParser = fhirCtxt.newXmlParser();
+											Contract contract = (Contract)xmlParser.parseResource(new InputStreamReader(new FileInputStream(filename)));
+											contract.setId(documentUuids.get(document.getDocumentUniqueId().getLongName()));
+											result.add(contract);
+										}
+										else
+										{
+											log.info("Document retrieved is not XML - document ID="
+													+ document.getDocumentUniqueId().getLongName());
 										}
 									}
-									
-									if (!templateFound)
-								    {
-								    	// Document doesn't match the template ID - add to error list...
-//								    	patientDataResponse.getErrorMsgs().add("Document retrieved doesn't match required template ID - document ID="
-//								    			+ document.getDocumentUniqueId().getLongName());
-									}
 								}
-								else
+								catch (Exception e)
 								{
-//									patientDataResponse.getErrorMsgs().add("Document retrieved is not XML - document ID="
-//											+ document.getDocumentUniqueId().getLongName());
+									log.error("Error encountered, "
+											+ e.getMessage());
+									throw e;
 								}
 							}
-						}
-						catch (Exception e)
-						{
-							log.error("Error encountered, "
-									+ e.getMessage());
-							throw e;
 						}
 					}
 				}
@@ -469,7 +457,9 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 		}
 		catch (Exception e)
 		{
-			
+			log.error("Error encountered, "
+					+ e.getMessage());
+			throw new UnexpectedServerException("Error - " + e.getMessage());
 		}
 		
 		return result;
@@ -614,22 +604,4 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 		log.info("Exiting FHIR Contract create service");
 		return result;
 	}
-	
-	private Object getContainedResource(Class<?> resourceClass,
-			List<IResource> containedResources,
-			String idValue)
-	{
-		Object retVal = null;
-		for (IResource resource : containedResources)
-		{
-			if ((resource.getClass().equals(resourceClass)) &&
-				(resource.getIdElement().getIdPart().equalsIgnoreCase(idValue)))
-			{
-				retVal = resource;
-				break;
-			}
-		}
-
-		return retVal;
-	}	
 }

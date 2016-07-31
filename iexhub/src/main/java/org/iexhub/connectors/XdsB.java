@@ -558,6 +558,24 @@ public class XdsB
 			String queryStartDate,
 			String queryEndDate) throws Exception
 	{
+		return registryStoredQuery(patientID,
+				queryStartDate,
+				queryEndDate,
+				null);
+	}
+
+	/**
+	 * @param patientID
+	 * @param queryStartDate
+	 * @param queryEndDate
+	 * @return
+	 * @throws Exception
+	 */
+	public AdhocQueryResponse registryStoredQuery(String patientID,
+			String queryStartDate,
+			String queryEndDate,
+			String typeCode) throws Exception
+	{
 		AdhocQueryRequest request = new AdhocQueryRequest();
 		AdhocQueryType adhocQuery = new AdhocQueryType();
 		
@@ -625,6 +643,24 @@ public class XdsB
 			valueList.setValueListTypeSequence(valueListSequenceArray);
 			slot.setValueList(valueList);
 			adhocQuery.addSlot(slot);
+		}
+		
+		if (typeCode != null)
+		{
+			slot = new SlotType1();
+			name = new LongName();
+			name.setLongName("$XDSDocumentEntryTypeCode");
+			slot.setName(name);
+			valueList = new ValueListType();
+			valueListSequenceArray = new ValueListTypeSequence[1];
+			valueListSequence = new ValueListTypeSequence(); 
+			valueName = new LongName();
+			valueName.setLongName(typeCode);
+			valueListSequence.setValue(valueName);
+			valueListSequenceArray[0] = valueListSequence;
+			valueList.setValueListTypeSequence(valueListSequenceArray);
+			slot.setValueList(valueList);
+			adhocQuery.addSlot(slot);			
 		}
 		
 		try

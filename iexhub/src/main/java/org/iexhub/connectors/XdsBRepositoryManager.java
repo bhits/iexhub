@@ -1711,6 +1711,7 @@ public class XdsBRepositoryManager
 			classification.setId(UUID.randomUUID().toString());
 			classification.setClassificationScheme(documentContentTypeClassificationScheme);
 			classification.setClassifiedObject("urn:uuid:" + newDocumentUuid.toString());
+			
 			// Code
 			classification.setNodeRepresentation("57016-8");
 				
@@ -1719,7 +1720,7 @@ public class XdsBRepositoryManager
 
 			//  Code system
 			valueList = new ValueListType();
-		    valueList.getValue().add("2.16.840.1.113883.6.1");
+		    valueList.getValue().add(/*"2.16.840.1.113883.6.1"*/ "LOINC");
 			slot.setValueList(valueList);
 			classification.getSlot().add(slot);
 

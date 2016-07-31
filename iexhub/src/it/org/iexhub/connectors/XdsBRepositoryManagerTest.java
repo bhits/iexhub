@@ -92,10 +92,8 @@ public class XdsBRepositoryManagerTest
 	@Test
 	public void testProvideAndRegisterDocumentSet()
 	{
-
 		try
 		{
-
 			log.info("Repository ProvideAndRegisterDocumentSet (ITI-41) unit test started...");
 			XdsBRepository = new XdsBRepositoryManager(xdsBRegistryEndpointURI,
 					xdsBRepositoryEndpointURI);
