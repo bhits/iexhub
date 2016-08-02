@@ -1714,6 +1714,7 @@ public class XdsBRepositoryManager
 			classification.setId(UUID.randomUUID().toString());
 			classification.setClassificationScheme(documentContentTypeClassificationScheme);
 			classification.setClassifiedObject("urn:uuid:" + newDocumentUuid.toString());
+			
 			// Code
 			classification.setNodeRepresentation("57016-8");
 				
