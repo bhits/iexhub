@@ -778,7 +778,6 @@ public class GetPatientDataService
 		{
 			String msg = "Error encounter while publishing document to HIE: " + e.getMessage();
 			log.error(msg);
-			System.out.println(msg);
 			throw new UnexpectedServerException(msg);
 		}
 
