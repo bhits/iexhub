@@ -101,6 +101,7 @@ public class XdsBRepositoryManager
 
 	private static String documentClassCodesClassificationScheme = "urn:uuid:41a5887f-8865-4c09-adf7-e362475b143a";
 	private static String documentClassCodesNodeRepresentation = "*";
+	private static String documentClassCodesNodeRepresentationContract = "*";
 	private static String documentClassCodesCodingScheme = "1.3.6.1.4.1.21367.100.1";
 	private static String documentClassCodesName = "2.16.840.1.113883.6.1";
 
@@ -216,6 +217,8 @@ public class XdsBRepositoryManager
 					: props.getProperty("XdsBDocumentClassCodesClassificationScheme");
 			XdsBRepositoryManager.documentClassCodesNodeRepresentation = (props.getProperty("XdsBDocumentClassCodesNodeRepresentation") == null) ? XdsBRepositoryManager.documentClassCodesNodeRepresentation
 					: props.getProperty("XdsBDocumentClassCodesNodeRepresentation");
+			XdsBRepositoryManager.documentClassCodesNodeRepresentationContract = (props.getProperty("XdsBDocumentClassCodesNodeRepresentationContract") == null) ? XdsBRepositoryManager.documentClassCodesNodeRepresentationContract
+					: props.getProperty("XdsBDocumentClassCodesNodeRepresentationContract");
 			XdsBRepositoryManager.documentClassCodesCodingScheme = (props.getProperty("XdsBDocumentClassCodesCodingScheme") == null) ? XdsBRepositoryManager.documentClassCodesCodingScheme
 					: props.getProperty("XdsBDocumentClassCodesCodingScheme");
 			XdsBRepositoryManager.documentClassCodesName = (props.getProperty("XdsBDocumentClassCodesName") == null) ? XdsBRepositoryManager.documentClassCodesName
@@ -1602,7 +1605,8 @@ public class XdsBRepositoryManager
 			classification.setId(UUID.randomUUID().toString());
 			classification.setClassificationScheme(documentClassCodesClassificationScheme);
 			classification.setClassifiedObject("urn:uuid:" + newDocumentUuid.toString());
-			classification.setNodeRepresentation("*");
+
+			classification.setNodeRepresentation(documentClassCodesNodeRepresentationContract);
 				
 			slot = new SlotType1();
 			slot.setName("codingScheme");
