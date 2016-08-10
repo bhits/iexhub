@@ -60,7 +60,7 @@ import static org.junit.Assert.fail;
  */
 public class ContractResourceTest {
 	private static String testResourcesPath = "src/test/resources/";
-	private static String propertiesFile = testResourcesPath+"/properties/IExHub.properties";
+	private static String propertiesFile = /*testResourcesPath+"/properties/IExHub.properties"*/ "c:/temp/IExHub.properties";
 	private static Properties properties = new Properties();
 	private static String uriPrefix = ""; //"urn:oid:";
 	private static String iExHubDomainOid = "2.16.840.1.113883.3.72.5.9.1";
@@ -76,7 +76,7 @@ public class ContractResourceTest {
 	private static Practitioner recipientPractitionerResource = new Practitioner();
 	// FHIR resource identifiers for inline/embedded objects
 	private static String consentId = "consentId";
-	private static String patientId = "ffc486eff2b04b8"; /*"ffc486eff2b0999";*/ //"patientId";
+	private static String patientId = "2203b14e2fef4f2"; //"ffc486eff2b04b8"; /*"ffc486eff2b0999";*/ //"patientId";
 	private static String sourceOrganizationId = "sourceOrgOID";
 	private static String sourcePractitionerId = "sourcePractitionerNPI";
 	private static String recipientPractitionerId = "recipientPractitionerNPI";
