@@ -76,7 +76,7 @@ public class ContractResourceTest {
 	private static Practitioner recipientPractitionerResource = new Practitioner();
 	// FHIR resource identifiers for inline/embedded objects
 	private static String consentId = "consentId";
-	private static String patientId = "2203b14e2fef4f2"; //"ffc486eff2b04b8"; /*"ffc486eff2b0999";*/ //"patientId";
+	private static String patientId = "7035dc57936e40a"; //"2203b14e2fef4f2"; //"ffc486eff2b04b8"; /*"ffc486eff2b0999";*/ //"patientId";
 	private static String sourceOrganizationId = "sourceOrgOID";
 	private static String sourcePractitionerId = "sourcePractitionerNPI";
 	private static String recipientPractitionerId = "recipientPractitionerNPI";
@@ -183,7 +183,8 @@ public class ContractResourceTest {
 			IGenericClient client = ctxt.newRestfulGenericClient(serverBaseUrl);
 			client.registerInterceptor(loggingInterceptor); // Required only for
 															// logging
-			Contract retVal = client.read(Contract.class, iExHubDomainOid+"."+consentId);
+			Contract retVal = client.read(Contract.class,
+					/*iExHubDomainOid + "." + consentId*/ /*"2.25.1469220780502"*/ "2.25.1471531116858");
 			
 			assertTrue("Error - unexpected return value for testFindContract", retVal != null);
 		} catch (Exception e) {
