@@ -76,7 +76,7 @@ public class ContractResourceTest {
 	private static Practitioner recipientPractitionerResource = new Practitioner();
 	// FHIR resource identifiers for inline/embedded objects
 	private static String consentId = "consentId";
-	private static String patientId = "7035dc57936e40a"; //"2203b14e2fef4f2"; //"ffc486eff2b04b8"; /*"ffc486eff2b0999";*/ //"patientId";
+	private static String defaultPatientId = "5035e8bba3144fd"; //"7035dc57936e40a"; //"2203b14e2fef4f2"; //"ffc486eff2b04b8"; /*"ffc486eff2b0999";*/ //"patientId";
 	private static String sourceOrganizationId = "sourceOrgOID";
 	private static String sourcePractitionerId = "sourcePractitionerNPI";
 	private static String recipientPractitionerId = "recipientPractitionerNPI";
@@ -103,13 +103,13 @@ public class ContractResourceTest {
 		ctxt.getRestfulClientFactory().setSocketTimeout(fhirClientSocketTimeout);
 
 		// create the testPatient resource to be embedded into a contract
-		testPatientResource.setId(new IdDt(patientId));
+		testPatientResource.setId(new IdDt(defaultPatientId));
 		testPatientResource.addName().addFamily("Patient Family Name").addGiven("Patient Given Name");
 		// set SSN value using coding system 2.16.840.1.113883.4.1
 //		testPatientResource.addIdentifier().setSystem(uriPrefix + "2.16.840.1.113883.4.1").setValue("123-45-6789");
 //		testPatientResource.addIdentifier().setSystem(uriPrefix + "1.3.6.1.4.1.21367.2005.13.20.1000").setValue(patientId);
 		// set local patient id
-		testPatientResource.addIdentifier().setSystem(uriPrefix + iExHubDomainOid).setValue(patientId);
+		testPatientResource.addIdentifier().setSystem(uriPrefix + iExHubDomainOid).setValue(defaultPatientId);
 		testPatientResource.setGender(AdministrativeGenderEnum.FEMALE);
 		testPatientResource.setBirthDate(new DateDt("1966-10-22"));
 		testPatientResource.addAddress().addLine("Patient Address Line").setCity("City").setState("NY")
@@ -166,6 +166,102 @@ public class ContractResourceTest {
 	}
 
 	/**
+	 * Test method for general Contract resource workflow
+	 */
+	@Test
+	public void testContractWorkflow()
+	{
+		String currentTest = "ContractWorkflow";
+		Logger logger = LoggerFactory.getLogger(ContractResourceTest.class);
+		LoggingInterceptor loggingInterceptor = new LoggingInterceptor();
+		loggingInterceptor.setLogRequestSummary(true);
+		loggingInterceptor.setLogRequestBody(true);
+		loggingInterceptor.setLogger(logger);
+
+		// create FHIR client
+		IGenericClient client = ctxt.newRestfulGenericClient(serverBaseUrl);
+		client.registerInterceptor(loggingInterceptor);
+
+		// Assumes that user ID is known (i.e., patient ID feed has been provided by NIST for use with their test server at
+		//   http://ihexds.nist.gov:12090/xdstools/pidallocate
+		//
+		// Specify that patient ID in the patientId variable below.
+		//
+		// Create a contract for the user...
+		MethodOutcome createMethodOutcome = null;
+		try
+		{
+			Contract contract = createBasicTestConsent();
+
+			String xmlEncodedGranularConsent = ctxt.newXmlParser().setPrettyPrint(true)
+					.encodeResourceToString(contract);
+			FileUtils.writeStringToFile(new File(testResourcesPath+"/XML/"+currentTest+".xml"), xmlEncodedGranularConsent);
+			String jsonEncodedGranularConsent = ctxt.newJsonParser().setPrettyPrint(true)
+					.encodeResourceToString(contract);
+			FileUtils.writeStringToFile(new File(testResourcesPath+"/JSON/"+currentTest+".json"), jsonEncodedGranularConsent);
+			 
+			//  invoke Contract service
+			createMethodOutcome = client.create().resource(contract).execute();
+		}
+		catch (Exception e)
+		{
+			fail( e.getMessage());
+		}
+
+		// Now search for the contract to ensure it was stored...
+		ca.uhn.fhir.model.dstu2.resource.Bundle response = null;
+		List<Contract> retrievedContract = null;
+		try
+		{
+			IdentifierDt searchParam = new IdentifierDt(iExHubDomainOid,
+					defaultPatientId);
+			response = client
+					.search()
+					.forResource(Contract.class)
+					.where(Patient.IDENTIFIER.exactly().identifier(searchParam))
+					.returnBundle(ca.uhn.fhir.model.dstu2.resource.Bundle.class).execute();
+
+			retrievedContract = response.getAllPopulatedChildElementsOfType(Contract.class);
+			assertTrue("Error - unexpected return value for testSearchContract",
+					((response != null) && (retrievedContract.size() == 1)));
+		}
+		catch (Exception e)
+		{
+			fail(e.getMessage());
+		}
+
+		// Now update the contract.  Note that the document entryUUID (i.e., Contract resource ID) should not be modified by the client.  However,
+		//   a new document uniqueID (i.e., Contract resource identifier) must be stored in the retrieved Contract because the NIST test server (and likely
+		//   other implementations) requires that the replacement document have a different uniqueID.  This is shown in code below...
+		MethodOutcome updateMethodOutcome = null;
+		try
+		{
+			// Change document unique ID.  For this example, a timestamp is used to generate one portion of the identifier value.
+			retrievedContract.get(0).getIdentifier().setSystem(uriPrefix + iExHubDomainOid).setValue("2.25." + Long.toString(DateTime.now(DateTimeZone.UTC).getMillis()));
+			
+			updateMethodOutcome = client.update().resource(retrievedContract.get(0)).execute();
+		}
+		catch (Exception e)
+		{
+			fail(e.getMessage());
+		}
+		
+		// Alternative way of looking for a Contract resource - FHIR Find using the UUID which is the Contract resource ID...
+		try
+		{
+			Contract findVal = client.read(Contract.class,
+					updateMethodOutcome.getResource().getIdElement().getIdPart());
+			
+			assertTrue("Error - unexpected return value for testFindContract",
+					findVal != null);
+		}
+		catch (Exception e)
+		{
+			fail(e.getMessage());
+		}
+	}
+	
+	/**
 	 * Test method for
 	 * {@link org.iexhub.services.JaxRsContractRestProvider\#find(@IdParam final
 	 * IdDt id)}.
@@ -211,7 +307,7 @@ public class ContractResourceTest {
 			client.registerInterceptor(loggingInterceptor);
 
 			IdentifierDt searchParam = new IdentifierDt(iExHubDomainOid/*"1.3.6.1.4.1.21367.2005.13.20.1000"*/,
-					patientId);
+					defaultPatientId);
 			ca.uhn.fhir.model.dstu2.resource.Bundle response = client
 					.search()
 					.forResource(Contract.class)
@@ -421,7 +517,7 @@ public class ContractResourceTest {
 	{
 		return createBasicTestConsent(null);
 	}
-	
+
 	/**
 	 * createBasicTestConsent(UUID identifier)
 	 * 
@@ -451,7 +547,7 @@ public class ContractResourceTest {
 		contract.getContained().getContainedResources().add(sourcePractitionerResource);
 		// specify the patient identified in the consent
 		// add local reference to patient
-		ResourceReferenceDt patientReference = new ResourceReferenceDt("#" + patientId);
+		ResourceReferenceDt patientReference = new ResourceReferenceDt("#" + defaultPatientId);
 		contract.getSubject().add(patientReference);
 		contract.getSignerFirstRep().setType(new CodingDt("http://hl7.org/fhir/contractsignertypecodes","1.2.840.10065.1.12.1.7"));
 		contract.getSignerFirstRep().setSignature(testPatientResource.getNameFirstRep().getNameAsSingleString());
