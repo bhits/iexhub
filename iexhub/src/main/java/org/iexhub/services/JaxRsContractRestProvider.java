@@ -69,7 +69,7 @@ import ca.uhn.fhir.rest.server.IPagingProvider;
 import ca.uhn.fhir.rest.server.interceptor.IServerInterceptor;
 
 /**
- * FHIR Contract Implementation supports: create, update.
+ * FHIR Contract Implementation supports: create, update, search, find.
  * @author A. Sute
  */
 @Local

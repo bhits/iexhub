@@ -576,6 +576,7 @@ public class XdsB
 		return registryStoredQuery(patientId,
 				queryStartDate,
 				queryEndDate,
+				null,
 				null);
 	}
 
@@ -594,7 +595,8 @@ public class XdsB
 		return registryStoredQuery(patientId,
 				queryStartDate,
 				queryEndDate,
-				typeCode);
+				typeCode,
+				null);
 	}
 	
 	/**
