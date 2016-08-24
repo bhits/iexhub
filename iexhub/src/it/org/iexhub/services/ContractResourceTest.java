@@ -77,7 +77,7 @@ public class ContractResourceTest {
 	private static Practitioner recipientPractitionerResource = new Practitioner();
 	// FHIR resource identifiers for inline/embedded objects
 	private static String consentId = "consentId";
-	private static String defaultPatientId = "5035e8bba3144fd"; //"7035dc57936e40a"; //"2203b14e2fef4f2"; //"ffc486eff2b04b8"; /*"ffc486eff2b0999";*/ //"patientId";
+	private static String defaultPatientId = "f042864c0b8c4d3";
 	private static String sourceOrganizationId = "sourceOrgOID";
 	private static String sourcePractitionerId = "sourcePractitionerNPI";
 	private static String recipientPractitionerId = "recipientPractitionerNPI";
@@ -180,13 +180,13 @@ public class ContractResourceTest {
 		loggingInterceptor.setLogger(logger);
 
 		// create FHIR client
-		IGenericClient client = ctxt.newRestfulGenericClient(serverBaseUrl);
+		IGenericClient client = ctxt.newRestfulGenericClient(serverBaseUrl /*"http://fhirtest.uhn.ca/baseDstu2"*/);
 		client.registerInterceptor(loggingInterceptor);
 
 		// Assumes that user ID is known (i.e., patient ID feed has been provided by NIST for use with their test server at
 		//   http://ihexds.nist.gov:12090/xdstools/pidallocate
 		//
-		// Specify that patient ID in the patientId variable below.
+		// Specify that patient ID in the defaultPatientId static variable above.
 		//
 		// Create a contract for the user...
 		MethodOutcome createMethodOutcome = null;
@@ -200,7 +200,7 @@ public class ContractResourceTest {
 			String jsonEncodedGranularConsent = ctxt.newJsonParser().setPrettyPrint(true)
 					.encodeResourceToString(contract);
 			FileUtils.writeStringToFile(new File(testResourcesPath+"/JSON/"+currentTest+".json"), jsonEncodedGranularConsent);
-			 
+			
 			//  invoke Contract service
 			createMethodOutcome = client.create().resource(contract).execute();
 		}
@@ -231,27 +231,58 @@ public class ContractResourceTest {
 			fail(e.getMessage());
 		}
 
-		// Now update the contract.  Note that the document entryUUID (i.e., Contract resource ID) should not be modified by the client.  However,
-		//   a new document uniqueID (i.e., Contract resource identifier) must be stored in the retrieved Contract because the NIST test server (and likely
-		//   other implementations) requires that the replacement document have a different uniqueID.  This is shown in code below...
+		// Preserve the original contract identifier...
+		String originalContractIdentifier = new String(retrievedContract.get(0).getIdentifier().getValue());
+		
+		// Now update the contract.  Note that the document entry UUID (i.e., Contract resource ID) should not be modified by the client as this is required by the
+		//   XDS.b document repository to establish the association between the old and new contract.  However, a new document unique ID (i.e., Contract resource
+		//   identifier) must be stored in the retrieved Contract because the NIST test server (and likely other implementations) requires that the replacement
+		//   document have a different unique ID.  This is shown below...
 		MethodOutcome updateMethodOutcome = null;
 		try
 		{
-			// Change document unique ID.  For this example, a timestamp is used to generate one portion of the identifier value.
+			// Change document unique ID.  For this example, a timestamp is used to generate one portion of the identifier value.  The document repository will set the status of the
+			//   old document being replaced to "Deprecated".
 			retrievedContract.get(0).getIdentifier().setSystem(uriPrefix + iExHubDomainOid).setValue("2.25." + Long.toString(DateTime.now(DateTimeZone.UTC).getMillis()));
 			
 			updateMethodOutcome = client.update().resource(retrievedContract.get(0)).execute();
+			assertTrue("Update failed",
+					updateMethodOutcome.getCreated());
 		}
 		catch (Exception e)
 		{
 			fail(e.getMessage());
 		}
-		
-		// Alternative way of looking for a Contract resource - FHIR Find using the UUID which is the Contract resource ID...
+
+		// Now search for the updated contract to ensure it was stored...
+		response = null;
+		List<Contract> retrievedUpdatedContract = null;
+		try
+		{
+			IdentifierDt searchParam = new IdentifierDt(iExHubDomainOid,
+					defaultPatientId);
+			response = client
+					.search()
+					.forResource(Contract.class)
+					.where(Patient.IDENTIFIER.exactly().identifier(searchParam))
+					.returnBundle(ca.uhn.fhir.model.dstu2.resource.Bundle.class).execute();
+
+			retrievedUpdatedContract = response.getAllPopulatedChildElementsOfType(Contract.class);
+			assertTrue("Error - unexpected return value for testSearchContract",
+					((response != null)
+							&& (retrievedUpdatedContract.size() == 1)
+							&& (retrievedUpdatedContract.get(0).getIdentifier().getValue().compareToIgnoreCase(originalContractIdentifier) != 0)));
+		}
+		catch (Exception e)
+		{
+			fail(e.getMessage());
+		}
+
+		// Alternative way of looking for a Contract resource - FHIR Find using the document unique ID which is the Contract resource identifier...
 		try
 		{
 			Contract findVal = client.read(Contract.class,
-					updateMethodOutcome.getResource().getIdElement().getIdPart());
+					retrievedUpdatedContract.get(0).getIdentifier().getValue());
 			
 			assertTrue("Error - unexpected return value for testFindContract",
 					findVal != null);

@@ -162,8 +162,7 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 		}
 
 		MethodOutcome result = new MethodOutcome().setCreated(false);
-		result.setResource(contract);
-		
+	
 		try
 		{
 			if (xdsBRepositoryManager == null)
@@ -196,7 +195,10 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 			
 			if ((response.getRegistryErrorList() == null) || (response.getRegistryErrorList().getRegistryError().isEmpty()))
 			{
-				result = new MethodOutcome().setCreated(true);
+				result.setCreated(true);
+				result.setId(contract.getId());
+//				OperationOutcome operationOutcome = new OperationOutcome();
+//				result.setOperationOutcome(operationOutcome);
 			}
 		}
 		catch (Exception e)
@@ -749,7 +751,6 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 		}
 
 		MethodOutcome result = new MethodOutcome().setCreated(false);
-		result.setResource(contract);
 		
 		try
 		{
@@ -784,7 +785,8 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 			
 			if ((response.getRegistryErrorList() == null) || (response.getRegistryErrorList().getRegistryError().isEmpty()))
 			{
-				result = new MethodOutcome().setCreated(true);
+				result.setCreated(true);
+				result.setId(contract.getId());
 			}
 		}
 		catch (Exception e)

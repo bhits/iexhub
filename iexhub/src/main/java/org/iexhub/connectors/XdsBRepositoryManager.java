@@ -1935,11 +1935,11 @@ public class XdsBRepositoryManager
 				registryObjectList.getIdentifiable().add(objectFactory.createAssociation(rplcAssociation));
 				
 				// Replace old contract identifier with new one...
-				contract.getIdentifier().setValue(newDocumentUuid.toString());
+				contract.getId().setValueAsString(newDocumentUuid.toString());
 			}
 			else
 			{
-				contract.getIdentifier().setValue(newDocumentUuid.toString());
+				contract.getId().setValueAsString(newDocumentUuid.toString());
 			}
 			
 			submitObjectsRequest.setRegistryObjectList(registryObjectList);
