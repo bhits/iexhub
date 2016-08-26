@@ -29,6 +29,7 @@ import ca.uhn.fhir.model.primitive.DateDt;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.rest.api.MethodOutcome;
+import ca.uhn.fhir.rest.api.PreferReturnEnum;
 import ca.uhn.fhir.rest.client.IGenericClient;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
 import org.apache.commons.io.FileUtils;
@@ -77,7 +78,7 @@ public class ContractResourceTest {
 	private static Practitioner recipientPractitionerResource = new Practitioner();
 	// FHIR resource identifiers for inline/embedded objects
 	private static String consentId = "consentId";
-	private static String defaultPatientId = "f042864c0b8c4d3";
+	private static String defaultPatientId = "32eef402464f475";
 	private static String sourceOrganizationId = "sourceOrgOID";
 	private static String sourcePractitionerId = "sourcePractitionerNPI";
 	private static String recipientPractitionerId = "recipientPractitionerNPI";
@@ -184,9 +185,10 @@ public class ContractResourceTest {
 		client.registerInterceptor(loggingInterceptor);
 
 		// Assumes that user ID is known (i.e., patient ID feed has been provided by NIST for use with their test server at
-		//   http://ihexds.nist.gov:12090/xdstools/pidallocate
+		//   http://ihexds.nist.gov:12090/xdstools/pidallocate).  Use the assigning authority "1.3.6.1.4.1.21367.2005.13.20.1000&ISO"
+		//   shown on the page (typically the first button).
 		//
-		// Specify that patient ID in the defaultPatientId static variable above.
+		// Specify that patient ID in the "defaultPatientId" static variable above prior to running this test.
 		//
 		// Create a contract for the user...
 		MethodOutcome createMethodOutcome = null;
@@ -202,7 +204,7 @@ public class ContractResourceTest {
 			FileUtils.writeStringToFile(new File(testResourcesPath+"/JSON/"+currentTest+".json"), jsonEncodedGranularConsent);
 			
 			//  invoke Contract service
-			createMethodOutcome = client.create().resource(contract).execute();
+			createMethodOutcome = client.create().resource(contract).prefer(PreferReturnEnum.REPRESENTATION).execute();
 		}
 		catch (Exception e)
 		{
@@ -245,33 +247,9 @@ public class ContractResourceTest {
 			//   old document being replaced to "Deprecated".
 			retrievedContract.get(0).getIdentifier().setSystem(uriPrefix + iExHubDomainOid).setValue("2.25." + Long.toString(DateTime.now(DateTimeZone.UTC).getMillis()));
 			
-			updateMethodOutcome = client.update().resource(retrievedContract.get(0)).execute();
+			updateMethodOutcome = client.update().resource(retrievedContract.get(0)).prefer(PreferReturnEnum.REPRESENTATION).execute();
 			assertTrue("Update failed",
 					updateMethodOutcome.getCreated());
-		}
-		catch (Exception e)
-		{
-			fail(e.getMessage());
-		}
-
-		// Now search for the updated contract to ensure it was stored...
-		response = null;
-		List<Contract> retrievedUpdatedContract = null;
-		try
-		{
-			IdentifierDt searchParam = new IdentifierDt(iExHubDomainOid,
-					defaultPatientId);
-			response = client
-					.search()
-					.forResource(Contract.class)
-					.where(Patient.IDENTIFIER.exactly().identifier(searchParam))
-					.returnBundle(ca.uhn.fhir.model.dstu2.resource.Bundle.class).execute();
-
-			retrievedUpdatedContract = response.getAllPopulatedChildElementsOfType(Contract.class);
-			assertTrue("Error - unexpected return value for testSearchContract",
-					((response != null)
-							&& (retrievedUpdatedContract.size() == 1)
-							&& (retrievedUpdatedContract.get(0).getIdentifier().getValue().compareToIgnoreCase(originalContractIdentifier) != 0)));
 		}
 		catch (Exception e)
 		{
@@ -282,7 +260,7 @@ public class ContractResourceTest {
 		try
 		{
 			Contract findVal = client.read(Contract.class,
-					retrievedUpdatedContract.get(0).getIdentifier().getValue());
+					((Contract)updateMethodOutcome.getResource()).getIdentifier().getValue());
 			
 			assertTrue("Error - unexpected return value for testFindContract",
 					findVal != null);
@@ -563,7 +541,7 @@ public class ContractResourceTest {
 		DateTime testDocId = DateTime.now(DateTimeZone.UTC);
 		contract.getIdentifier().setSystem(uriPrefix + iExHubDomainOid)
 				.setValue("2.25." + Long.toString(testDocId.getMillis()));
-		contract.getType().setValueAsEnum(ContractTypeCodesEnum.DISCLOSURE);
+		contract.getType().addCoding().setSystem("urn:oid:2.16.840.1.113883.5.4").setCode("IDSCL");
 		contract.getActionReason().add(new CodeableConceptDt("http://hl7.org/fhir/contractsubtypecodes", "TREAT"));
 		DateTimeDt issuedDateTime = new DateTimeDt();
 		issuedDateTime.setValue(Calendar.getInstance().getTime());

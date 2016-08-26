@@ -197,6 +197,7 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 			{
 				result.setCreated(true);
 				result.setId(contract.getId());
+				result.setResource(contract);
 //				OperationOutcome operationOutcome = new OperationOutcome();
 //				result.setOperationOutcome(operationOutcome);
 			}
@@ -787,6 +788,7 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 			{
 				result.setCreated(true);
 				result.setId(contract.getId());
+				result.setResource(contract);
 			}
 		}
 		catch (Exception e)

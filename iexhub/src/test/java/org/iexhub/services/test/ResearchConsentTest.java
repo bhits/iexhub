@@ -132,7 +132,7 @@ public class ResearchConsentTest {
 		contract.setId(new IdDt(iExHubDomainOid + "." + consentId));
 		contract.getIdentifier().setSystem(uriPrefix + iExHubDomainOid)
 				.setValue("consent GUID");
-		contract.getType().setValueAsEnum(ContractTypeCodesEnum.DISCLOSURE);
+		contract.getType().addCoding().setSystem("urn:oid:2.16.840.1.113883.5.4").setCode("IDSCL");
 		//research
 		CodeableConceptDt reasearchPurposeCode = new CodeableConceptDt("http://hl7.org/fhir/contractsubtypecodes", "HRESCH");
 		reasearchPurposeCode.setText("Consent for research"); //$NON-NLS-1$
