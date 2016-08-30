@@ -47,9 +47,9 @@
 		file as a basis for your own project. -->
 	<parent>
 		<groupId>ca.uhn.hapi.fhir</groupId>
-		<artifactId>hapi-deployable-pom</artifactId>
+		<artifactId>hapi-fhir</artifactId>
 		<version>1.6</version>
-		<relativePath>../hapi-deployable-pom/pom.xml</relativePath>
+		<relativePath>../hapi-fhir/pom.xml</relativePath>
 	</parent>
 
 	<repositories>
