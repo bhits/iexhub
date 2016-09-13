@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Substance Abuse and Mental Health Services Administration (SAMHSA)
+ * Copyright (c) 2015, 2016 Substance Abuse and Mental Health Services Administration (SAMHSA)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -11,7 +11,8 @@
  * limitations under the License.
  *
  * Contributors:
- *     Eversolve, LLC - initial IExHub implementation
+ *     Eversolve, LLC - initial IExHub implementation for Health Information Exchange (HIE) integration
+ *     Anthony Sute, Ioana Singureanu
  *******************************************************************************/
 package org.iexhub.services;
 
@@ -33,9 +34,13 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import org.apache.log4j.Logger;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.iexhub.connectors.XdsB;
 import org.iexhub.connectors.XdsBRepositoryManager;
 import org.iexhub.exceptions.ContractIdParamMissingException;
+import org.iexhub.exceptions.DocumentRegistryErrorException;
+import org.iexhub.exceptions.InvalidDocumentTypeException;
+import org.iexhub.exceptions.MultipleResourcesFoundException;
 import org.iexhub.exceptions.UnexpectedServerException;
 import org.iexhub.services.client.DocumentRegistry_ServiceStub.AdhocQueryResponse;
 import org.iexhub.services.client.DocumentRegistry_ServiceStub.ClassificationType;
@@ -50,6 +55,7 @@ import org.iexhub.services.client.DocumentRepository_ServiceStub.RetrieveDocumen
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.jaxrs.server.AbstractJaxRsResourceProvider;
 import ca.uhn.fhir.model.dstu2.composite.IdentifierDt;
+import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Contract;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.primitive.IdDt;
@@ -64,7 +70,7 @@ import ca.uhn.fhir.rest.server.IPagingProvider;
 import ca.uhn.fhir.rest.server.interceptor.IServerInterceptor;
 
 /**
- * FHIR Contract Implementation supports: create, update.
+ * FHIR Contract Implementation supports: create, update, search, find.
  * @author A. Sute
  */
 @Local
@@ -156,8 +162,7 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 		}
 
 		MethodOutcome result = new MethodOutcome().setCreated(false);
-		result.setResource(contract);
-		
+	
 		try
 		{
 			if (xdsBRepositoryManager == null)
@@ -190,7 +195,11 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 			
 			if ((response.getRegistryErrorList() == null) || (response.getRegistryErrorList().getRegistryError().isEmpty()))
 			{
-				result = new MethodOutcome().setCreated(true);
+				result.setCreated(true);
+				result.setId(contract.getId());
+				result.setResource(contract);
+//				OperationOutcome operationOutcome = new OperationOutcome();
+//				result.setOperationOutcome(operationOutcome);
 			}
 		}
 		catch (Exception e)
@@ -288,6 +297,7 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 					}
 					
 					log.error(errorText.toString());
+					throw new DocumentRegistryErrorException(errorText.toString());
 				}
 			}
 
@@ -406,7 +416,6 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 					{
 						result = new ArrayList<Contract>();
 						
-						// Invoke appropriate map(s) to process documents in documentSetResponse...
 						if (documentSetResponse.getRetrieveDocumentSetResponse().getRetrieveDocumentSetResponseTypeSequence_type0() != null)
 						{
 							DocumentResponse_type0[] docResponseArray = documentSetResponse.getRetrieveDocumentSetResponse().getRetrieveDocumentSetResponseTypeSequence_type0().getDocumentResponse();
@@ -419,7 +428,7 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 										log.info("Processing document ID="
 												+ document.getDocumentUniqueId().getLongName());
 										
-										String mimeType = docResponseArray[0].getMimeType().getLongName();
+										String mimeType = document.getMimeType().getLongName();
 										if (mimeType.compareToIgnoreCase("text/xml") == 0)
 										{
 											String filename = "test/" + document.getDocumentUniqueId().getLongName() + ".xml";
@@ -491,10 +500,197 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 			}
 		}
 
-		Contract result = null;
+		try
+		{
+			if (xdsB == null)
+			{
+				log.info("Instantiating XdsB connector...");
+				xdsB = new XdsB(null,
+						null,
+						false);
+				log.info("XdsB connector successfully started");
+			}
+		}
+		catch (Exception e)
+		{
+			log.error("Error encountered instantiating XdsB connector, "
+					+ e.getMessage());
+			throw new UnexpectedServerException("Error - " + e.getMessage());
+		}
 
-		// TBD...
-		
+		Contract result = null;
+		HashMap<String, String> documentUniqueIds = new HashMap<String, String>();
+		HashMap<String, String> documentUuids = new HashMap<String, String>();
+		documentUniqueIds.put(id.getIdPart(),
+				null);
+
+		log.info("Invoking XdsB repository connector retrieval...");
+		RetrieveDocumentSetResponse documentSetResponse = xdsB.retrieveDocumentSet(xdsBRepositoryUniqueId,
+				documentUniqueIds,
+				null);
+		log.info("XdsB repository connector retrieval succeeded");
+
+		if ((documentSetResponse.getRetrieveDocumentSetResponse().getRegistryResponse().getRegistryErrorList() != null) &&
+			(documentSetResponse.getRetrieveDocumentSetResponse().getRegistryResponse().getRegistryErrorList().getRegistryError().length > 0))
+		{
+			for (DocumentRepository_ServiceStub.RegistryError_type0 error : documentSetResponse.getRetrieveDocumentSetResponse().getRegistryResponse().getRegistryErrorList().getRegistryError())
+			{ 
+				StringBuilder errorText = new StringBuilder();
+				if (error.getErrorCode() != null)
+				{
+					errorText.append("Error code=" + error.getErrorCode() + "\n");
+				}
+				if (error.getCodeContext() != null)
+				{
+					errorText.append("Error code context=" + error.getCodeContext() + "\n");
+				}
+				
+				if (error.getLocation() != null)
+				{
+					errorText.append("Error location=" + error.getLocation());
+				}
+				
+				log.error(errorText.toString());
+			}
+		}
+		else
+		{
+			result = new Contract();
+			
+			if (documentSetResponse.getRetrieveDocumentSetResponse().getRetrieveDocumentSetResponseTypeSequence_type0() != null)
+			{
+				DocumentResponse_type0[] docResponseArray = documentSetResponse.getRetrieveDocumentSetResponse().getRetrieveDocumentSetResponseTypeSequence_type0().getDocumentResponse();
+				if (docResponseArray != null)
+				{
+					try
+					{
+						if (docResponseArray.length > 1)
+						{
+							log.error(String.format("Multiple contract resources found when only one expected during find operation, resource count=%d",
+									docResponseArray.length));
+							throw new MultipleResourcesFoundException(String.format("Multiple contract resources found when only one expected during find operation, resource count=%d",
+									docResponseArray.length));
+						}
+						
+						DocumentResponse_type0 document = docResponseArray[0];
+						log.info("Processing document ID="
+								+ document.getDocumentUniqueId().getLongName());
+						
+						String mimeType = document.getMimeType().getLongName();
+						if (mimeType.compareToIgnoreCase("text/xml") == 0)
+						{
+							String filename = "test/" + document.getDocumentUniqueId().getLongName() + ".xml";
+							log.info("Persisting document to filesystem, filename="
+									+ filename);
+							DataHandler dh = document.getDocument();
+							File file = new File(filename);
+							FileOutputStream fileOutStream = new FileOutputStream(file);
+							dh.writeTo(fileOutStream);
+							fileOutStream.close();
+
+							IParser xmlParser = fhirCtxt.newXmlParser();
+							result = (Contract)xmlParser.parseResource(new InputStreamReader(new FileInputStream(filename)));
+							
+							ResourceReferenceDt consentSubjectRef = result.getSubject().get(0);
+							IBaseResource referencedSubject = consentSubjectRef.getResource();
+							String referencedId = referencedSubject.getIdElement().getIdPart();
+
+							// Need to query the registry to get the document UUID (XDSDocumentEntry. entryUUID).  This value is required for document replacement.
+							AdhocQueryResponse registryResponse = xdsB.registryStoredQuery("'"
+										+ referencedId
+										+ "^^^&"
+										+ iExHubDomainOid
+										+ "&"
+										+ iExHubAssigningAuthority
+										+ "'",
+									null,
+									null,
+									null,
+									"'" + id.getIdPart() + "'");
+							
+							log.info("Call to XdsB registry successful");
+
+							// Determine if registry server returned any errors...
+							if ((registryResponse.getRegistryErrorList() != null) &&
+								(registryResponse.getRegistryErrorList().getRegistryError().length > 0))
+							{
+								for (RegistryError_type0 error : registryResponse.getRegistryErrorList().getRegistryError())
+								{
+									StringBuilder errorText = new StringBuilder();
+									if (error.getErrorCode() != null)
+									{
+										errorText.append("Error code=" + error.getErrorCode() + "\n");
+									}
+									if (error.getCodeContext() != null)
+									{
+										errorText.append("Error code context=" + error.getCodeContext() + "\n");
+									}
+									
+									if (error.getLocation() != null)
+									{
+										errorText.append("Error location=" + error.getLocation());
+									}
+									
+									log.error(errorText.toString());
+									throw new DocumentRegistryErrorException(errorText.toString());
+								}
+							}
+							
+							// One document should be present...
+							boolean documentTypeFound = false;
+							RegistryObjectListType registryObjectList = registryResponse.getRegistryObjectList();
+							IdentifiableType[] documentObjects = registryObjectList.getIdentifiable();
+							if ((documentObjects != null) &&
+								(documentObjects.length == 1))
+							{
+								log.info("Document found in the registry, retrieving XDSDocumentEntry. entryUUID...");
+								
+								if (documentObjects[0].getClass().equals(ExtrinsicObjectType.class))
+								{
+									// Determine if this is the privacy consent document type...
+									ClassificationType[] classifications = ((ExtrinsicObjectType)documentObjects[0]).getClassification();
+									for (ClassificationType classification : classifications)
+									{
+										if (classification.getClassificationScheme().getReferenceURI().getPath().compareToIgnoreCase(privacyConsentClassificationType) == 0)
+										{
+											documentTypeFound = true;
+											break;
+										}
+									}
+									
+									if (documentTypeFound)
+									{
+										// Set FHIR resource ID to document UUID...
+										result.setId(((ExtrinsicObjectType)documentObjects[0]).getId().getPath().replace("uuid:", ""));
+										log.info("Found document UUID: "
+												+ ((ExtrinsicObjectType)documentObjects[0]).getId().getPath().replace("uuid:", ""));
+									}
+									else
+									{
+										log.error(String.format("Requested document is of invalid type, expected classification type %s",
+												privacyConsentClassificationType));
+										throw new InvalidDocumentTypeException(String.format("Requested document is of invalid type, expected classification type %s",
+												privacyConsentClassificationType));
+									}
+								}
+							}
+						}
+						else
+						{
+							log.info("Document retrieved is not XML - document ID="
+									+ document.getDocumentUniqueId().getLongName());
+						}
+					}
+					catch (Exception e)
+					{
+						log.error("Error encountered, "
+								+ e.getMessage());
+						throw e;
+					}
+				}
+			}
+		}
+			
 		log.info("Exiting FHIR Contract find (by ID) service");
 		return result;
 	}
@@ -556,7 +752,6 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 		}
 
 		MethodOutcome result = new MethodOutcome().setCreated(false);
-		result.setResource(contract);
 		
 		try
 		{
@@ -591,7 +786,9 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 			
 			if ((response.getRegistryErrorList() == null) || (response.getRegistryErrorList().getRegistryError().isEmpty()))
 			{
-				result = new MethodOutcome().setCreated(true);
+				result.setCreated(true);
+				result.setId(contract.getId());
+				result.setResource(contract);
 			}
 		}
 		catch (Exception e)
