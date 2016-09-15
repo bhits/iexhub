@@ -55,7 +55,8 @@ import static org.junit.Assert.fail;
 //import org.apache.log4j.Logger;
 
 /**
- * Contract Resource Test - used to create, find, search Privacy Consents
+ * Privacy Consent DSTU2 using Contract Resource
+ * Workflow-based Integration Test:  to create, find, search Privacy Consents
  * 
  * @author A. Sute
  *
