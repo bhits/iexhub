@@ -375,12 +375,12 @@
 			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="var" path="M2_REPO/ca/uhn/hapi/fhir/hapi-fhir-jaxrsserver-base/1.6/hapi-fhir-jaxrsserver-base-1.6.jar">
+	<classpathentry kind="var" path="M2_REPO/ca/uhn/hapi/fhir/hapi-fhir-jaxrsserver-base/2.0/hapi-fhir-jaxrsserver-base-2.0.jar">
 		<attributes>
 			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="var" path="M2_REPO/ca/uhn/hapi/fhir/hapi-fhir-base/1.6/hapi-fhir-base-1.6.jar">
+	<classpathentry kind="var" path="M2_REPO/ca/uhn/hapi/fhir/hapi-fhir-base/2.0/hapi-fhir-base-2.0.jar">
 		<attributes>
 			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
 		</attributes>
@@ -415,12 +415,12 @@
 			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="var" path="M2_REPO/ca/uhn/hapi/fhir/hapi-fhir-structures-dstu2/1.6/hapi-fhir-structures-dstu2-1.6.jar">
+	<classpathentry kind="var" path="M2_REPO/ca/uhn/hapi/fhir/hapi-fhir-structures-dstu2/2.0/hapi-fhir-structures-dstu2-2.0.jar">
 		<attributes>
 			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="var" path="M2_REPO/ca/uhn/hapi/fhir/hapi-fhir-structures-dstu3/1.6/hapi-fhir-structures-dstu3-1.6.jar">
+	<classpathentry kind="var" path="M2_REPO/ca/uhn/hapi/fhir/hapi-fhir-structures-dstu3/2.0/hapi-fhir-structures-dstu3-2.0.jar">
 		<attributes>
 			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
 		</attributes>

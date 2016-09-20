@@ -55,12 +55,13 @@ import static org.junit.Assert.fail;
 //import org.apache.log4j.Logger;
 
 /**
- * Contract Resource Test - used to create, find, search Privacy Consents
+ * Privacy Consent DSTU2 using Contract Resource
+ * Workflow-based Integration Test:  to create, find, search Privacy Consents
  * 
  * @author A. Sute
  *
  */
-public class ContractResourceTest {
+public class ConsentDstu2Test {
 	private static String testResourcesPath = "src/test/resources/";
 	private static String propertiesFile = /*testResourcesPath+"/properties/IExHub.properties"*/ "c:/temp/IExHub.properties";
 	private static Properties properties = new Properties();
@@ -87,15 +88,15 @@ public class ContractResourceTest {
 	static {
 		try {
 			properties.load(new FileInputStream(propertiesFile));
-			ContractResourceTest.iExHubDomainOid = (properties.getProperty("IExHubDomainOID") == null)
-					? ContractResourceTest.iExHubDomainOid : properties.getProperty("IExHubDomainOID");
-			ContractResourceTest.iExHubAssigningAuthority = (properties.getProperty("IExHubAssigningAuthority") == null)
-					? ContractResourceTest.iExHubAssigningAuthority
+			ConsentDstu2Test.iExHubDomainOid = (properties.getProperty("IExHubDomainOID") == null)
+					? ConsentDstu2Test.iExHubDomainOid : properties.getProperty("IExHubDomainOID");
+			ConsentDstu2Test.iExHubAssigningAuthority = (properties.getProperty("IExHubAssigningAuthority") == null)
+					? ConsentDstu2Test.iExHubAssigningAuthority
 					: properties.getProperty("IExHubAssigningAuthority");
-			ContractResourceTest.fhirClientSocketTimeout = (properties
-					.getProperty("FHIRClientSocketTimeoutInMs") == null) ? ContractResourceTest.fhirClientSocketTimeout
+			ConsentDstu2Test.fhirClientSocketTimeout = (properties
+					.getProperty("FHIRClientSocketTimeoutInMs") == null) ? ConsentDstu2Test.fhirClientSocketTimeout
 							: Integer.parseInt(properties.getProperty("FHIRClientSocketTimeoutInMs"));
-			ContractResourceTest.iExHubDomainOid = (properties.getProperty("IExHubDomainOID") == null) ? ContractResourceTest.iExHubDomainOid
+			ConsentDstu2Test.iExHubDomainOid = (properties.getProperty("IExHubDomainOID") == null) ? ConsentDstu2Test.iExHubDomainOid
 					: properties.getProperty("IExHubDomainOID");
 		} catch (IOException e) {
 			throw new UnexpectedServerException(
@@ -179,7 +180,7 @@ public class ContractResourceTest {
 		//
 		// Specify that patient ID in the "defaultPatientId" static variable above prior to running this test.
 		String currentTest = "ContractWorkflow";
-		Logger logger = LoggerFactory.getLogger(ContractResourceTest.class);
+		Logger logger = LoggerFactory.getLogger(ConsentDstu2Test.class);
 		LoggingInterceptor loggingInterceptor = new LoggingInterceptor();
 		loggingInterceptor.setLogRequestSummary(true);
 		loggingInterceptor.setLogRequestBody(true);
@@ -281,7 +282,7 @@ public class ContractResourceTest {
 	public void testFindContract() {
 
 		try {
-			Logger logger = LoggerFactory.getLogger(ContractResourceTest.class);
+			Logger logger = LoggerFactory.getLogger(ConsentDstu2Test.class);
 			LoggingInterceptor loggingInterceptor = new LoggingInterceptor();
 			loggingInterceptor.setLogRequestSummary(true);
 			loggingInterceptor.setLogRequestBody(true);
@@ -308,7 +309,7 @@ public class ContractResourceTest {
 	public void testSearchContract() {
 
 		try {
-			Logger logger = LoggerFactory.getLogger(ContractResourceTest.class);
+			Logger logger = LoggerFactory.getLogger(ConsentDstu2Test.class);
 			LoggingInterceptor loggingInterceptor = new LoggingInterceptor();
 			loggingInterceptor.setLogRequestSummary(true);
 			loggingInterceptor.setLogRequestBody(true);
@@ -344,7 +345,7 @@ public class ContractResourceTest {
 		// using ITI-41
 		String currentTest = "BasicConsent";
 		try {
-			Logger logger = LoggerFactory.getLogger(ContractResourceTest.class);
+			Logger logger = LoggerFactory.getLogger(ConsentDstu2Test.class);
 			LoggingInterceptor loggingInterceptor = new LoggingInterceptor();
 			loggingInterceptor.setLogRequestSummary(true);
 			loggingInterceptor.setLogRequestBody(true);
@@ -387,7 +388,7 @@ public class ContractResourceTest {
 		// using ITI-41
 		String currentTest = "BasicConsentUpdate";
 		try {
-			Logger logger = LoggerFactory.getLogger(ContractResourceTest.class);
+			Logger logger = LoggerFactory.getLogger(ConsentDstu2Test.class);
 			LoggingInterceptor loggingInterceptor = new LoggingInterceptor();
 			loggingInterceptor.setLogRequestSummary(true);
 			loggingInterceptor.setLogRequestBody(true);
@@ -430,7 +431,7 @@ public class ContractResourceTest {
 		// Create a Privacy Consent as a Contract to be submitted as document
 		// using ITI-41
 		try {
-			Logger logger = LoggerFactory.getLogger(ContractResourceTest.class);
+			Logger logger = LoggerFactory.getLogger(ConsentDstu2Test.class);
 			LoggingInterceptor loggingInterceptor = new LoggingInterceptor();
 			loggingInterceptor.setLogRequestSummary(true);
 			loggingInterceptor.setLogRequestBody(true);
