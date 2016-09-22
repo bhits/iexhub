@@ -126,7 +126,7 @@
 				<artifactId>docker-maven-plugin</artifactId>
 				<version>${docker.maven.version}</version>
 				<configuration>
-					<imageName>bhits/${project.artifactId}</imageName>
+					<imageName>bhits/${project.artifactId}-fork</imageName>
 					<dockerDirectory>src/main/docker</dockerDirectory>
 					<buildArgs>
 						<finalName>${project.build.finalName}.war</finalName>
