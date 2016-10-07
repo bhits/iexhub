@@ -25,6 +25,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Calendar;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.io.FileUtils;
 import org.hl7.fhir.dstu3.exceptions.FHIRException;
 import org.hl7.fhir.dstu3.model.Coding;
@@ -40,6 +42,10 @@ import org.hl7.fhir.instance.model.api.IIdType;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.apache.commons.httpclient.*;
+import org.apache.commons.httpclient.methods.*;
+import org.apache.commons.httpclient.params.HttpMethodParams;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.api.MethodOutcome;
@@ -68,6 +74,7 @@ public class VitalSignsMonitoringProcedureStu3Test {
 	private static String currentTest = "MonitoringProcedure";
 	
 	private static Procedure vitalSignsMonitoringProcedure ;
+	
 	
 
 
@@ -197,9 +204,6 @@ public class VitalSignsMonitoringProcedureStu3Test {
 			e.printStackTrace();
 			fail("Failed to set end date:" + e.getMessage());
 		}
-		
-		
-
 		System.out.println("For update:"+"\n"+ctx.newXmlParser().setPrettyPrint(true).encodeResourceToString(vitalSignsMonitoringProcedure));
 		
 		// update procedure
@@ -224,7 +228,12 @@ public class VitalSignsMonitoringProcedureStu3Test {
 		} catch (IOException e) {
 			fail("Write persisted procedure resource to json:" + e.getMessage());
 		}
+		
+
+		
 	}
+	
+	
 	
 	
 
@@ -251,6 +260,19 @@ public class VitalSignsMonitoringProcedureStu3Test {
 		return testPatientResource;
 	}
 
+	/**
+	 * Invokes "parseUDI" Api
+	 */
+	@Test
+	public void testParseUDI() {
+		String accessGudidUrl = "https://accessgudid.nlm.nih.gov/api/v1/parse_udi.xml";
+		HttpClient accessGudidClient = new HttpClient();
+		System.out.println("Server URL:"+accessGudidUrl);
+		GetMethod method = new GetMethod("http://www.apache.org/");
+		method.setPath(accessGudidUrl);
+		method.getParams().setParameter("udi", deviceUdiCarrier);
+		
+	}
 	/**
 	 * Create a Device resource based on scanned UDI carrier string
 	 * http://www.fda.gov/downloads/MedicalDevices/DeviceRegulationandGuidance/UniqueDeviceIdentification/GlobalUDIDatabaseGUDID/UCM396595.doc
