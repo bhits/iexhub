@@ -1,5 +1,5 @@
 # Short Description
-Information Exchange Hub (IExHub) API is connector for Consent2Share to do HIE operations.
+Information Exchange Hub (IExHub) API is a connector for Consent2Share to perform HIE operations.
 
 # Full Description
 
