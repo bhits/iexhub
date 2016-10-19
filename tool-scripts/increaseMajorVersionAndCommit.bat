@@ -6,7 +6,7 @@ echo 'Will increase Major parts of version numbers in pom.xml files by 1'
 ::
  
 :: set the working directory of a command in windows batch file
-pushd ..\iexhub-fork
+pushd ..\iexhub
 
 :: get current version of the top level pom
 :: call mvn help:evaluate -Dexpression=project.version
