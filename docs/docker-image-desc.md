@@ -19,7 +19,7 @@ For more information and related downloads for Consent2Share, please visit [Cons
 
 ## Start a IExHub instance
 
-Be sure to familiarize yourself with the repository's [README.md](https://github.com/bhits/iexhub) file before starting the instance.
+Be sure to familiarize yourself with the repository's [README.md](../Readme.md) file before starting the instance.
 
 `docker run --name iexhub -d bhits/iexhub:latest`
 
