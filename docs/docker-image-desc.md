@@ -21,9 +21,9 @@ For more information and related downloads for Consent2Share, please visit [Cons
 
 Be sure to familiarize yourself with the repository's [README.md](https://github.com/bhits/iexhub) file before starting the instance.
 
-`docker run  --name iexhub -d bhits/iexhub:latest`
+`docker run --name iexhub -d bhits/iexhub:latest`
 
-*NOTE: In order for this API to fully function as a microservice in the Consent2Share application, it is required to setup the dependency microservices and support level infrastructure. Please refer to the [Consent2Share Deployment Guide]() for instructions to setup the Consent2Share infrastructure.*
+*NOTE: In order for this API to fully function as a microservice in the Consent2Share application, it is required to setup the dependency microservices and support level infrastructure. Please refer to the [Consent2Share Deployment Guide](https://github.com/bhits/consent2share/releases/download/2.0.0/c2s-deployment-guide.pdf) for instructions to setup the Consent2Share infrastructure.*
 
 
 ## Configure
@@ -58,7 +58,7 @@ Please see the [Docker installation documentation](https://docs.docker.com/engin
 
 # License
 
-View [license]() information for the software contained in this image.
+View [license](../LICENSE) information for the software contained in this image.
 
 # User Feedback
 
