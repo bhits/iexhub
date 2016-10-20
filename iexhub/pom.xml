@@ -1,28 +1,38 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
 	<groupId>gov.samhsa.iexhub</groupId>
+	<artifactId>iexhub</artifactId>
 	<version>0.3.0-SNAPSHOT</version>
 	<packaging>war</packaging>
-	<artifactId>iexhub</artifactId>
+
 	<name>iexhub</name>
-	<url>tbd</url>
+	<description>Information Exchange Hub consists of connectors, services, and transformation components intended to allow applications to interoperate with standards-based Health Information Exchange (HIE) organizations.</description>
+	<url>${project.scm.url}</url>
+
 	<organization>
 		<name>SAMHSA</name>
-		<url>www.samhsa.hhs.gov</url>
+		<url>http://www.samhsa.gov/</url>
 	</organization>
-	<description>Information Exchange Hub consists of connectors, services, and ransformation components intended to allow applications to interoperate with standards-based Health Information Exchange (HIE) organizations.</description>
 
-	<scm>
-		<url>https://github.com/FEISystems/iexhub</url>
-		<connection>scm:git:https://github.com/FEISystems/iexhub.git</connection>
-		<developerConnection>scm:git:https://github.com/FEISystems/iexhub.git</developerConnection>
-	</scm>
+	<licenses>
+		<license>
+			<name>See license in LICENSE.md</name>
+			<url>${project.scm.url}/blob/master/LICENSE.md</url>
+		</license>
+	</licenses>
 
 	<ciManagement>
-		<system>Jenkins</system>
+		<system>CI</system>
 		<url>http://BhitsBuild03/</url>
 	</ciManagement>
+
+	<scm>
+		<url>https://github.com/bhits/iexhub</url>
+		<connection>scm:git:{project.scm.url}.git</connection>
+		<developerConnection>scm:git:${project.scm.url}.git</developerConnection>
+	</scm>
 
 	<distributionManagement>
 		<repository>
@@ -37,14 +47,9 @@
 		</snapshotRepository>
 	</distributionManagement>
 
-	<properties>
-		<maven.nexus.servername>BHITSMVNREP01</maven.nexus.servername>
-		<docker.maven.version>0.4.3</docker.maven.version>
-		<hapi.fhir.version>2.0</hapi.fhir.version>
-	</properties>
-	<!-- Note: HAPI projects use the "hapi-fhir" POM as their base to provide 
-		easy management. You do not need to use this in your own projects, so the 
-		"parent" tag and it's contents below may be removed if you are using this 
+	<!-- Note: HAPI projects use the "hapi-fhir" POM as their base to provide
+		easy management. You do not need to use this in your own projects, so the
+		"parent" tag and it's contents below may be removed if you are using this
 		file as a basis for your own project. -->
 	<parent>
 		<groupId>ca.uhn.hapi.fhir</groupId>
@@ -52,6 +57,18 @@
 		<version>2.0</version>
 		<relativePath>../hapi-fhir/pom.xml</relativePath>
 	</parent>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<java.version>1.7</java.version>
+		<docker.maven.version>0.4.3</docker.maven.version>
+		<hapi.fhir.version>2.0</hapi.fhir.version>
+		<mdmi.version>1.0.0-SNAPSHOT</mdmi.version>
+		<apache.axiom.version>1.2.15</apache.axiom.version>
+		<apache.axis2.version>1.6.3</apache.axis2.version>
+		<apache.rampart.version>1.6.2</apache.rampart.version>
+		<jersey_version>2.22</jersey_version>
+	</properties>
 
 	<repositories>
 		<repository>
@@ -94,55 +111,7 @@
 			</snapshots>
 		</repository>
 	</repositories>
-	<build>
-		<!-- <sourceDirectory>src</sourceDirectory> -->
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
-				</configuration>
-			</plugin>
-			<plugin>
-				<artifactId>maven-war-plugin</artifactId>
-				<dependencies>
-					<dependency>
-						<groupId>org.apache.axis2</groupId>
-						<artifactId>axis2-jaxbri</artifactId>
-						<version>1.6.3</version>
-					</dependency>
-				</dependencies>
-			</plugin>
 
-			<plugin>
-				<groupId>org.apache.axis2</groupId>
-				<artifactId>axis2-mar-maven-plugin</artifactId>
-				<version>1.6.3</version>
-				<extensions>true</extensions>
-			</plugin>
-			<plugin>
-				<groupId>com.spotify</groupId>
-				<artifactId>docker-maven-plugin</artifactId>
-				<version>${docker.maven.version}</version>
-				<configuration>
-					<imageName>bhits/${project.artifactId}-fork</imageName>
-					<dockerDirectory>src/main/docker</dockerDirectory>
-					<buildArgs>
-						<finalName>${project.build.finalName}.war</finalName>
-					</buildArgs>
-					<resources>
-						<resource>
-							<targetPath>/</targetPath>
-							<directory>${project.build.directory}</directory>
-							<include>${project.build.finalName}.war</include>
-						</resource>
-					</resources>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 	<dependencies>
 		<dependency>
 			<groupId>org.antlr</groupId>
@@ -157,7 +126,7 @@
 		<dependency>
 			<groupId>org.mdmi</groupId>
 			<artifactId>org.mdmi.core</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
+			<version>${mdmi.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
@@ -172,28 +141,28 @@
 		<dependency>
 			<groupId>org.apache.axis2</groupId>
 			<artifactId>axis2</artifactId>
-			<version>1.6.3</version>
+			<version>${apache.axis2.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.ws.commons.axiom</groupId>
 			<artifactId>axiom-api</artifactId>
-			<version>1.2.15</version>
+			<version>${apache.axiom.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.ws.commons.axiom</groupId>
 			<artifactId>axiom-impl</artifactId>
-			<version>1.2.15</version>
+			<version>${apache.axiom.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.ws.commons.axiom</groupId>
 			<artifactId>axiom-dom</artifactId>
-			<version>1.2.15</version>
+			<version>${apache.axiom.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.ws.commons.axiom</groupId>
 			<artifactId>axiom-compat</artifactId>
-			<version>1.2.15</version>
+			<version>${apache.axiom.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.neethi</groupId>
@@ -208,12 +177,12 @@
 		<dependency>
 			<groupId>org.apache.axis2</groupId>
 			<artifactId>axis2-transport-local</artifactId>
-			<version>1.6.3</version>
+			<version>${apache.axis2.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.axis2</groupId>
 			<artifactId>axis2-transport-http</artifactId>
-			<version>1.6.3</version>
+			<version>${apache.axis2.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.mail</groupId>
@@ -286,11 +255,8 @@
 		<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
 			<artifactId>hapi-fhir-jaxrsserver-base</artifactId>
-			<version>2.0</version>
+			<version>${hapi.fhir.version}</version>
 		</dependency>
-		<!-- HAPI FHIR Schematron Validation Dependency Latest: <dependency> <groupId>com.helger</groupId> 
-			<artifactId>ph-schematron</artifactId> <version>3.0.1</version> </dependency> 
-			HAPI FHIR dependencies: -->
 		<dependency>
 			<groupId>com.phloc</groupId>
 			<artifactId>phloc-schematron</artifactId>
@@ -303,23 +269,23 @@
 		<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
 			<artifactId>hapi-fhir-validation-resources-dstu2</artifactId>
-			<version>2.0</version>
+			<version>${hapi.fhir.version}</version>
 		</dependency>
 		<!-- HAPI FHIR StructureDefinition validation -->
 		<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
 			<artifactId>hapi-fhir-validation-resources-dstu3</artifactId>
-			<version>2.0</version>
+			<version>${hapi.fhir.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
 			<artifactId>hapi-fhir-structures-dstu2</artifactId>
-			<version>2.0</version>
+			<version>${hapi.fhir.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
 			<artifactId>hapi-fhir-structures-dstu3</artifactId>
-			<version>2.0</version>
+			<version>${hapi.fhir.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.ws.rs</groupId>
@@ -376,7 +342,7 @@
 		<dependency>
 			<groupId>org.apache.rampart</groupId>
 			<artifactId>rampart</artifactId>
-			<version>1.6.2</version>
+			<version>${apache.rampart.version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.apache.xalan</groupId>
@@ -395,7 +361,7 @@
 		<dependency>
 			<groupId>org.apache.rampart</groupId>
 			<artifactId>rampart-core</artifactId>
-			<version>1.6.2</version>
+			<version>${apache.rampart.version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.apache.xalan</groupId>
@@ -414,7 +380,7 @@
 		<dependency>
 			<groupId>org.apache.rampart</groupId>
 			<artifactId>rampart-policy</artifactId>
-			<version>1.6.2</version>
+			<version>${apache.rampart.version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.apache.xalan</groupId>
@@ -433,7 +399,7 @@
 		<dependency>
 			<groupId>org.apache.rampart</groupId>
 			<artifactId>rampart-trust</artifactId>
-			<version>1.6.2</version>
+			<version>${apache.rampart.version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.apache.xalan</groupId>
@@ -472,4 +438,53 @@
 		</dependency>
 
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-war-plugin</artifactId>
+				<dependencies>
+					<dependency>
+						<groupId>org.apache.axis2</groupId>
+						<artifactId>axis2-jaxbri</artifactId>
+						<version>${apache.axis2.version}</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.axis2</groupId>
+				<artifactId>axis2-mar-maven-plugin</artifactId>
+				<version>${apache.axis2.version}</version>
+				<extensions>true</extensions>
+			</plugin>
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>${docker.maven.version}</version>
+				<configuration>
+					<imageName>bhits/${project.artifactId}-fork</imageName>
+					<dockerDirectory>src/main/docker</dockerDirectory>
+					<buildArgs>
+						<finalName>${project.build.finalName}.war</finalName>
+					</buildArgs>
+					<resources>
+						<resource>
+							<targetPath>/</targetPath>
+							<directory>${project.build.directory}</directory>
+							<include>${project.build.finalName}.war</include>
+						</resource>
+					</resources>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>
