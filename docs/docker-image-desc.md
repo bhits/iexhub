@@ -58,7 +58,7 @@ Please see the [Docker installation documentation](https://docs.docker.com/engin
 
 # License
 
-View [license](../LICENSE) information for the software contained in this image.
+View [license](https://github.com/bhits/iexhub/blob/master/LICENSE) information for the software contained in this image.
 
 # User Feedback
 
