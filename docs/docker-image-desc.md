@@ -28,7 +28,7 @@ Be sure to familiarize yourself with the repository's [README.md](https://github
 
 ## Configure
 
-This API runs with a [default configuration](https://github.com/bhits/iexhub/blob/master/iexhub/src/main/resources/IExHub.properties) that is primarily targeted for the development environment.
+This API runs with a [default configuration](../iexhub/src/main/resources/IExHub.properties) that is primarily targeted for the development environment.
 
 ### Using a custom configuration file
 
