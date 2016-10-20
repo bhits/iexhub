@@ -42,6 +42,8 @@
 		<developerConnection>scm:git:${project.scm.url}.git</developerConnection>
 	</scm>
 
+	<!-- This configuration is for BHITS team to deploy the artifacts to organization repository with 'mvn deploy' command -->
+	<!-- Please reconfigure based on your environment setup to run 'mvn deploy' -->
 	<distributionManagement>
 		<repository>
 			<id>deployment</id>
