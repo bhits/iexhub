@@ -16,6 +16,14 @@
 		<url>http://www.samhsa.gov/</url>
 	</organization>
 
+	<developers>
+		<developer>
+			<id>BHITS Team</id>
+			<name>BHITS Team</name>
+			<organization>FEi Systems</organization>
+		</developer>
+	</developers>
+
 	<licenses>
 		<license>
 			<name>See license in LICENSE.md</name>
