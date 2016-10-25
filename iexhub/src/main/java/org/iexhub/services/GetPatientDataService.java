@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Substance Abuse and Mental Health Services Administration (SAMHSA)
+ * Copyright (c) 2015, 2016 Substance Abuse and Mental Health Services Administration (SAMHSA)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -11,7 +11,8 @@
  * limitations under the License.
  *
  * Contributors:
- *     Eversolve, LLC - initial IExHub implementation
+ *     Eversolve, LLC - initial IExHub implementation for Health Information Exchange (HIE) integration
+ *     Anthony Sute, Ioana Singureanu
  *******************************************************************************/
 package org.iexhub.services;
 
@@ -21,12 +22,17 @@ import jersey.repackaged.com.google.common.collect.Collections2;
 import jersey.repackaged.com.google.common.collect.MapDifference;
 import jersey.repackaged.com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
 import org.apache.log4j.Logger;
 import org.iexhub.connectors.XdsB;
+import org.iexhub.connectors.XdsBRepositoryManager;
 import org.iexhub.exceptions.*;
 import org.iexhub.services.client.DocumentRegistry_ServiceStub.*;
 import org.iexhub.services.client.DocumentRepository_ServiceStub.DocumentResponse_type0;
 import org.iexhub.services.client.DocumentRepository_ServiceStub.RetrieveDocumentSetResponse;
+import org.iexhub.services.dto.ClinicalDocumentRequest;
+import org.iexhub.services.dto.ClinicalDocumentResponse;
 import org.iexhub.services.dto.DocumentsResponseDto;
 import org.iexhub.services.dto.PatientDocument;
 import org.openhealthtools.mdht.mdmi.*;
@@ -38,6 +44,7 @@ import org.w3c.dom.NodeList;
 import javax.activation.DataHandler;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.*;
@@ -750,6 +757,32 @@ public class GetPatientDataService
 		documentsResponseDto.setDocuments(patientDocuments);
 
 		return Response.status(Response.Status.OK).entity(documentsResponseDto).type(MediaType.APPLICATION_JSON).build();
+	}
+
+	@POST
+	@Path("/publish")
+	@Produces({MediaType.APPLICATION_JSON})
+	public Response publishDocument(ClinicalDocumentRequest clinicalDocumentRequest)
+	{
+		Properties props = new Properties();
+
+		try
+		{
+			byte[] document = clinicalDocumentRequest.getDocument();
+			props.load(new FileInputStream(propertiesFile));
+			String xdsBRegistryEndpointURI = props.getProperty("XdsBRegistryEndpointURI");
+			String xdsBRepositoryEndpointURI = props.getProperty("XdsBRepositoryEndpointURI");
+			XdsBRepositoryManager XdsBRepository = new XdsBRepositoryManager(xdsBRegistryEndpointURI, xdsBRepositoryEndpointURI);
+			XdsBRepository.provideAndRegisterDocumentSet(document ,"text/xml" );
+		}
+		catch (Exception e)
+		{
+			String msg = "Error encounter while publishing document to HIE: " + e.getMessage();
+			log.error(msg);
+			throw new UnexpectedServerException(msg);
+		}
+
+		return Response.status(Response.Status.OK).entity(new ClinicalDocumentResponse(true)).type(MediaType.APPLICATION_JSON).build();
 	}
 
 	private String invokeMap(String sourceFilename)

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Substance Abuse and Mental Health Services Administration (SAMHSA)
+ * Copyright (c) 2015, 2016 Substance Abuse and Mental Health Services Administration (SAMHSA)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -11,13 +11,13 @@
  * limitations under the License.
  *
  * Contributors:
- *     Eversolve, LLC - initial IExHub implementation
+ *     Eversolve, LLC - initial IExHub implementation for Health Information Exchange (HIE) integration
+ *     Anthony Sute, Ioana Singureanu
  *******************************************************************************/
 package org.iexhub.connectors;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Files;
@@ -422,10 +422,18 @@ public class XdsB
 		String logMsg = FileUtils.readFileToString(new File(iti18AuditMsgTemplate));
 		
 		// Substitutions...
-		patientId = patientId.replace("'",
-				"");
-		patientId = patientId.replace("&",
-				"&amp;");
+		if ((patientId != null) &&
+			(patientId.length() > 0))
+		{
+			patientId = patientId.replace("'",
+					"");
+			patientId = patientId.replace("&",
+					"&amp;");
+		}
+		else
+		{
+			patientId = new String("");
+		}
 		
 		DateTime now = new DateTime(DateTimeZone.UTC);
 		DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
@@ -485,10 +493,18 @@ public class XdsB
 		String logMsg = FileUtils.readFileToString(new File(iti43AuditMsgTemplate));
 		
 		// Substitutions...
-		patientId = patientId.replace("'",
-				"");
-		patientId = patientId.replace("&",
-				"&amp;");
+		if ((patientId != null) &&
+			(patientId.length() > 0))
+		{
+			patientId = patientId.replace("'",
+					"");
+			patientId = patientId.replace("&",
+					"&amp;");
+		}
+		else
+		{
+			patientId = new String("");
+		}
 		
 		DateTime now = new DateTime(DateTimeZone.UTC);
 		DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
@@ -548,33 +564,82 @@ public class XdsB
 	}
 
 	/**
-	 * @param patientID
+	 * @param patientId
 	 * @param queryStartDate
 	 * @param queryEndDate
 	 * @return
 	 * @throws Exception
 	 */
-	public AdhocQueryResponse registryStoredQuery(String patientID,
+	public AdhocQueryResponse registryStoredQuery(String patientId,
 			String queryStartDate,
 			String queryEndDate) throws Exception
 	{
+		return registryStoredQuery(patientId,
+				queryStartDate,
+				queryEndDate,
+				null,
+				null);
+	}
+
+	/**
+	 * @param patientId
+	 * @param queryStartDate
+	 * @param queryEndDate
+	 * @return
+	 * @throws Exception
+	 */
+	public AdhocQueryResponse registryStoredQuery(String patientId,
+			String queryStartDate,
+			String queryEndDate,
+			String typeCode) throws Exception
+	{
+		return registryStoredQuery(patientId,
+				queryStartDate,
+				queryEndDate,
+				typeCode,
+				null);
+	}
+	
+	/**
+	 * @param patientId
+	 * @param queryStartDate
+	 * @param queryEndDate
+	 * @return
+	 * @throws Exception
+	 */
+	public AdhocQueryResponse registryStoredQuery(String patientId,
+			String queryStartDate,
+			String queryEndDate,
+			String typeCode,
+			String documentUniqueId) throws Exception
+	{
 		AdhocQueryRequest request = new AdhocQueryRequest();
 		AdhocQueryType adhocQuery = new AdhocQueryType();
+		SlotType1 slot = null;
+		LongName name = null;
+		ValueListType valueList = null;
+		ValueListTypeSequence[] valueListSequenceArray = null;
+		ValueListTypeSequence valueListSequence = null;
+		LongName valueName = null;
 		
-		SlotType1 slot = new SlotType1();
-		LongName name = new LongName();
-		name.setLongName("$XDSDocumentEntryPatientId");
-		slot.setName(name);
-		ValueListType valueList = new ValueListType();
-		ValueListTypeSequence[] valueListSequenceArray = new ValueListTypeSequence[1];
-		ValueListTypeSequence valueListSequence = new ValueListTypeSequence(); 
-		LongName valueName = new LongName();
-		valueName.setLongName(patientID);
-		valueListSequence.setValue(valueName);
-		valueListSequenceArray[0] = valueListSequence;
-		valueList.setValueListTypeSequence(valueListSequenceArray);
-		slot.setValueList(valueList);
-		adhocQuery.addSlot(slot);
+		if ((patientId != null) &&
+			(patientId.length() > 0))
+		{
+			slot = new SlotType1();
+			name = new LongName();
+			name.setLongName("$XDSDocumentEntryPatientId");
+			slot.setName(name);
+			valueList = new ValueListType();
+			valueListSequenceArray = new ValueListTypeSequence[1];
+			valueListSequence = new ValueListTypeSequence(); 
+			valueName = new LongName();
+			valueName.setLongName(patientId);
+			valueListSequence.setValue(valueName);
+			valueListSequenceArray[0] = valueListSequence;
+			valueList.setValueListTypeSequence(valueListSequenceArray);
+			slot.setValueList(valueList);
+			adhocQuery.addSlot(slot);
+		}
 		
 		slot = new SlotType1();
 		name = new LongName();
@@ -627,6 +692,42 @@ public class XdsB
 			adhocQuery.addSlot(slot);
 		}
 		
+		if (typeCode != null)
+		{
+			slot = new SlotType1();
+			name = new LongName();
+			name.setLongName("$XDSDocumentEntryTypeCode");
+			slot.setName(name);
+			valueList = new ValueListType();
+			valueListSequenceArray = new ValueListTypeSequence[1];
+			valueListSequence = new ValueListTypeSequence(); 
+			valueName = new LongName();
+			valueName.setLongName(typeCode);
+			valueListSequence.setValue(valueName);
+			valueListSequenceArray[0] = valueListSequence;
+			valueList.setValueListTypeSequence(valueListSequenceArray);
+			slot.setValueList(valueList);
+			adhocQuery.addSlot(slot);			
+		}
+
+		if (documentUniqueId != null)
+		{
+			slot = new SlotType1();
+			name = new LongName();
+			name.setLongName("$XDSDocumentEntryUniqueId");
+			slot.setName(name);
+			valueList = new ValueListType();
+			valueListSequenceArray = new ValueListTypeSequence[1];
+			valueListSequence = new ValueListTypeSequence(); 
+			valueName = new LongName();
+			valueName.setLongName(documentUniqueId);
+			valueListSequence.setValue(valueName);
+			valueListSequenceArray[0] = valueListSequence;
+			valueList.setValueListTypeSequence(valueListSequenceArray);
+			slot.setValueList(valueList);
+			adhocQuery.addSlot(slot);			
+		}
+
 		try
 		{
 			org.apache.axis2.databinding.types.URI id = new org.apache.axis2.databinding.types.URI();
@@ -643,7 +744,7 @@ public class XdsB
 					soapFactory);
 			String queryText = requestElement.toString();
 			logIti18AuditMsg(queryText,
-					patientID);
+					patientId);
 
 			if (logXdsBRequestMessages)
 			{

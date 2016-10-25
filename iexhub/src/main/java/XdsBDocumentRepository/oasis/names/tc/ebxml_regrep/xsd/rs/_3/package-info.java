@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Substance Abuse and Mental Health Services Administration (SAMHSA)
+ * Copyright (c) 2015, 2016 Substance Abuse and Mental Health Services Administration (SAMHSA)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -11,7 +11,8 @@
  * limitations under the License.
  *
  * Contributors:
- *     Eversolve, LLC - initial IExHub implementation
+ *     Eversolve, LLC - initial IExHub implementation for Health Information Exchange (HIE) integration
+ *     Anthony Sute, Ioana Singureanu
  *******************************************************************************/
 @javax.xml.bind.annotation.XmlSchema(namespace = "urn:oasis:names:tc:ebxml-regrep:xsd:rs:3.0", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
 package XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rs._3;

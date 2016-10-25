@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Substance Abuse and Mental Health Services Administration (SAMHSA)
+ * Copyright (c) 2015, 2016 Substance Abuse and Mental Health Services Administration (SAMHSA)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -11,7 +11,8 @@
  * limitations under the License.
  *
  * Contributors:
- *     Eversolve, LLC - initial IExHub implementation
+ *     Eversolve, LLC - initial IExHub implementation for Health Information Exchange (HIE) integration
+ *     Anthony Sute, Ioana Singureanu
  *******************************************************************************/
 /**
  * 
@@ -507,7 +508,70 @@ public class XdsBTest
 	}
 
 	@Test
-	public void testXslTransform() throws ParserConfigurationException, FileNotFoundException, SAXException, IOException, XPathExpressionException, TransformerException
+	public void testRetrieveDocumentSetJson()
+	{
+		try
+		{
+			log.info("Repository document set retrieval query (ITI-43) unit test started...");
+			xdsB = new XdsB(registryEndpointURI,
+					repositoryEndpointURI);
+
+			String startDate = null;
+			String endDate = null;
+
+			HashMap<String, String> documents = queryRegistry(patientIdentifier, startDate, endDate);
+			assertFalse("Error - no documents found",
+					documents.isEmpty());
+
+			RetrieveDocumentSetResponse documentSetResponse = xdsB.retrieveDocumentSet(xdsBRepositoryUniqueId,
+					documents,
+					patientIdentifier);
+			log.info("XDS.b document set query response in log message immediately following...");
+			OMElement requestElement = documentSetResponse.getOMElement(RetrieveDocumentSetResponse.MY_QNAME,
+					soapFactory);
+			log.info(requestElement);
+
+			DocumentResponse_type0[] docResponseArray = documentSetResponse.getRetrieveDocumentSetResponse().getRetrieveDocumentSetResponseTypeSequence_type0().getDocumentResponse();
+			assertFalse("Error - no documents returned",
+					docResponseArray.length == 0);
+			if (docResponseArray != null)
+			{
+				try
+				{
+					for (DocumentResponse_type0 document : docResponseArray)
+					{
+						String mimeType = docResponseArray[0].getMimeType().getLongName();
+						if (mimeType.compareToIgnoreCase("text/xml") == 0)
+						{
+							String filename = "/temp/Output/" + document.getDocumentUniqueId().getLongName() + ".xml";
+							DataHandler dh = document.getDocument();
+							File file = new File(filename);
+							FileOutputStream fileOutStream = new FileOutputStream(file);
+							dh.writeTo(fileOutStream);
+							fileOutStream.close();
+
+							log.info("Document written to "
+									+ filename);
+						}
+					}
+				}
+				catch (Exception e)
+				{
+					throw e;
+				}
+			}
+
+			log.info("Repository document set retrieval query (ITI-43) unit test ending.");
+		}
+		catch (Exception e)
+		{
+			log.error("Error-" + e.getMessage());
+			fail("Error - " + e.getMessage());
+		}
+	}
+
+	@Test
+    public void testXslTransform() throws ParserConfigurationException, FileNotFoundException, SAXException, IOException, XPathExpressionException, TransformerException
 	{
 		String filename = "C:/temp/1.1.1^SallyShare CCDA1.xml";
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();

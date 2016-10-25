@@ -1,27 +1,36 @@
+/*******************************************************************************
+ * Copyright (c) 2015, 2016 Substance Abuse and Mental Health Services Administration (SAMHSA)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Contributors:
+ *     Eversolve, LLC - initial IExHub implementation for Health Information Exchange (HIE) integration
+ *     Anthony Sute, Ioana Singureanu
+ *******************************************************************************/
 package org.iexhub.services.test;
 
 
 import static org.junit.Assert.*;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.transform.stream.StreamResult;
 
@@ -30,8 +39,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
 import org.apache.commons.io.FileUtils;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 
@@ -44,7 +51,6 @@ import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
 import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Basic;
-import ca.uhn.fhir.model.dstu2.resource.Composition;
 import ca.uhn.fhir.model.dstu2.resource.Contract;
 import ca.uhn.fhir.model.dstu2.resource.Contract.Rule;
 import ca.uhn.fhir.model.dstu2.resource.ListResource;
@@ -56,18 +62,11 @@ import ca.uhn.fhir.model.dstu2.valueset.AddressTypeEnum;
 import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
 import ca.uhn.fhir.model.dstu2.valueset.ContactPointSystemEnum;
 import ca.uhn.fhir.model.dstu2.valueset.ContactPointUseEnum;
-import ca.uhn.fhir.model.dstu2.valueset.ContractTypeCodesEnum;
 import ca.uhn.fhir.model.dstu2.valueset.ListModeEnum;
 import ca.uhn.fhir.model.dstu2.valueset.ListStatusEnum;
-import ca.uhn.fhir.model.primitive.Base64BinaryDt;
 import ca.uhn.fhir.model.primitive.DateDt;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
-import ca.uhn.fhir.model.primitive.XhtmlDt;
-import ca.uhn.fhir.narrative.DefaultThymeleafNarrativeGenerator;
-import ca.uhn.fhir.rest.api.MethodOutcome;
-import ca.uhn.fhir.rest.client.IGenericClient;
-import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
 ;
 
 public class PrivacyConsentTest {
@@ -181,7 +180,7 @@ public class PrivacyConsentTest {
 		consentAsContract.setId(new IdDt(iExHubDomainOid + "." + consentId));
 
 		consentAsContract.getIdentifier().setSystem(uriPrefix + iExHubDomainOid).setValue("consent GUID");
-		consentAsContract.getType().setValueAsEnum(ContractTypeCodesEnum.DISCLOSURE);
+		consentAsContract.getType().addCoding().setSystem("urn:oid:2.16.840.1.113883.5.4").setCode("IDSCL");
 		consentAsContract.getActionReason()
 				.add(new CodeableConceptDt("http://hl7.org/fhir/contractsubtypecodes", "TREAT"));
 

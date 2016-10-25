@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Substance Abuse and Mental Health Services Administration (SAMHSA)
+ * Copyright (c) 2015, 2016 Substance Abuse and Mental Health Services Administration (SAMHSA)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -11,7 +11,8 @@
  * limitations under the License.
  *
  * Contributors:
- *     Eversolve, LLC - initial IExHub implementation
+ *     Eversolve, LLC - initial IExHub implementation for Health Information Exchange (HIE) integration
+ *     Anthony Sute, Ioana Singureanu
  *******************************************************************************/
 /**
  * 
@@ -199,9 +200,9 @@ public class PatientResourceTest {
 		try {
 			Patient patientResource = new Patient();
 			// pat.addName().addFamily("HINOJOXS").addGiven("JOYCE");
-			patientResource.addName().addFamily("SMITH").addGiven("ANDREW");
+			patientResource.addName().addFamily("SMITH").addGiven("BOB");
 			// SSN
-			patientResource.addIdentifier().setSystem(uriPrefix + "2.16.840.1.113883.4.1").setValue("123-45-6789");
+			patientResource.addIdentifier().setSystem(uriPrefix + "2.16.840.1.113883.4.1").setValue("321-54-9876");
 			// MRN - the "official" identifier used to refer to this patient
 			// identity
 			// The server checks the "use" to determine that this is the official/trusted identifier supplied by the application
@@ -279,7 +280,7 @@ public class PatientResourceTest {
 			IGenericClient client = ctxt.newRestfulGenericClient(serverBaseUrl);
 			client.registerInterceptor(loggingInterceptor); // Required only for
 															// logging
-			MethodOutcome outcome = client.create().resource(patientResource).execute();
+			client.create().resource(patientResource).execute();
 		} catch (Exception e) {
 			fail("Error - " + e.getMessage());
 		}

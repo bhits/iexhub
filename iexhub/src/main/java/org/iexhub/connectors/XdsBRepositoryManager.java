@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Substance Abuse and Mental Health Services Administration (SAMHSA)
+ * Copyright (c) 2015, 2016 Substance Abuse and Mental Health Services Administration (SAMHSA)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -11,7 +11,8 @@
  * limitations under the License.
  *
  * Contributors:
- *     Eversolve, LLC - initial IExHub implementation
+ *     Eversolve, LLC - initial IExHub implementation for Health Information Exchange (HIE) integration
+ *     Anthony Sute, Ioana Singureanu
  *******************************************************************************/
 package org.iexhub.connectors;
 
@@ -46,6 +47,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
@@ -100,6 +102,7 @@ public class XdsBRepositoryManager
 
 	private static String documentClassCodesClassificationScheme = "urn:uuid:41a5887f-8865-4c09-adf7-e362475b143a";
 	private static String documentClassCodesNodeRepresentation = "*";
+	private static String documentClassCodesNodeRepresentationContract = "*";
 	private static String documentClassCodesCodingScheme = "1.3.6.1.4.1.21367.100.1";
 	private static String documentClassCodesName = "2.16.840.1.113883.6.1";
 
@@ -125,6 +128,8 @@ public class XdsBRepositoryManager
 	private static String extrinsicObjectExternalIdentifierPatientIdName = "XDSDocumentEntry.patientId";
 	private static String extrinsicObjectExternalIdentifierUniqueIdIdentificationScheme = "urn:uuid:2e82c1f6-a085-4c72-9da3-8640a32e42ab";
 	private static String extrinsicObjectExternalIdentifierUniqueIdName = "XDSDocumentEntry.uniqueId";
+	private static String extrinsicObjectExternalIdentifierEntryUuidIdentificationScheme = "urn:uuid:7edca82f-054d-47f2-a032-9b2a5b5186c1";
+	private static String extrinsicObjectExternalIdentifierEntryUuidName = "XDSDocumentEntry.entryUuid";
 
 	private static String submissionSetOid = "1.2.3.4.5";
 
@@ -139,7 +144,9 @@ public class XdsBRepositoryManager
 	private static String externalIdentifierSubmissionSetSourceIdName = "XDSSubmissionSet.sourceId";
 	private static String externalIdentifierSubmissionSetPatientIdName = "XDSSubmissionSet.patientId";
 
-	
+	public XdsBRepositoryManager() {
+	}
+
 	/**
 	 * @param repositoryEndpointURI
 	 */
@@ -211,6 +218,8 @@ public class XdsBRepositoryManager
 					: props.getProperty("XdsBDocumentClassCodesClassificationScheme");
 			XdsBRepositoryManager.documentClassCodesNodeRepresentation = (props.getProperty("XdsBDocumentClassCodesNodeRepresentation") == null) ? XdsBRepositoryManager.documentClassCodesNodeRepresentation
 					: props.getProperty("XdsBDocumentClassCodesNodeRepresentation");
+			XdsBRepositoryManager.documentClassCodesNodeRepresentationContract = (props.getProperty("XdsBDocumentClassCodesNodeRepresentationContract") == null) ? XdsBRepositoryManager.documentClassCodesNodeRepresentationContract
+					: props.getProperty("XdsBDocumentClassCodesNodeRepresentationContract");
 			XdsBRepositoryManager.documentClassCodesCodingScheme = (props.getProperty("XdsBDocumentClassCodesCodingScheme") == null) ? XdsBRepositoryManager.documentClassCodesCodingScheme
 					: props.getProperty("XdsBDocumentClassCodesCodingScheme");
 			XdsBRepositoryManager.documentClassCodesName = (props.getProperty("XdsBDocumentClassCodesName") == null) ? XdsBRepositoryManager.documentClassCodesName
@@ -261,7 +270,11 @@ public class XdsBRepositoryManager
 					: props.getProperty("XdsBExtrinsicObjectExternalIdentifierUniqueIdIdentificationScheme");
 			XdsBRepositoryManager.extrinsicObjectExternalIdentifierUniqueIdName = (props.getProperty("XdsBExtrinsicObjectExternalIdentifierUniqueIdName") == null) ? XdsBRepositoryManager.extrinsicObjectExternalIdentifierUniqueIdName
 					: props.getProperty("XdsBExtrinsicObjectExternalIdentifierUniqueIdName");
-
+			XdsBRepositoryManager.extrinsicObjectExternalIdentifierEntryUuidIdentificationScheme = (props.getProperty("XdsBExtrinsicObjectExternalIdentifierEntryUuidIdentificationScheme") == null) ? XdsBRepositoryManager.extrinsicObjectExternalIdentifierEntryUuidIdentificationScheme
+					: props.getProperty("XdsBExtrinsicObjectExternalIdentifierEntryUuidIdentificationScheme");
+			XdsBRepositoryManager.extrinsicObjectExternalIdentifierEntryUuidName = (props.getProperty("XdsBExtrinsicObjectExternalIdentifierEntryUuidName") == null) ? XdsBRepositoryManager.extrinsicObjectExternalIdentifierEntryUuidName
+					: props.getProperty("XdsBExtrinsicObjectExternalIdentifierEntryUuidName");
+			
 			XdsBRepositoryManager.registryPackageAuthorClassificationScheme = (props.getProperty("XdsBRegistryPackageAuthorClassificationScheme") == null) ? XdsBRepositoryManager.registryPackageAuthorClassificationScheme
 					: props.getProperty("XdsBRegistryPackageAuthorClassificationScheme");
 			XdsBRepositoryManager.registryPackageContentTypeCodesClassificationScheme = (props.getProperty("XdsBRegistryPackageContentTypeCodesClassificationScheme") == null) ? XdsBRepositoryManager.registryPackageContentTypeCodesClassificationScheme
@@ -501,13 +514,13 @@ public class XdsBRepositoryManager
 			extrinsicObject.setId(documentId);
 			extrinsicObject.setMimeType(mimeType);
 			extrinsicObject.setObjectType("urn:uuid:7edca82f-054d-47f2-a032-9b2a5b5186c1");
-			
+
 			// Create creationTime rim:Slot...
 			ValueListType valueList = null;
 			SlotType1 slot = new SlotType1();
 			slot.setName("creationTime");
-			XPath xPath = XPathFactory.newInstance().newXPath();
-			NodeList nodes = (NodeList)xPath.evaluate("/ClinicalDocument/effectiveTime",
+			XPath xPath = getCustomXPath();
+			NodeList nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:effectiveTime",
 			        doc.getDocumentElement(),
 			        XPathConstants.NODESET);
 			if (nodes.getLength() > 0)
@@ -519,8 +532,8 @@ public class XdsBRepositoryManager
 			}
 			
 			// Create languageCode rim:Slot...
-			xPath = XPathFactory.newInstance().newXPath();
-			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/languageCode",
+			xPath = getCustomXPath();
+			nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:languageCode",
 			        doc.getDocumentElement(),
 			        XPathConstants.NODESET);
 			if (nodes.getLength() > 0)
@@ -534,8 +547,8 @@ public class XdsBRepositoryManager
 			}
 			
 			// Create serviceStartTime rim:Slot...
-			xPath = XPathFactory.newInstance().newXPath();
-			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/documentationOf/serviceEvent/effectiveTime/low",
+			xPath = getCustomXPath();
+			nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:documentationOf/hl7:serviceEvent/hl7:effectiveTime/hl7:low",
 			        doc.getDocumentElement(),
 			        XPathConstants.NODESET);
 			if (nodes.getLength() > 0)
@@ -549,8 +562,8 @@ public class XdsBRepositoryManager
 			}
 
 			// Create serviceStopTime rim:Slot...
-			xPath = XPathFactory.newInstance().newXPath();
-			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/documentationOf/serviceEvent/effectiveTime/high",
+			xPath = getCustomXPath();
+			nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:documentationOf/hl7:serviceEvent/hl7:effectiveTime/high",
 			        doc.getDocumentElement(),
 			        XPathConstants.NODESET);
 			if (nodes.getLength() > 0)
@@ -564,8 +577,8 @@ public class XdsBRepositoryManager
 			}
 
 			// Create sourcePatientId rim:Slot...
-			xPath = XPathFactory.newInstance().newXPath();
-			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/recordTarget/patientRole/id",
+			xPath = getCustomXPath();
+			nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:recordTarget/hl7:patientRole/hl7:id",
 			        doc.getDocumentElement(),
 			        XPathConstants.NODESET);
 			String patientId = null;
@@ -584,8 +597,8 @@ public class XdsBRepositoryManager
 			}
 
 			// Create sourcePatientInfo rim:Slot...
-			xPath = XPathFactory.newInstance().newXPath();
-			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/recordTarget/patientRole/patient/name/family",
+			xPath = getCustomXPath();
+			nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:recordTarget/hl7:patientRole/hl7:patient/hl7:name/hl7:family",
 			        doc.getDocumentElement(),
 			        XPathConstants.NODESET);
 			if (nodes.getLength() > 0)
@@ -601,8 +614,8 @@ public class XdsBRepositoryManager
 			    		+ ((Element)nodes.item(0)).getTextContent()
 			    		+ "^");
 			    
-				xPath = XPathFactory.newInstance().newXPath();
-				nodes = (NodeList)xPath.evaluate("/ClinicalDocument/recordTarget/patientRole/patient/name/given",
+				xPath = getCustomXPath();
+				nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:recordTarget/hl7:patientRole/hl7:patient/hl7:name/hl7:given",
 				        doc.getDocumentElement(),
 				        XPathConstants.NODESET);
 				if (nodes.getLength() > 0)
@@ -615,8 +628,8 @@ public class XdsBRepositoryManager
 					name.append("^^");
 				}
 				
-				xPath = XPathFactory.newInstance().newXPath();
-				nodes = (NodeList)xPath.evaluate("/ClinicalDocument/recordTarget/patientRole/patient/name/prefix",
+				xPath = getCustomXPath();
+				nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:recordTarget/hl7:patientRole/hl7:patient/hl7:name/hl7:prefix",
 				        doc.getDocumentElement(),
 				        XPathConstants.NODESET);
 				if (nodes.getLength() > 0)
@@ -629,8 +642,8 @@ public class XdsBRepositoryManager
 					name.append("^");
 				}
 
-				xPath = XPathFactory.newInstance().newXPath();
-				nodes = (NodeList)xPath.evaluate("/ClinicalDocument/recordTarget/patientRole/patient/name/suffix",
+				xPath = getCustomXPath();
+				nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:recordTarget/hl7:patientRole/hl7:patient/hl7:name/hl7:suffix",
 				        doc.getDocumentElement(),
 				        XPathConstants.NODESET);
 				if (nodes.getLength() > 0)
@@ -640,8 +653,8 @@ public class XdsBRepositoryManager
 
 				valueList.getValue().add(name.toString());
 
-				xPath = XPathFactory.newInstance().newXPath();
-				nodes = (NodeList)xPath.evaluate("/ClinicalDocument/recordTarget/patientRole/patient/birthTime",
+				xPath = getCustomXPath();
+				nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:recordTarget/hl7:patientRole/hl7:patient/hl7:birthTime",
 				        doc.getDocumentElement(),
 				        XPathConstants.NODESET);
 				if (nodes.getLength() > 0)
@@ -650,8 +663,8 @@ public class XdsBRepositoryManager
 				    		+ ((Element)nodes.item(0)).getAttribute("value"));
 				}
 
-				xPath = XPathFactory.newInstance().newXPath();
-				nodes = (NodeList)xPath.evaluate("/ClinicalDocument/recordTarget/patientRole/patient/administrativeGenderCode",
+				xPath = getCustomXPath();
+				nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:recordTarget/hl7:patientRole/hl7:patient/hl7:administrativeGenderCode",
 				        doc.getDocumentElement(),
 				        XPathConstants.NODESET);
 				if (nodes.getLength() > 0)
@@ -660,8 +673,8 @@ public class XdsBRepositoryManager
 				    		+ ((Element)nodes.item(0)).getAttribute("code"));
 				}
 
-				xPath = XPathFactory.newInstance().newXPath();
-				nodes = (NodeList)xPath.evaluate("/ClinicalDocument/recordTarget/patientRole/addr",
+				xPath = getCustomXPath();
+				nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:recordTarget/hl7:patientRole/hl7:addr",
 				        doc.getDocumentElement(),
 				        XPathConstants.NODESET);
 				if (nodes.getLength() > 0)
@@ -669,8 +682,8 @@ public class XdsBRepositoryManager
 					StringBuilder address = new StringBuilder();
 					address.append("PID-11|");
 					
-					xPath = XPathFactory.newInstance().newXPath();
-					nodes = (NodeList)xPath.evaluate("/ClinicalDocument/recordTarget/patientRole/addr/streetAddressLine",
+					xPath = getCustomXPath();
+					nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:recordTarget/hl7:patientRole/hl7:addr/hl7:streetAddressLine",
 					        doc.getDocumentElement(),
 					        XPathConstants.NODESET);
 					if (nodes.getLength() > 0)
@@ -683,8 +696,8 @@ public class XdsBRepositoryManager
 						address.append("^^");
 					}
 					
-					xPath = XPathFactory.newInstance().newXPath();
-					nodes = (NodeList)xPath.evaluate("/ClinicalDocument/recordTarget/patientRole/addr/city",
+					xPath = getCustomXPath();
+					nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:recordTarget/hl7:patientRole/hl7:addr/hl7:city",
 					        doc.getDocumentElement(),
 					        XPathConstants.NODESET);
 					if (nodes.getLength() > 0)
@@ -697,8 +710,8 @@ public class XdsBRepositoryManager
 						address.append("^");
 					}
 
-					xPath = XPathFactory.newInstance().newXPath();
-					nodes = (NodeList)xPath.evaluate("/ClinicalDocument/recordTarget/patientRole/addr/state",
+					xPath = getCustomXPath();
+					nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:recordTarget/hl7:patientRole/hl7:addr/hl7:state",
 					        doc.getDocumentElement(),
 					        XPathConstants.NODESET);
 					if (nodes.getLength() > 0)
@@ -711,8 +724,8 @@ public class XdsBRepositoryManager
 						address.append("^");
 					}
 
-					xPath = XPathFactory.newInstance().newXPath();
-					nodes = (NodeList)xPath.evaluate("/ClinicalDocument/recordTarget/patientRole/addr/postalCode",
+					xPath = getCustomXPath();
+					nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:recordTarget/hl7:patientRole/hl7:addr/hl7:postalCode",
 					        doc.getDocumentElement(),
 					        XPathConstants.NODESET);
 					if (nodes.getLength() > 0)
@@ -725,8 +738,8 @@ public class XdsBRepositoryManager
 						address.append("^");
 					}
 
-					xPath = XPathFactory.newInstance().newXPath();
-					nodes = (NodeList)xPath.evaluate("/ClinicalDocument/recordTarget/patientRole/addr/country",
+					xPath = getCustomXPath();
+					nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:recordTarget/hl7:patientRole/hl7:addr/hl7:country",
 					        doc.getDocumentElement(),
 					        XPathConstants.NODESET);
 					if (nodes.getLength() > 0)
@@ -775,8 +788,8 @@ public class XdsBRepositoryManager
 
 			// Create classifications - start with document author(s)...
 			ArrayList<ClassificationType> documentAuthorClassifications = new ArrayList<ClassificationType>();
-			xPath = XPathFactory.newInstance().newXPath();
-			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/author",
+			xPath = getCustomXPath();
+			nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:author",
 			        doc.getDocumentElement(),
 			        XPathConstants.NODESET);
 			if (nodes.getLength() > 0)
@@ -793,14 +806,14 @@ public class XdsBRepositoryManager
 
 					// authorPerson rim:Slot
 					StringBuilder authorName = new StringBuilder();
-					xPath = XPathFactory.newInstance().newXPath();
-					NodeList subNodes = (NodeList)xPath.evaluate("assignedAuthor/assignedPerson",
+					xPath = getCustomXPath();
+					NodeList subNodes = (NodeList)xPath.evaluate("hl7:assignedAuthor/hl7:assignedPerson",
 							nodes.item(i).getChildNodes(),
 							XPathConstants.NODESET);
 					if (subNodes.getLength() > 0)
 					{
-						xPath = XPathFactory.newInstance().newXPath();
-						NodeList assignedPersonSubNodes = (NodeList)xPath.evaluate("name/prefix",
+						xPath = getCustomXPath();
+						NodeList assignedPersonSubNodes = (NodeList)xPath.evaluate("hl7:name/hl7:prefix",
 								subNodes.item(0).getChildNodes(),
 								XPathConstants.NODESET);
 						if (assignedPersonSubNodes.getLength() > 0)
@@ -809,8 +822,8 @@ public class XdsBRepositoryManager
 									+ " ");
 						}
 
-						xPath = XPathFactory.newInstance().newXPath();
-						assignedPersonSubNodes = (NodeList)xPath.evaluate("name/given",
+						xPath = getCustomXPath();
+						assignedPersonSubNodes = (NodeList)xPath.evaluate("hl7:name/hl7:given",
 								subNodes.item(0).getChildNodes(),
 						        XPathConstants.NODESET);
 						if (assignedPersonSubNodes.getLength() > 0)
@@ -819,8 +832,8 @@ public class XdsBRepositoryManager
 									+ " ");
 						}
 	
-						xPath = XPathFactory.newInstance().newXPath();
-						assignedPersonSubNodes = (NodeList)xPath.evaluate("name/family",
+						xPath = getCustomXPath();
+						assignedPersonSubNodes = (NodeList)xPath.evaluate("hl7:name/hl7:family",
 								subNodes.item(0).getChildNodes(),
 						        XPathConstants.NODESET);
 						if (assignedPersonSubNodes.getLength() > 0)
@@ -828,8 +841,8 @@ public class XdsBRepositoryManager
 							authorName.append(((Element)assignedPersonSubNodes.item(0)).getTextContent());
 						}
 	
-						xPath = XPathFactory.newInstance().newXPath();
-						assignedPersonSubNodes = (NodeList)xPath.evaluate("name/suffix",
+						xPath = getCustomXPath();
+						assignedPersonSubNodes = (NodeList)xPath.evaluate("hl7:name/hl7:suffix",
 								subNodes.item(0).getChildNodes(),
 						        XPathConstants.NODESET);
 						if (assignedPersonSubNodes.getLength() > 0)
@@ -841,7 +854,7 @@ public class XdsBRepositoryManager
 					else
 					{
 						// If assignedAuthor is not present, then check for representedOrganization/name...
-						subNodes = (NodeList)xPath.evaluate("assignedAuthor/representedOrganization/name",
+						subNodes = (NodeList)xPath.evaluate("hl7:assignedAuthor/hl7:representedOrganization/hl7:name",
 								nodes.item(i).getChildNodes(),
 								XPathConstants.NODESET);
 						xPath = XPathFactory.newInstance().newXPath();
@@ -866,8 +879,8 @@ public class XdsBRepositoryManager
 			classification.setId(UUID.randomUUID().toString());
 			classification.setClassificationScheme(documentClassCodesClassificationScheme);
 			classification.setClassifiedObject(documentId);
-			xPath = XPathFactory.newInstance().newXPath();
-			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/code",
+			xPath =  getCustomXPath();
+			nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:code",
 			        doc.getDocumentElement(),
 			        XPathConstants.NODESET);
 			if (nodes.getLength() > 0)
@@ -905,8 +918,8 @@ public class XdsBRepositoryManager
 			classification.setId(UUID.randomUUID().toString());
 			classification.setClassificationScheme(documentConfidentialityCodesClassificationScheme);
 			classification.setClassifiedObject(documentId);
-			xPath = XPathFactory.newInstance().newXPath();
-			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/confidentialityCode",
+			xPath = getCustomXPath();
+			nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:confidentialityCode",
 			        doc.getDocumentElement(),
 			        XPathConstants.NODESET);
 			if (nodes.getLength() > 0)
@@ -982,8 +995,8 @@ public class XdsBRepositoryManager
 			classification.setId(UUID.randomUUID().toString());
 			classification.setClassificationScheme(documentPracticeSettingCodesClassificationScheme);
 			classification.setClassifiedObject(documentId);
-			xPath = XPathFactory.newInstance().newXPath();
-			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/code",
+			xPath = getCustomXPath();
+			nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:code",
 			        doc.getDocumentElement(),
 			        XPathConstants.NODESET);
 			if (nodes.getLength() > 0)
@@ -1021,8 +1034,8 @@ public class XdsBRepositoryManager
 			classification.setId(UUID.randomUUID().toString());
 			classification.setClassificationScheme(documentContentTypeClassificationScheme);
 			classification.setClassifiedObject(documentId);
-			xPath = XPathFactory.newInstance().newXPath();
-			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/code",
+			xPath = getCustomXPath();
+			nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:code",
 			        doc.getDocumentElement(),
 			        XPathConstants.NODESET);
 			if (nodes.getLength() > 0)
@@ -1056,8 +1069,8 @@ public class XdsBRepositoryManager
 			}
 			
 			// Create rim:ExternalIdentifier(s) - first the XDSDocumentEntry.patientId value(s)...
-			xPath = XPathFactory.newInstance().newXPath();
-			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/recordTarget/patientRole/id",
+			xPath =getCustomXPath();
+			nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:recordTarget/hl7:patientRole/hl7:id",
 			        doc.getDocumentElement(),
 			        XPathConstants.NODESET);
 			if (nodes.getLength() > 0)
@@ -1097,8 +1110,8 @@ public class XdsBRepositoryManager
 			}
 			
 			// Now the XDSDocumentEntry.uniqueId value(s)...
-			xPath = XPathFactory.newInstance().newXPath();
-			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/id",
+			xPath = getCustomXPath();
+			nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:id",
 			        doc.getDocumentElement(),
 			        XPathConstants.NODESET);
 			if (nodes.getLength() > 0)
@@ -1197,8 +1210,8 @@ public class XdsBRepositoryManager
 			classification.setId(UUID.randomUUID().toString());
 			classification.setClassificationScheme(registryPackageContentTypeCodesClassificationScheme);
 			classification.setClassifiedObject(submissionSetId);
-			xPath = XPathFactory.newInstance().newXPath();
-			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/code",
+			xPath =getCustomXPath();
+			nodes = (NodeList)xPath.evaluate("/hl7:ClinicalDocument/hl7:code",
 			        doc.getDocumentElement(),
 			        XPathConstants.NODESET);
 			if (nodes.getLength() > 0)
@@ -1334,6 +1347,7 @@ public class XdsBRepositoryManager
 
 	/**
 	 * @param contract
+	 * @param xmlContent
 	 * @param mimeType
 	 * @return
 	 * @throws Exception
@@ -1343,8 +1357,40 @@ public class XdsBRepositoryManager
 			String mimeType)
 			throws Exception
 	{
+		return provideAndRegisterDocumentSet(contract,
+				xmlContent,
+				mimeType,
+				false);
+	}
+
+	/**
+	 * @param contract
+	 * @param xmlContent
+	 * @param mimeType
+	 * @param updateDocument
+	 * @return
+	 * @throws Exception
+	 */
+	public RegistryResponseType provideAndRegisterDocumentSet(Contract contract,
+			byte[] xmlContent,
+			String mimeType,
+			boolean updateDocument)
+			throws Exception
+	{
 		try
 		{
+			UUID previousDocumentUuid = (updateDocument) ? UUID.fromString(contract.getId().getIdPart())
+					: null;
+			UUID newDocumentUuid = UUID.randomUUID();
+//			long hi = entryUuid.getMostSignificantBits();
+//			long lo = entryUuid.getLeastSignificantBits();
+//			byte[] bytes = ByteBuffer.allocate(16).putLong(hi).putLong(lo).array();
+//			BigInteger big = new BigInteger(bytes);
+			String documentIdToUse = /*"urn:oid:"
+					+*/ contract.getIdentifier().getValue(); //"2.25."
+//					+ big.toString().replace('-',
+//							'0');
+			
 			ProvideAndRegisterDocumentSetRequestType documentSetRequest = new ProvideAndRegisterDocumentSetRequestType();
 
 			// Create SubmitObjectsRequest...
@@ -1355,7 +1401,7 @@ public class XdsBRepositoryManager
 
 			// Create ExtrinsicObject...
 			ExtrinsicObjectType extrinsicObject = new ExtrinsicObjectType();
-			extrinsicObject.setId(contract.getIdentifier().getValue());
+			extrinsicObject.setId("urn:uuid:" + newDocumentUuid.toString());
 			extrinsicObject.setMimeType(mimeType);
 			extrinsicObject.setObjectType("urn:uuid:7edca82f-054d-47f2-a032-9b2a5b5186c1");
 
@@ -1424,11 +1470,10 @@ public class XdsBRepositoryManager
 			slot.setName("sourcePatientId");
 			valueList = new ValueListType();
 			String patientId = null;
-			patientId = /*"'" +*/ referencedId
+			patientId = referencedId
 				+ "^^^&"
 	    		+ iExHubDomainOid
-	    		+ "&ISO"
-	    		/*+ "'"*/;
+	    		+ "&ISO";
 		    valueList.getValue().add(patientId);
 			slot.setValueList(valueList);
 			extrinsicObject.getSlot().add(slot);
@@ -1526,7 +1571,7 @@ public class XdsBRepositoryManager
 			ClassificationType documentAuthorClassification = new ClassificationType();
 			documentAuthorClassification.setId(UUID.randomUUID().toString());
 			documentAuthorClassification.setClassificationScheme(documentAuthorClassificationScheme);
-			documentAuthorClassification.setClassifiedObject(contract.getIdentifier().getValue());
+			documentAuthorClassification.setClassifiedObject("urn:uuid:" + newDocumentUuid.toString());
 			documentAuthorClassification.setNodeRepresentation("");
 			slot = new SlotType1();
 			slot.setName("authorPerson");
@@ -1560,8 +1605,9 @@ public class XdsBRepositoryManager
 			ClassificationType classification = new ClassificationType();
 			classification.setId(UUID.randomUUID().toString());
 			classification.setClassificationScheme(documentClassCodesClassificationScheme);
-			classification.setClassifiedObject(contract.getIdentifier().getValue());
-			classification.setNodeRepresentation("*");
+			classification.setClassifiedObject("urn:uuid:" + newDocumentUuid.toString());
+
+			classification.setNodeRepresentation(documentClassCodesNodeRepresentationContract);
 				
 			slot = new SlotType1();
 			slot.setName("codingScheme");
@@ -1585,7 +1631,7 @@ public class XdsBRepositoryManager
 			classification = new ClassificationType();
 			classification.setId(UUID.randomUUID().toString());
 			classification.setClassificationScheme(documentConfidentialityCodesClassificationScheme);
-			classification.setClassifiedObject(contract.getIdentifier().getValue());
+			classification.setClassifiedObject("urn:uuid:" + newDocumentUuid.toString());
 			// Code
 			classification.setNodeRepresentation("N");
 				
@@ -1611,7 +1657,7 @@ public class XdsBRepositoryManager
 			classification = new ClassificationType();
 			classification.setId(UUID.randomUUID().toString());
 			classification.setClassificationScheme(documentFormatCodesClassificationScheme);
-			classification.setClassifiedObject(contract.getIdentifier().getValue());
+			classification.setClassifiedObject("urn:uuid:" + newDocumentUuid.toString());
 			classification.setNodeRepresentation(documentFormatCodesNodeRepresentation);
 			slot = new SlotType1();
 			slot.setName("codingScheme");
@@ -1630,7 +1676,7 @@ public class XdsBRepositoryManager
 			classification = new ClassificationType();
 			classification.setId(UUID.randomUUID().toString());
 			classification.setClassificationScheme(documentHealthcareFacilityTypeCodesClassificationScheme);
-			classification.setClassifiedObject(contract.getIdentifier().getValue());
+			classification.setClassifiedObject("urn:uuid:" + newDocumentUuid.toString());
 			classification.setNodeRepresentation(documentHealthcareFacilityTypeCodesNodeRepresentation);
 			slot = new SlotType1();
 			slot.setName("codingScheme");
@@ -1649,7 +1695,7 @@ public class XdsBRepositoryManager
 			classification = new ClassificationType();
 			classification.setId(UUID.randomUUID().toString());
 			classification.setClassificationScheme(documentPracticeSettingCodesClassificationScheme);
-			classification.setClassifiedObject(contract.getIdentifier().getValue());
+			classification.setClassifiedObject("urn:uuid:" + newDocumentUuid.toString());
 			classification.setNodeRepresentation(documentPracticeSettingCodesNodeRepresentation);
 				
 			slot = new SlotType1();
@@ -1672,7 +1718,8 @@ public class XdsBRepositoryManager
 			classification = new ClassificationType();
 			classification.setId(UUID.randomUUID().toString());
 			classification.setClassificationScheme(documentContentTypeClassificationScheme);
-			classification.setClassifiedObject(contract.getIdentifier().getValue());
+			classification.setClassifiedObject("urn:uuid:" + newDocumentUuid.toString());
+			
 			// Code
 			classification.setNodeRepresentation("57016-8");
 				
@@ -1697,13 +1744,12 @@ public class XdsBRepositoryManager
 			// Create rim:ExternalIdentifier(s) - first the XDSDocumentEntry.patientId value(s)...
 			ExternalIdentifierType externalIdentifierPatientId = new ExternalIdentifierType();
 			externalIdentifierPatientId.setId(UUID.randomUUID().toString());
-			externalIdentifierPatientId.setRegistryObject(contract.getIdentifier().getValue());
+			externalIdentifierPatientId.setRegistryObject("urn:uuid:" + newDocumentUuid.toString());
 			externalIdentifierPatientId.setIdentificationScheme(extrinsicObjectExternalIdentifierPatientIdIdentificationScheme);
-			externalIdentifierPatientId.setValue(/*"'" +*/ referencedId
+			externalIdentifierPatientId.setValue(referencedId
 					+ "^^^&"
 					+ iExHubDomainOid
-					+ "&ISO"
-					/*+ "'"*/);
+					+ "&ISO");
 			text = new InternationalStringType();
 			localizedText = new LocalizedStringType();
 			localizedText.setValue(extrinsicObjectExternalIdentifierPatientIdName);
@@ -1712,31 +1758,31 @@ public class XdsBRepositoryManager
 			extrinsicObject.getExternalIdentifier().add(externalIdentifierPatientId);
 			
 			// Now the XDSDocumentEntry.uniqueId value(s)...
-			ExternalIdentifierType externalIdentifierDocumentId = new ExternalIdentifierType();
-			externalIdentifierDocumentId.setId(UUID.randomUUID().toString());
-			externalIdentifierDocumentId.setRegistryObject(contract.getIdentifier().getValue());
-			externalIdentifierDocumentId.setIdentificationScheme(extrinsicObjectExternalIdentifierUniqueIdIdentificationScheme);
-				
-			if (testMode)
-			{
-				DateTime testDocId = DateTime.now(DateTimeZone.UTC);
-				externalIdentifierDocumentId.setValue(contract.getIdentifier().getSystem()
-						+ "^"
-						+ testDocId.getMillis());
-			}
-			else
-			{
-				externalIdentifierDocumentId.setValue(contract.getIdentifier().getSystem()
-						+ "^"
-						+ contract.getIdentifier().getValue());
-			}
+			ExternalIdentifierType externalIdentifierUniqueId = new ExternalIdentifierType();
+			externalIdentifierUniqueId.setId(UUID.randomUUID().toString());
+			externalIdentifierUniqueId.setRegistryObject("urn:uuid:" + newDocumentUuid.toString());
+			externalIdentifierUniqueId.setIdentificationScheme(extrinsicObjectExternalIdentifierUniqueIdIdentificationScheme);
+			
+//			if (testMode)
+//			{
+//				DateTime testDocId = DateTime.now(DateTimeZone.UTC);
+//				externalIdentifierDocumentId.setValue(contract.getIdentifier().getSystem()
+//						+ "^"
+//						+ testDocId.getMillis());
+//			}
+//			else
+//			{
+				externalIdentifierUniqueId.setValue(//contract.getIdentifier().getSystem()
+//						+ "^"
+						/*+*/ documentIdToUse);
+//			}
 				
 			text = new InternationalStringType();
 			localizedText = new LocalizedStringType();
 			localizedText.setValue(extrinsicObjectExternalIdentifierUniqueIdName);
 			text.getLocalizedString().add(localizedText);
-			externalIdentifierDocumentId.setName(text);
-			extrinsicObject.getExternalIdentifier().add(externalIdentifierDocumentId);
+			externalIdentifierUniqueId.setName(text);
+			extrinsicObject.getExternalIdentifier().add(externalIdentifierUniqueId);
 			
 			registryObjectList.getIdentifiable().add(objectFactory.createExtrinsicObject(extrinsicObject));
 			
@@ -1872,7 +1918,8 @@ public class XdsBRepositoryManager
 			submissionSetAssociation.setId(/*UUID.randomUUID().toString()*/ "as01");
 			submissionSetAssociation.setAssociationType("urn:oasis:names:tc:ebxml-regrep:AssociationType:HasMember");
 			submissionSetAssociation.setSourceObject(submissionSetId);
-			submissionSetAssociation.setTargetObject(contract.getIdentifier().getValue());
+			submissionSetAssociation.setTargetObject("urn:uuid:" + newDocumentUuid.toString());
+			
 			slot = new SlotType1();
 			slot.setName("SubmissionSetStatus");
 			valueList = new ValueListType();
@@ -1881,13 +1928,34 @@ public class XdsBRepositoryManager
 			submissionSetAssociation.getSlot().add(slot);
 			registryObjectList.getIdentifiable().add(objectFactory.createAssociation(submissionSetAssociation));
 			
+			// If updating a document, then we need to add another association which links the current document in the repository to this one...
+			if (updateDocument)
+			{
+				AssociationType1 rplcAssociation = new AssociationType1();
+				rplcAssociation.setId("Assoc1");
+				rplcAssociation.setAssociationType("urn:ihe:iti:2007:AssociationType:RPLC");
+				rplcAssociation.setTargetObject("urn:uuid:"
+						+ previousDocumentUuid.toString());
+				rplcAssociation.setSourceObject("urn:uuid:" + newDocumentUuid.toString() ///*(contract.getIdentifier().getValue().startsWith("urn:uuid:")) ?*/ contract.getIdentifier().getValue()
+						/*: "urn:uuid:" + contract.getIdentifier().getValue()*/);
+				
+				registryObjectList.getIdentifiable().add(objectFactory.createAssociation(rplcAssociation));
+				
+				// Replace old contract identifier with new one...
+				contract.getId().setValueAsString(newDocumentUuid.toString());
+			}
+			else
+			{
+				contract.getId().setValueAsString(newDocumentUuid.toString());
+			}
+			
 			submitObjectsRequest.setRegistryObjectList(registryObjectList);
 			documentSetRequest.setSubmitObjectsRequest(submitObjectsRequest);
 			
 			// Add document to message...
 			XdsBDocumentRepository.ihe.iti.xds_b._2007.ProvideAndRegisterDocumentSetRequestType.Document documentForMessage = new XdsBDocumentRepository.ihe.iti.xds_b._2007.ProvideAndRegisterDocumentSetRequestType.Document();
 			documentForMessage.setValue(xmlContent);
-			documentForMessage.setId(contract.getIdentifier().getValue());
+			documentForMessage.setId("urn:uuid:" + newDocumentUuid.toString());
 			documentSetRequest.getDocument().add(documentForMessage);
 			
 			logIti41AuditMsg(submissionSetId,
@@ -1900,7 +1968,7 @@ public class XdsBRepositoryManager
 		                    "ProvideAndRegisterDocumentSetRequest")),
 		                new javax.xml.namespace.QName("urn:ihe:iti:xds-b:2007",
 		    				"ProvideAndRegisterDocumentSetRequest"));
-				Files.write(Paths.get(logOutputPath + contract.getIdentifier().getValue() + "_ProvideAndRegisterDocumentSetRequest.xml"),
+				Files.write(Paths.get(logOutputPath + newDocumentUuid.toString() + "_ProvideAndRegisterDocumentSetRequest.xml"),
 						requestElement.toString().getBytes());
 			}
 
@@ -1928,5 +1996,28 @@ public class XdsBRepositoryManager
 		}
 
 		return retVal;
+	}
+
+	private XPath getCustomXPath(){
+		XPath xPath = XPathFactory.newInstance().newXPath();
+
+		//set namespace to xpath
+		xPath.setNamespaceContext(new NamespaceContext() {
+			private final String uri = "urn:hl7-org:v3";
+			private final String prefix = "hl7";
+			@Override
+			public String getNamespaceURI(String prefix) {
+				return this.prefix.equals(prefix) ? uri : null;
+			}
+			@Override
+			public String getPrefix(String namespaceURI) {
+				return this.uri.equals(namespaceURI) ? this.prefix : null;
+			}
+			@Override
+			public Iterator getPrefixes(String namespaceURI) {
+				return null;
+			}
+		});
+		return xPath;
 	}
 }
