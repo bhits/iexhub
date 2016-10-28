@@ -5,7 +5,7 @@ Information Exchange Hub (IExHub) API is a connector for Consent2Share to perfor
 
 # Supported Tags and Respective `Dockerfile` Links
 
-[`0.2.0`](https://github.com/bhits/iexhub/blob/master/iexhub/src/main/docker/Dockerfile),[`latest`](https://github.com/bhits/iexhub/blob/master/iexhub/src/main/docker/Dockerfile)[(0.2.0/Dockerfile)](https://github.com/bhits/iexhub/blob/master/iexhub/src/main/docker/Dockerfile)
+[`0.3.0`](https://github.com/bhits/iexhub/blob/master/iexhub/src/main/docker/Dockerfile),[`latest`](https://github.com/bhits/iexhub/blob/master/iexhub/src/main/docker/Dockerfile)[(0.3.0/Dockerfile)](https://github.com/bhits/iexhub/blob/master/iexhub/src/main/docker/Dockerfile)
 
 For more information about this image, the source code, and its history, please see the [GitHub repository](https://github.com/bhits/iexhub).
 
