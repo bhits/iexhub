@@ -57,28 +57,24 @@
 		</snapshotRepository>
 	</distributionManagement>
 
-	<!-- Note: HAPI projects use the "hapi-fhir" POM as their base to provide
-		easy management. You do not need to use this in your own projects, so the
-		"parent" tag and it's contents below may be removed if you are using this
-		file as a basis for your own project. -->
-	<parent>
-		<groupId>ca.uhn.hapi.fhir</groupId>
-		<artifactId>hapi-fhir</artifactId>
-		<version>2.0</version>
-		<relativePath>../hapi-fhir/pom.xml</relativePath>
-	</parent>
-
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>1.7</java.version>
+		<apache.maven.compiler-plugin.version>3.5.1</apache.maven.compiler-plugin.version>
+		<apache.maven.war-plugin.version>2.6</apache.maven.war-plugin.version>
 		<docker.maven.version>0.4.3</docker.maven.version>
 		<hapi.fhir.version>2.0</hapi.fhir.version>
 		<mdmi.version>1.0.0-SNAPSHOT</mdmi.version>
 		<apache.axiom.version>1.2.15</apache.axiom.version>
 		<apache.axis2.version>1.6.3</apache.axis2.version>
 		<apache.rampart.version>1.6.2</apache.rampart.version>
+		<apache.velocity.version>1.7</apache.velocity.version>
 		<jersey_version>2.22</jersey_version>
 		<iexhub.iexhub_generated.version>1.0.0-SNAPSHOT</iexhub.iexhub_generated.version>
+		<phloc_schematron_version>2.7.1</phloc_schematron_version>
+		<phloc_commons_version>4.4.5</phloc_commons_version>
+		<javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
+		<javax.ejb.ejb-api.version>3.0</javax.ejb.ejb-api.version>
 	</properties>
 
 	<repositories>
@@ -277,10 +273,12 @@
 		<dependency>
 			<groupId>com.phloc</groupId>
 			<artifactId>phloc-schematron</artifactId>
+			<version>${phloc_schematron_version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.phloc</groupId>
 			<artifactId>phloc-commons</artifactId>
+			<version>${phloc_commons_version}</version>
 		</dependency>
 		<!-- HAPI FHIR StructureDefinition validation -->
 		<dependency>
@@ -307,11 +305,13 @@
 		<dependency>
 			<groupId>javax.ws.rs</groupId>
 			<artifactId>javax.ws.rs-api</artifactId>
+			<version>${javax.ws.rs-api.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>javax.ejb</groupId>
 			<artifactId>ejb-api</artifactId>
+			<version>${javax.ejb.ejb-api.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -322,14 +322,17 @@
 		<dependency>
 			<groupId>org.glassfish.jersey.containers</groupId>
 			<artifactId>jersey-container-servlet-core</artifactId>
+			<version>${jersey_version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.containers</groupId>
 			<artifactId>jersey-container-jetty-http</artifactId>
+			<version>${jersey_version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
 			<artifactId>jersey-media-moxy</artifactId>
+			<version>${jersey_version}</version>
 		</dependency>
 
 		<dependency>
@@ -435,6 +438,7 @@
 		<dependency>
 			<groupId>org.apache.velocity</groupId>
 			<artifactId>velocity</artifactId>
+			<version>${apache.velocity.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.owasp.esapi</groupId>
@@ -461,6 +465,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${apache.maven.compiler-plugin.version}</version>
 				<configuration>
 					<source>${java.version}</source>
 					<target>${java.version}</target>
@@ -468,6 +473,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-war-plugin</artifactId>
+				<version>${apache.maven.war-plugin.version}</version>
 				<dependencies>
 					<dependency>
 						<groupId>org.apache.axis2</groupId>
