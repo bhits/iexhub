@@ -65,16 +65,39 @@
 		<docker.maven.version>0.4.3</docker.maven.version>
 		<hapi.fhir.version>2.0</hapi.fhir.version>
 		<mdmi.version>1.0.0-SNAPSHOT</mdmi.version>
+		<commons-pool.version>1.6</commons-pool.version>
+		<opensaml.version>2.6.4</opensaml.version>
+		<junit.version>4.12</junit.version>
+		<xerces.version>2.11.0</xerces.version>
+		<xalan.version>2.7.1</xalan.version>
+		<asm.version>3.3.1</asm.version>
+		<antlr.antlr4.version>4.0</antlr.antlr4.version>
+		<antlr.antlr4-runtime.version>4.2</antlr.antlr4-runtime.version>
+		<bouncycastle.bcprov-jdk15on.version>1.53</bouncycastle.bcprov-jdk15on.version>
+		<joda-time.version>2.9.2</joda-time.version>
+		<javax.mail.version>1.5.4</javax.mail.version>
+		<org.json.version>20140107</org.json.version>
+		<jackson-databind.version>2.7.3</jackson-databind.version>
+		<nrlparser.version>1.4.6</nrlparser.version>
+		<syslog4j.version>0.9.30</syslog4j.version>
+		<log4j.version>1.2.17</log4j.version>
+		<slf4j-simple.version>1.7.14</slf4j-simple.version>
+		<owasp.esapi.version>2.1.0</owasp.esapi.version>
+		<apache.neethi.version>3.0.3</apache.neethi.version>
 		<apache.axiom.version>1.2.15</apache.axiom.version>
 		<apache.axis2.version>1.6.3</apache.axis2.version>
 		<apache.rampart.version>1.6.2</apache.rampart.version>
 		<apache.velocity.version>1.7</apache.velocity.version>
+		<apache.ws.commons.schema.XmlSchema.version>1.4.7</apache.ws.commons.schema.XmlSchema.version>
+		<apache.ws.security.wss4j.version>1.5.5</apache.ws.security.wss4j.version>
 		<jersey_version>2.22</jersey_version>
 		<iexhub.iexhub_generated.version>1.0.0-SNAPSHOT</iexhub.iexhub_generated.version>
 		<phloc_schematron_version>2.7.1</phloc_schematron_version>
 		<phloc_commons_version>4.4.5</phloc_commons_version>
 		<javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
 		<javax.ejb.ejb-api.version>3.0</javax.ejb.ejb-api.version>
+		<javax.javaee-api.version>7.0</javax.javaee-api.version>
+		<thymeleaf-spring3.version>2.1.4.RELEASE</thymeleaf-spring3.version>
 	</properties>
 
 	<repositories>
@@ -129,12 +152,12 @@
 		<dependency>
 			<groupId>org.antlr</groupId>
 			<artifactId>antlr4</artifactId>
-			<version>4.0</version>
+			<version>${antlr.antlr4.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.antlr</groupId>
 			<artifactId>antlr4-runtime</artifactId>
-			<version>4.2</version>
+			<version>${antlr.antlr4-runtime.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mdmi</groupId>
@@ -144,12 +167,12 @@
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
-			<version>1.2.17</version>
+			<version>${log4j.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
-			<version>2.9.2</version>
+			<version>${joda-time.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.axis2</groupId>
@@ -180,12 +203,12 @@
 		<dependency>
 			<groupId>org.apache.neethi</groupId>
 			<artifactId>neethi</artifactId>
-			<version>3.0.3</version>
+			<version>${apache.neethi.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.ws.commons.schema</groupId>
 			<artifactId>XmlSchema</artifactId>
-			<version>1.4.7</version>
+			<version>${apache.ws.commons.schema.XmlSchema.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.axis2</groupId>
@@ -200,17 +223,17 @@
 		<dependency>
 			<groupId>com.sun.mail</groupId>
 			<artifactId>javax.mail</artifactId>
-			<version>1.5.4</version>
+			<version>${javax.mail.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sourceforge.nrl</groupId>
 			<artifactId>nrlparser</artifactId>
-			<version>1.4.6</version>
+			<version>${nrlparser.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>xerces</groupId>
 			<artifactId>xercesImpl</artifactId>
-			<version>2.11.0</version>
+			<version>${xerces.version}</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>xml-apis</artifactId>
@@ -221,7 +244,7 @@
 		<dependency>
 			<groupId>xalan</groupId>
 			<artifactId>xalan</artifactId>
-			<version>2.7.1</version>
+			<version>${xalan.version}</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>xml-apis</artifactId>
@@ -232,38 +255,38 @@
 		<dependency>
 			<groupId>asm</groupId>
 			<artifactId>asm</artifactId>
-			<version>3.3.1</version>
+			<version>${asm.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20140107</version>
+			<version>${org.json.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.12</version>
+			<version>${junit.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15on</artifactId>
-			<version>1.53</version>
+			<version>${bouncycastle.bcprov-jdk15on.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.ws.security</groupId>
 			<artifactId>wss4j</artifactId>
-			<version>1.5.5</version>
+			<version>${apache.ws.security.wss4j.version}</version>
 		</dependency>
 		<!-- used to be org.codehaus.jackson -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>2.7.3</version>
+			<version>${jackson-databind.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-pool</groupId>
 			<artifactId>commons-pool</artifactId>
-			<version>1.6</version>
+			<version>${commons-pool.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
@@ -338,24 +361,24 @@
 		<dependency>
 			<groupId>org.syslog4j</groupId>
 			<artifactId>syslog4j</artifactId>
-			<version>0.9.30</version>
+			<version>${syslog4j.version}</version>
 		</dependency>
 
 
 		<dependency>
 			<groupId>org.opensaml</groupId>
 			<artifactId>opensaml</artifactId>
-			<version>2.6.4</version>
+			<version>${opensaml.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-simple</artifactId>
-			<version>1.7.14</version>
+			<version>${slf4j-simple.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>javax</groupId>
 			<artifactId>javaee-api</artifactId>
-			<version>7.0</version>
+			<version>${javax.javaee-api.version}</version>
 		</dependency>
 
 		<!-- Rampart Dependency -->
@@ -443,7 +466,7 @@
 		<dependency>
 			<groupId>org.owasp.esapi</groupId>
 			<artifactId>esapi</artifactId>
-			<version>2.1.0</version>
+			<version>${owasp.esapi.version}</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>xml-apis</artifactId>
@@ -455,7 +478,7 @@
 		<dependency>
 			<groupId>org.thymeleaf</groupId>
 			<artifactId>thymeleaf-spring3</artifactId>
-			<version>2.1.4.RELEASE</version>
+			<version>${thymeleaf-spring3.version}</version>
 		</dependency>
 
 	</dependencies>
