@@ -256,7 +256,7 @@ public class ResearchConsentTest {
 
 			String xmlEncodedPatient = ctxt.newXmlParser().setPrettyPrint(true).encodeResourceToString(subjectPatientResource);
 			try {
-				FileUtils.writeStringToFile(new File(testResourcesPath + "/XML/" + "PatientSubject.xml"),
+				FileUtils.writeStringToFile(new File(testResourcesPath + "/XML/temp/" + "PatientSubject.xml"),
 						xmlEncodedPatient);
 			} catch (IOException e) {
 
