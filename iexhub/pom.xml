@@ -59,7 +59,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<java.version>1.7</java.version>
+		<java.version>1.8</java.version>
 		<apache.maven.compiler-plugin.version>3.5.1</apache.maven.compiler-plugin.version>
 		<apache.maven.war-plugin.version>2.6</apache.maven.war-plugin.version>
 		<docker.maven.version>0.4.3</docker.maven.version>
