@@ -22,8 +22,6 @@ import jersey.repackaged.com.google.common.collect.Collections2;
 import jersey.repackaged.com.google.common.collect.MapDifference;
 import jersey.repackaged.com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
 import org.apache.log4j.Logger;
 import org.iexhub.connectors.XdsB;
 import org.iexhub.connectors.XdsBRepositoryManager;
@@ -69,7 +67,6 @@ import java.util.*;
 import static java.nio.file.Files.readAllBytes;
 import static java.nio.file.Paths.get;
 
-//import org.openhealthtools.mdht.uml.cda.util.CDAUtil.ValidationHandler;
 
 /**
  * @author A. Sute
@@ -81,34 +78,6 @@ public class GetPatientDataService
 {
     /** Logger */
     public static Logger log = Logger.getLogger(GetPatientDataService.class);
-
-//	public static class Handler implements ValidationHandler
-//	{
-//		boolean isValid = true;
-//
-//		public boolean isValid() {
-//			return isValid;
-//		}
-//
-//		public void setValid( boolean isValid ) {
-//			this.isValid = isValid;
-//		}
-//
-//		@Override
-//		public void handleError( Diagnostic arg0 ) {
-//			isValid = false;
-//		}
-//
-//		@Override
-//		public void handleInfo( Diagnostic arg0 ) {
-//			// Currently ignoring all informational diagnostics
-//		}
-//
-//		@Override
-//		public void handleWarning( Diagnostic arg0 ) {
-//			// Currently ignoring all warning diagnostics
-//		}
-//	}
 
 	private static Properties props = null;
 	private static XdsB xdsB = null;
@@ -215,23 +184,12 @@ public class GetPatientDataService
 
 				log.info("HTTP headers successfully parsed, now calling XdsB registry...");
 								
-				// Determine if a complete patient ID (including OID and ISO specification) was provided.  If not, then append IExHubDomainOid
-				//   and IExAssigningAuthority...
+				// Determine if a complete patient ID (including OID and ISO specification) was provided.  If not, then append IExHubDomainOid and IExAssigningAuthority...
 				if (!patientId.contains("^^^&"))
 				{
 					patientId = "'" + patientId + "^^^&" + GetPatientDataService.iExHubDomainOid + "&" + GetPatientDataService.iExHubAssigningAuthority + "'";
 				}
-				
-//				if (!patientId.startsWith("'"))
-//				{
-//					patientId = "'" + patientId;
-//				}
-//				
-//				if (!patientId.endsWith("'"))
-//				{
-//					patientId += "'";
-//				}
-				
+
 				AdhocQueryResponse registryResponse = xdsB.registryStoredQuery(patientId,
 						(startDate != null) ? DateFormat.getDateInstance().format(startDate) : null,
 						(endDate != null) ? DateFormat.getDateInstance().format(endDate) : null);
@@ -389,10 +347,6 @@ public class GetPatientDataService
 												doc.getDocumentElement(),
 												XPathConstants.NODESET);
 
-/*										NodeList nodes = (NodeList)xPath.evaluate("/ClinicalDocument/templateId",
-										        doc.getDocumentElement(),
-										        XPathConstants.NODESET);*/
-
 										boolean templateFound = false;
 										if (nodes.getLength() > 0)
 										{
@@ -407,35 +361,7 @@ public class GetPatientDataService
 											    {
 											    	log.info("/ClinicalDocument/templateId node found, document ID="
 											    			+ document.getDocumentUniqueId().getLongName());
-											    	
-													// CCDA 1.1 validation check...
-//													Handler handler = new Handler();
-//													handler.setValid(true);
-		//											ClinicalDocument clinicalDocument = CDAUtil.load(new FileInputStream(filename),
-		//													handler);
-		//											ByteArrayOutputStream output = new ByteArrayOutputStream();
-		//											CDAUtil.save(clinicalDocument,
-		//													output);
-		
-//													if (handler.isValid())
-//													{
-	//													log.info("Invoking map, document ID="
-	//															+ document.getDocumentUniqueId().getLongName());
-														
-	//													String mapOutput = invokeMap(filename);
-	
-	//													log.info("Map invocation successful, document ID="
-	//															+ document.getDocumentUniqueId().getLongName());
-	
-														// Persist transformed CCDA to filesystem for auditing...
-	//													Files.write(Paths.get("test/" + document.getDocumentUniqueId().getLongName() + "_TransformedToPatientPortalXML.xml"),
-	//															mapOutput.getBytes());
-	
-	//													log.info("Persisted transformed CCDA document to filesystem, filename="
-	//															+ "test/"
-	//															+ document.getDocumentUniqueId().getLongName()
-	//															+ "_TransformedToPatientPortalXML.xml");
-	
+
 														log.info("Invoking XSL transform, document ID="
 																+ document.getDocumentUniqueId().getLongName());
 	
@@ -459,16 +385,9 @@ public class GetPatientDataService
 														log.info("Successfully transformed CCDA to JSON, filename="
 																+ jsonFilename);
 														
-	//										            patientDataResponse.getDocuments().add(new String(readAllBytes(get(jsonFilename))));
 														jsonOutput.append(new String(readAllBytes(get(jsonFilename))));
 														
 												    	templateFound = true;
-//													}
-//													else
-//													{
-//														patientDataResponse.getErrorMsgs().add("Document retrieved is not a valid C-CDA 1.1 document - document ID="
-//																+ document.getDocumentUniqueId().getLongName());									
-//													}
 											    }
 											}
 										}
@@ -511,7 +430,7 @@ public class GetPatientDataService
 		}
 		else
 		{
-			// Return canned document for sprint #16 demo.  Sprint #17 will return JSON created by MDMI map (code below outside of this block).
+			// Return test document when testMode is true
 			try
 			{
 				retVal = FileUtils.readFileToString(new File(GetPatientDataService.testJSONDocumentPathname));
@@ -523,7 +442,6 @@ public class GetPatientDataService
 			}
 		}
 		
-//		return Response.status(Response.Status.OK).entity(patientDataResponse).type(MediaType.APPLICATION_JSON).build();
 		return Response.status(Response.Status.OK).entity(jsonOutput.toString()).type(MediaType.APPLICATION_JSON).build();
 	}
 
@@ -593,8 +511,6 @@ public class GetPatientDataService
 				String ssoAuth = headerParams.getFirst("ssoauth");
 
 				log.info("HTTP headers successfully retrieved");
-				// Extract patient ID, query start date, and query end date.  Expected format from the client is
-				//   "PatientId={0}&LastName={1}&FirstName={2}&MiddleName={3}&DateOfBirth={4}&PatientGender={5}&MotherMaidenName={6}&AddressStreet={7}&AddressCity={8}&AddressState={9}&AddressPostalCode={10}&OtherIDsScopingOrganization={11}&StartDate={12}&EndDate={13}"
 				String[] splitPatientId = ssoAuth.split("&LastName=");
 				String patientId = (splitPatientId[0].split("=").length == 2) ? splitPatientId[0].split("=")[1] : null;
 
@@ -615,8 +531,7 @@ public class GetPatientDataService
 
 				log.info("HTTP headers successfully parsed, now calling XdsB registry...");
 
-				// Determine if a complete patient ID (including OID and ISO specification) was provided.  If not, then append IExHubDomainOid
-				//   and IExAssigningAuthority...
+				// Determine if a complete patient ID (including OID and ISO specification) was provided.  If not, then append IExHubDomainOid and IExAssigningAuthority...
 				if (!patientId.contains("^^^&"))
 				{
 					patientId = "'" + patientId + "^^^&" + GetPatientDataService.iExHubDomainOid + "&" + GetPatientDataService.iExHubAssigningAuthority + "'";
@@ -743,7 +658,7 @@ public class GetPatientDataService
 		}
 		else
 		{
-			// Return canned document for sprint #16 demo.  Sprint #17 will return JSON created by MDMI map (code below outside of this block).
+			// Return test document when testMode is true
 			try
 			{
 				retVal = FileUtils.readFileToString(new File(GetPatientDataService.testJSONDocumentPathname));

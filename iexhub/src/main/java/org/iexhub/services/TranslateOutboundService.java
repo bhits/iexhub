@@ -224,8 +224,6 @@ public class TranslateOutboundService
 							
 										// 7. set the return value
 										retVal = tMsg.getDataAsString();
-							
-//										saveResults(retVal);
 									}
 									catch (Exception e)
 									{

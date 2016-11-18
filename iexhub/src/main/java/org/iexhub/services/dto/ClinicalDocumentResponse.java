@@ -1,9 +1,5 @@
 package org.iexhub.services.dto;
 
-/**
- * Created by tomson.ngassa on 7/20/2016.
- */
-
 public class ClinicalDocumentResponse {
     private boolean published;
 

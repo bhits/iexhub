@@ -95,8 +95,7 @@ public class ResearchConsentTest {
 		testPatientResource.addTelecom().setUse(ContactPointUseEnum.HOME).setSystem(ContactPointSystemEnum.EMAIL)
 				.setValue("patient@home.org");
 		// Provider organization...
-		// set id to be used to reference the providerOrganization as an inline
-		// resource
+		// set id to be used to reference the providerOrganization as an inline resource
 		sourceOrganizationResource.setId(new IdDt(sourceOrganizationId));
 		sourceOrganizationResource.addIdentifier().setSystem(uriPrefix + "2.16.840.1.113883.4.6").setValue("NPI of source organization");
 		sourceOrganizationResource.setName("Research Organization Name");
@@ -135,7 +134,7 @@ public class ResearchConsentTest {
 		contract.getType().addCoding().setSystem("urn:oid:2.16.840.1.113883.5.4").setCode("IDSCL");
 		//research
 		CodeableConceptDt reasearchPurposeCode = new CodeableConceptDt("http://hl7.org/fhir/contractsubtypecodes", "HRESCH");
-		reasearchPurposeCode.setText("Consent for research"); //$NON-NLS-1$
+		reasearchPurposeCode.setText("Consent for research");
 		contract.getActionReason().add(reasearchPurposeCode);
 		DateTimeDt issuedDateTime = new DateTimeDt();
 		issuedDateTime.setValue(Calendar.getInstance().getTime());
@@ -153,7 +152,7 @@ public class ResearchConsentTest {
 				.setType(new CodingDt("http://hl7.org/fhir/contractsignertypecodes", "1.2.840.10065.1.12.1.7"));
 		contract.getSignerFirstRep().setSignature(testPatientResource.getNameFirstRep().getNameAsSingleString());
 		contract.getSignerFirstRep().setParty(patientReference);
-		// add test patient as a contained resource rather than externalreference
+		// add test patient as a contained resource rather than external reference
 		contract.getContained().getContainedResources().add(testPatientResource);
 		// set terms of consent and intended recipient(s)
 		PeriodDt applicablePeriod = new PeriodDt();
@@ -179,8 +178,7 @@ public class ResearchConsentTest {
 
 		// add discharge summary document type
 		ListResource.Entry researchStudyEntry = new ListResource.Entry();
-		// use list item flag to specify a category and the item to specify an
-		// instance (e.g. DocumentReference)
+		// use list item flag to specify a category and the item to specify an instance (e.g. DocumentReference)
 		CodeableConceptDt researchStudy = new CodeableConceptDt("urn:oid:2.16.840.1.113883.6.1", "LOINC_TBD");
 		researchStudy.setText("Human Nature Research Study");
 		Basic basicItem1 = new Basic();
@@ -198,7 +196,6 @@ public class ResearchConsentTest {
 		contract.getContained().getContainedResources().add(basicItem1);
 		// Use the narrative generator
 		// @TODO: add generator Thymeleaf templates
-		// ctxt.setNarrativeGenerator(new DefaultThymeleafNarrativeGenerator());
 		// Create XML and JSON files including generated narrative XHTML
 		String xmlEncodedGranularConsent = ctxt.newXmlParser().setPrettyPrint(true).encodeResourceToString(contract);
 		try {
@@ -249,10 +246,6 @@ public class ResearchConsentTest {
 					break;
 				}
 			}
-			//subjectPatientResource.getContained().getContainedResources().add(sourceOrganizationResource);
-			//ResourceReferenceDt sourceIdRef = new ResourceReferenceDt();
-			//sourceIdRef.setReference("#"+sourceOrganizationId);
-			//subjectPatientResource.getCareProvider().add(sourceIdRef);
 
 			String xmlEncodedPatient = ctxt.newXmlParser().setPrettyPrint(true).encodeResourceToString(subjectPatientResource);
 			try {
