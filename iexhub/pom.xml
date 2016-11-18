@@ -63,9 +63,15 @@
 		<maven-compiler-plugin.version>3.5.1</maven-compiler-plugin.version>
 		<maven-war-plugin.version>2.6</maven-war-plugin.version>
 		<docker-maven-plugin.version>0.4.3</docker-maven-plugin.version>
+		<commons-io.version>2.5</commons-io.version>
+		<commons-pool.version>1.6</commons-pool.version>
+		<jaxb-api.version>2.2.2</jaxb-api.version>
+		<javax.inject.version>2.4.0-b31</javax.inject.version>
+		<geronimo-activation.version>1.1</geronimo-activation.version>
+		<javax.activation.version>1.1</javax.activation.version>
+		<jsr311-api.version>1.1.1</jsr311-api.version>
 		<hapi-fhir.version>2.0</hapi-fhir.version>
 		<mdmi.version>1.0.0-SNAPSHOT</mdmi.version>
-		<commons-pool.version>1.6</commons-pool.version>
 		<opensaml.version>2.6.4</opensaml.version>
 		<junit.version>4.12</junit.version>
 		<xercesImpl.version>2.11.0</xercesImpl.version>
@@ -147,6 +153,48 @@
 			<groupId>gov.samhsa.iexhub</groupId>
 			<artifactId>iexhub-generated</artifactId>
 			<version>${iexhub-generated.version}</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>${commons-io.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.bundles.repackaged</groupId>
+			<artifactId>jersey-guava</artifactId>
+			<version>${jersey.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.xml.bind</groupId>
+			<artifactId>jaxb-api</artifactId>
+			<version>${jaxb-api.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.hk2.external</groupId>
+			<artifactId>javax.inject</artifactId>
+			<version>${javax.inject.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.geronimo.specs</groupId>
+			<artifactId>geronimo-activation_1.1_spec</artifactId>
+			<version>${geronimo-activation.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>ca.uhn.hapi.fhir</groupId>
+			<artifactId>hapi-fhir-base</artifactId>
+			<version>${hapi-fhir.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.ws.rs</groupId>
+			<artifactId>jsr311-api</artifactId>
+			<version>${jsr311-api.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.activation</groupId>
+			<artifactId>activation</artifactId>
+			<version>${javax.activation.version}</version>
 		</dependency>
 
 		<dependency>
