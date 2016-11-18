@@ -198,8 +198,6 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 				result.setCreated(true);
 				result.setId(contract.getId());
 				result.setResource(contract);
-//				OperationOutcome operationOutcome = new OperationOutcome();
-//				result.setOperationOutcome(operationOutcome);
 			}
 		}
 		catch (Exception e)
@@ -251,8 +249,7 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 
 		try
 		{
-			// Determine if a complete patient ID (including OID and ISO specification) was provided.  If not, then append IExHubDomainOid
-			//   and IExAssigningAuthority...
+			// Determine if a complete patient ID (including OID and ISO specification) was provided.  If not, then append IExHubDomainOid and IExAssigningAuthority...
 			String referencedId = identifier.getValue();
 			if (!referencedId.contains("^^^&"))
 			{
@@ -288,9 +285,7 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 						errorText.append("Error code context=" + error.getCodeContext() + "\n");
 					}
 					
-					// Error code location (i.e., stack trace) only to be logged to IExHub error file
-//					patientDataResponse.getErrorMsgs().add(errorText.toString());
-					
+
 					if (error.getLocation() != null)
 					{
 						errorText.append("Error location=" + error.getLocation());
@@ -401,9 +396,7 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 								errorText.append("Error code context=" + error.getCodeContext() + "\n");
 							}
 							
-							// Error code location (i.e., stack trace) only to be logged to IExHub error file
-	//						patientDataResponse.getErrorMsgs().add(errorText.toString());
-							
+
 							if (error.getLocation() != null)
 							{
 								errorText.append("Error location=" + error.getLocation());

@@ -67,7 +67,6 @@ import ca.uhn.fhir.model.dstu2.valueset.ListStatusEnum;
 import ca.uhn.fhir.model.primitive.DateDt;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
-;
 
 public class PrivacyConsentTest {
 	// FHIR resource identifiers for contained objects
@@ -128,8 +127,7 @@ public class PrivacyConsentTest {
 		testPatientResource.addTelecom().setUse(ContactPointUseEnum.HOME).setSystem(ContactPointSystemEnum.EMAIL)
 				.setValue("patient@home.org");
 		// Provider organization...
-		// set id to be used to reference the providerOrganization as an inline
-		// resource
+		// set id to be used to reference the providerOrganization as an inline resource
 		sourceOrganizationResource.setId(new IdDt(sourceOrganizationId));
 		// system 2.16.840.1.113883.4.6
 		sourceOrganizationResource.addIdentifier().setSystem(uriPrefix + "2.16.840.1.113883.4.6")
@@ -191,10 +189,9 @@ public class PrivacyConsentTest {
 		// add source resource and authority reference
 		consentAsContract.getContained().getContainedResources().add(sourceOrganizationResource);
 		consentAsContract.addAuthority().setReference("#" + sourceOrganizationId);
-		// This is required if the organization was not already added as a
-		// "contained" resource reference by the Patient
-		// contract.getContained().getContainedResources().add(sourceOrganizationResource);
-		// specify the provider who authored the data
+		/* This is required if the organization was not already added as a "contained" resource reference by the Patient
+		   contract.getContained().getContainedResources().add(sourceOrganizationResource);
+		   specify the provider who authored the data */
 		consentAsContract.addActor().getEntity().setReference("#" + sourcePractitionerId);
 		consentAsContract.getContained().getContainedResources().add(sourcePractitionerResource);
 		// specify the patient identified in the consent
@@ -207,9 +204,7 @@ public class PrivacyConsentTest {
 		consentAsContract.getSignerFirstRep()
 				.setSignature(testPatientResource.getNameFirstRep().getNameAsSingleString());
 		consentAsContract.getSignerFirstRep().setParty(patientReference);
-		// add test patient as a contained resource rather than
-		// external reference
-
+		// add test patient as a contained resource rather than external reference
 		consentAsContract.getContained().getContainedResources().add(testPatientResource);
 		// set terms of consent and intended recipient(s)
 		PeriodDt applicablePeriod = new PeriodDt();
@@ -234,12 +229,10 @@ public class PrivacyConsentTest {
 
 		// add discharge summary document type
 		ListResource.Entry dischargeSummaryEntry = new ListResource.Entry();
-		// use list item flag to specify a category and the item to specify an
-		// instance (e.g. DocumentReference)
+		// use list item flag to specify a category and the item to specify an instance (e.g. DocumentReference)
 		CodeableConceptDt dischargeSummaryCode = new CodeableConceptDt("urn:oid:2.16.840.1.113883.5.25", "SDV");
 		// dischargeSummaryCode
 		dischargeSummaryCode.setText("Sexual and domestic violence related");
-		// dischargeSummaryEntry.setFlag(dischargeSummaryCode);
 		Basic basicItem1 = new Basic();
 		basicItem1.setId(new IdDt("item1"));
 		basicItem1.setCode(dischargeSummaryCode);
@@ -249,12 +242,10 @@ public class PrivacyConsentTest {
 		list.addEntry(dischargeSummaryEntry);
 		// add a summary note document type
 		ListResource.Entry summaryNoteEntry = new ListResource.Entry();
-		// "34133-9" LOINC term is currently used as the Clinical Document
-		// code for both the Care Record Summary (CRS) and Continuity of Care
-		// Document (CCD).
+		/* "34133-9" LOINC term is currently used as the Clinical Document code for both
+		   the Care Record Summary (CRS) and Continuity of Care Document (CCD). */
 		CodeableConceptDt summaryNoteCode = new CodeableConceptDt("urn:oid:2.16.840.1.113883.5.25", "PSY");
 		summaryNoteCode.setText("Psychiatry Related Data");
-		// summaryNoteEntry.setFlag(summaryNoteCode);
 		summaryNoteEntry.setDeleted(false);
 		Basic basicItem2 = new Basic();
 		basicItem2.setId("item2");
@@ -264,12 +255,10 @@ public class PrivacyConsentTest {
 		summaryNoteEntry.setItem(itemReference2);
 		list.addEntry(summaryNoteEntry);
 
-		// substance abuse category may reference a single category code or
-		// several diagnosis codes
+		// substance abuse category may reference a single category code or several diagnosis codes
 		ListResource.Entry substanceAbuseRelatedEntry = new ListResource.Entry();
 		CodeableConceptDt substanceAbuseRelatedCode = new CodeableConceptDt("urn:oid:2.16.840.1.113883.5.25", "ETH");
 		substanceAbuseRelatedCode.setText("Substance Abuse Related Data");
-		// substanceAbuseRelatedEntry.setFlag(substanceAbuseRelatedCode);
 		Basic basicItem3 = new Basic();
 		basicItem3.setId("item3");
 		basicItem3.setCode(substanceAbuseRelatedCode);
@@ -287,7 +276,6 @@ public class PrivacyConsentTest {
 
 		// Use the narrative generator
 		// @TODO: add generator Thymeleaf templates
-		// ctxt.setNarrativeGenerator(new DefaultThymeleafNarrativeGenerator());
 		// Create XML and JSON files including generated narrative XHTML
 		String xmlEncodedGranularConsent = ctxt.newXmlParser().setPrettyPrint(true)
 				.encodeResourceToString(consentAsContract);
@@ -304,7 +292,6 @@ public class PrivacyConsentTest {
 		Transformer transformer;
 		try {
 			transformer = factory.newTransformer(xform);
-			//transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 			transformer.setOutputProperty(OutputKeys.METHOD, "xml");	
 			Source consentResourceSource = new StreamSource(xmlEncodedGranularConsentFile);
 			File testXacmlFile = new File(testResourcesPath + "/XML/temp/xacml.xml");
@@ -377,12 +364,6 @@ public class PrivacyConsentTest {
 			Rule xacmlFromFileRule = consentFromFile.getRule().get(0);
 			AttachmentDt xacmlPolicyAttachment = (AttachmentDt) xacmlFromFileRule.getContent();
 			byte[] xacmlPolicyByteArray = xacmlPolicyAttachment.getData();
-			//System.out.println(new String(xacmlPolicyByteArray));
-			// subjectPatientResource.getContained().getContainedResources().add(sourceOrganizationResource);
-			// ResourceReferenceDt sourceIdRef = new ResourceReferenceDt();
-			// sourceIdRef.setReference("#"+sourceOrganizationId);
-			// subjectPatientResource.getCareProvider().add(sourceIdRef);
-
 		}
 
 	}

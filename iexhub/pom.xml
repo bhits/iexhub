@@ -57,27 +57,53 @@
 		</snapshotRepository>
 	</distributionManagement>
 
-	<!-- Note: HAPI projects use the "hapi-fhir" POM as their base to provide
-		easy management. You do not need to use this in your own projects, so the
-		"parent" tag and it's contents below may be removed if you are using this
-		file as a basis for your own project. -->
-	<parent>
-		<groupId>ca.uhn.hapi.fhir</groupId>
-		<artifactId>hapi-fhir</artifactId>
-		<version>2.0</version>
-		<relativePath>../hapi-fhir/pom.xml</relativePath>
-	</parent>
-
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<java.version>1.7</java.version>
-		<docker.maven.version>0.4.3</docker.maven.version>
-		<hapi.fhir.version>2.0</hapi.fhir.version>
+		<java.version>1.8</java.version>
+		<maven-compiler-plugin.version>3.5.1</maven-compiler-plugin.version>
+		<maven-war-plugin.version>2.6</maven-war-plugin.version>
+		<docker-maven-plugin.version>0.4.3</docker-maven-plugin.version>
+		<commons-io.version>2.5</commons-io.version>
+		<commons-pool.version>1.6</commons-pool.version>
+		<jaxb-api.version>2.2.2</jaxb-api.version>
+		<javax.inject.version>2.4.0-b31</javax.inject.version>
+		<geronimo-activation.version>1.1</geronimo-activation.version>
+		<javax.activation.version>1.1</javax.activation.version>
+		<jsr311-api.version>1.1.1</jsr311-api.version>
+		<hapi-fhir.version>2.0</hapi-fhir.version>
 		<mdmi.version>1.0.0-SNAPSHOT</mdmi.version>
-		<apache.axiom.version>1.2.15</apache.axiom.version>
-		<apache.axis2.version>1.6.3</apache.axis2.version>
-		<apache.rampart.version>1.6.2</apache.rampart.version>
-		<jersey_version>2.22</jersey_version>
+		<opensaml.version>2.6.4</opensaml.version>
+		<junit.version>4.12</junit.version>
+		<xercesImpl.version>2.11.0</xercesImpl.version>
+		<xalan.version>2.7.1</xalan.version>
+		<asm.version>3.3.1</asm.version>
+		<antlr4.version>4.0</antlr4.version>
+		<antlr4-runtime.version>4.2</antlr4-runtime.version>
+		<bcprov-jdk15on.version>1.53</bcprov-jdk15on.version>
+		<joda-time.version>2.9.2</joda-time.version>
+		<javax.mail.version>1.5.4</javax.mail.version>
+		<json-in-java.version>20140107</json-in-java.version>
+		<jackson-databind.version>2.7.3</jackson-databind.version>
+		<nrlparser.version>1.4.6</nrlparser.version>
+		<syslog4j.version>0.9.30</syslog4j.version>
+		<log4j.version>1.2.17</log4j.version>
+		<slf4j-simple.version>1.7.14</slf4j-simple.version>
+		<esapi.version>2.1.0</esapi.version>
+		<neethi.version>3.0.3</neethi.version>
+		<axiom.version>1.2.15</axiom.version>
+		<axis2.version>1.6.3</axis2.version>
+		<rampart.version>1.6.2</rampart.version>
+		<velocity.version>1.7</velocity.version>
+		<XmlSchema.version>1.4.7</XmlSchema.version>
+		<wss4j.version>1.5.5</wss4j.version>
+		<jersey.version>2.22</jersey.version>
+		<iexhub-generated.version>1.0.0-SNAPSHOT</iexhub-generated.version>
+		<phloc-schematron.version>2.7.1</phloc-schematron.version>
+		<phloc-commons.version>4.4.5</phloc-commons.version>
+		<javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
+		<ejb-api.version>3.0</ejb-api.version>
+		<javaee-api.version>7.0</javaee-api.version>
+		<thymeleaf-spring3.version>2.1.4.RELEASE</thymeleaf-spring3.version>
 	</properties>
 
 	<repositories>
@@ -124,15 +150,53 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.antlr</groupId>
-			<artifactId>antlr4</artifactId>
-			<version>4.0</version>
+			<groupId>gov.samhsa.iexhub</groupId>
+			<artifactId>iexhub-generated</artifactId>
+			<version>${iexhub-generated.version}</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>${commons-io.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.antlr</groupId>
-			<artifactId>antlr4-runtime</artifactId>
-			<version>4.2</version>
+			<groupId>org.glassfish.jersey.bundles.repackaged</groupId>
+			<artifactId>jersey-guava</artifactId>
+			<version>${jersey.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>javax.xml.bind</groupId>
+			<artifactId>jaxb-api</artifactId>
+			<version>${jaxb-api.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.hk2.external</groupId>
+			<artifactId>javax.inject</artifactId>
+			<version>${javax.inject.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.geronimo.specs</groupId>
+			<artifactId>geronimo-activation_1.1_spec</artifactId>
+			<version>${geronimo-activation.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>ca.uhn.hapi.fhir</groupId>
+			<artifactId>hapi-fhir-base</artifactId>
+			<version>${hapi-fhir.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.ws.rs</groupId>
+			<artifactId>jsr311-api</artifactId>
+			<version>${jsr311-api.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.activation</groupId>
+			<artifactId>activation</artifactId>
+			<version>${javax.activation.version}</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.mdmi</groupId>
 			<artifactId>org.mdmi.core</artifactId>
@@ -141,73 +205,68 @@
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
-			<version>1.2.17</version>
+			<version>${log4j.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
-			<version>2.9.2</version>
+			<version>${joda-time.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.axis2</groupId>
 			<artifactId>axis2</artifactId>
-			<version>${apache.axis2.version}</version>
+			<version>${axis2.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.ws.commons.axiom</groupId>
 			<artifactId>axiom-api</artifactId>
-			<version>${apache.axiom.version}</version>
+			<version>${axiom.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.ws.commons.axiom</groupId>
 			<artifactId>axiom-impl</artifactId>
-			<version>${apache.axiom.version}</version>
+			<version>${axiom.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.ws.commons.axiom</groupId>
 			<artifactId>axiom-dom</artifactId>
-			<version>${apache.axiom.version}</version>
+			<version>${axiom.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.ws.commons.axiom</groupId>
 			<artifactId>axiom-compat</artifactId>
-			<version>${apache.axiom.version}</version>
+			<version>${axiom.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.neethi</groupId>
 			<artifactId>neethi</artifactId>
-			<version>3.0.3</version>
+			<version>${neethi.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.ws.commons.schema</groupId>
 			<artifactId>XmlSchema</artifactId>
-			<version>1.4.7</version>
+			<version>${XmlSchema.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.axis2</groupId>
 			<artifactId>axis2-transport-local</artifactId>
-			<version>${apache.axis2.version}</version>
+			<version>${axis2.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.axis2</groupId>
 			<artifactId>axis2-transport-http</artifactId>
-			<version>${apache.axis2.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.sun.mail</groupId>
-			<artifactId>javax.mail</artifactId>
-			<version>1.5.4</version>
+			<version>${axis2.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sourceforge.nrl</groupId>
 			<artifactId>nrlparser</artifactId>
-			<version>1.4.6</version>
+			<version>${nrlparser.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>xerces</groupId>
 			<artifactId>xercesImpl</artifactId>
-			<version>2.11.0</version>
+			<version>${xercesImpl.version}</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>xml-apis</artifactId>
@@ -218,7 +277,7 @@
 		<dependency>
 			<groupId>xalan</groupId>
 			<artifactId>xalan</artifactId>
-			<version>2.7.1</version>
+			<version>${xalan.version}</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>xml-apis</artifactId>
@@ -229,130 +288,138 @@
 		<dependency>
 			<groupId>asm</groupId>
 			<artifactId>asm</artifactId>
-			<version>3.3.1</version>
+			<version>${asm.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20140107</version>
+			<version>${json-in-java.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.12</version>
+			<version>${junit.version}</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15on</artifactId>
-			<version>1.53</version>
+			<version>${bcprov-jdk15on.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.ws.security</groupId>
 			<artifactId>wss4j</artifactId>
-			<version>1.5.5</version>
+			<version>${wss4j.version}</version>
 		</dependency>
 		<!-- used to be org.codehaus.jackson -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>2.7.3</version>
+			<version>${jackson-databind.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-pool</groupId>
 			<artifactId>commons-pool</artifactId>
-			<version>1.6</version>
+			<version>${commons-pool.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
 			<artifactId>hapi-fhir-jaxrsserver-base</artifactId>
-			<version>${hapi.fhir.version}</version>
+			<version>${hapi-fhir.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.phloc</groupId>
 			<artifactId>phloc-schematron</artifactId>
+			<version>${phloc-schematron.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.phloc</groupId>
 			<artifactId>phloc-commons</artifactId>
+			<version>${phloc-commons.version}</version>
 		</dependency>
 		<!-- HAPI FHIR StructureDefinition validation -->
 		<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
 			<artifactId>hapi-fhir-validation-resources-dstu2</artifactId>
-			<version>${hapi.fhir.version}</version>
+			<version>${hapi-fhir.version}</version>
 		</dependency>
 		<!-- HAPI FHIR StructureDefinition validation -->
 		<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
 			<artifactId>hapi-fhir-validation-resources-dstu3</artifactId>
-			<version>${hapi.fhir.version}</version>
+			<version>${hapi-fhir.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
 			<artifactId>hapi-fhir-structures-dstu2</artifactId>
-			<version>${hapi.fhir.version}</version>
+			<version>${hapi-fhir.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
 			<artifactId>hapi-fhir-structures-dstu3</artifactId>
-			<version>${hapi.fhir.version}</version>
+			<version>${hapi-fhir.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.ws.rs</groupId>
 			<artifactId>javax.ws.rs-api</artifactId>
+			<version>${javax.ws.rs-api.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>javax.ejb</groupId>
 			<artifactId>ejb-api</artifactId>
+			<version>${ejb-api.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.core</groupId>
 			<artifactId>jersey-server</artifactId>
-			<version>${jersey_version}</version>
+			<version>${jersey.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.containers</groupId>
 			<artifactId>jersey-container-servlet-core</artifactId>
+			<version>${jersey.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.containers</groupId>
 			<artifactId>jersey-container-jetty-http</artifactId>
+			<version>${jersey.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
 			<artifactId>jersey-media-moxy</artifactId>
+			<version>${jersey.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.syslog4j</groupId>
 			<artifactId>syslog4j</artifactId>
-			<version>0.9.30</version>
+			<version>${syslog4j.version}</version>
 		</dependency>
 
 
 		<dependency>
 			<groupId>org.opensaml</groupId>
 			<artifactId>opensaml</artifactId>
-			<version>2.6.4</version>
+			<version>${opensaml.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-simple</artifactId>
-			<version>1.7.14</version>
+			<version>${slf4j-simple.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>javax</groupId>
 			<artifactId>javaee-api</artifactId>
-			<version>7.0</version>
+			<version>${javaee-api.version}</version>
 		</dependency>
 
 		<!-- Rampart Dependency -->
 		<dependency>
 			<groupId>org.apache.rampart</groupId>
 			<artifactId>rampart</artifactId>
-			<version>${apache.rampart.version}</version>
+			<version>${rampart.version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.apache.xalan</groupId>
@@ -371,7 +438,7 @@
 		<dependency>
 			<groupId>org.apache.rampart</groupId>
 			<artifactId>rampart-core</artifactId>
-			<version>${apache.rampart.version}</version>
+			<version>${rampart.version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.apache.xalan</groupId>
@@ -390,7 +457,7 @@
 		<dependency>
 			<groupId>org.apache.rampart</groupId>
 			<artifactId>rampart-policy</artifactId>
-			<version>${apache.rampart.version}</version>
+			<version>${rampart.version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.apache.xalan</groupId>
@@ -409,7 +476,7 @@
 		<dependency>
 			<groupId>org.apache.rampart</groupId>
 			<artifactId>rampart-trust</artifactId>
-			<version>${apache.rampart.version}</version>
+			<version>${rampart.version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.apache.xalan</groupId>
@@ -428,11 +495,12 @@
 		<dependency>
 			<groupId>org.apache.velocity</groupId>
 			<artifactId>velocity</artifactId>
+			<version>${velocity.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.owasp.esapi</groupId>
 			<artifactId>esapi</artifactId>
-			<version>2.1.0</version>
+			<version>${esapi.version}</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>xml-apis</artifactId>
@@ -444,7 +512,7 @@
 		<dependency>
 			<groupId>org.thymeleaf</groupId>
 			<artifactId>thymeleaf-spring3</artifactId>
-			<version>2.1.4.RELEASE</version>
+			<version>${thymeleaf-spring3.version}</version>
 		</dependency>
 
 	</dependencies>
@@ -454,6 +522,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven-compiler-plugin.version}</version>
 				<configuration>
 					<source>${java.version}</source>
 					<target>${java.version}</target>
@@ -461,11 +530,12 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-war-plugin</artifactId>
+				<version>${maven-war-plugin.version}</version>
 				<dependencies>
 					<dependency>
 						<groupId>org.apache.axis2</groupId>
 						<artifactId>axis2-jaxbri</artifactId>
-						<version>${apache.axis2.version}</version>
+						<version>${axis2.version}</version>
 					</dependency>
 				</dependencies>
 			</plugin>
@@ -473,13 +543,13 @@
 			<plugin>
 				<groupId>org.apache.axis2</groupId>
 				<artifactId>axis2-mar-maven-plugin</artifactId>
-				<version>${apache.axis2.version}</version>
+				<version>${axis2.version}</version>
 				<extensions>true</extensions>
 			</plugin>
 			<plugin>
 				<groupId>com.spotify</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
-				<version>${docker.maven.version}</version>
+				<version>${docker-maven-plugin.version}</version>
 				<configuration>
 					<imageName>bhits/${project.artifactId}</imageName>
 					<dockerDirectory>src/main/docker</dockerDirectory>

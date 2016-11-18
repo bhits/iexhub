@@ -1,8 +1,5 @@
 package org.iexhub.services.dto;
 
-/**
- * Created by tomson.ngassa on 7/11/2016.
- */
 public class PatientDocument {
     private String name;
     private String document;

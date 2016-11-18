@@ -156,15 +156,6 @@ public class PDQQueryManager
 							+ propertiesFile);
 				}
 
-				// TCP over SSL (secure) syslog
-//				System.setProperty("javax.net.ssl.keyStore",
-//						keyStoreFile);
-//				System.setProperty("javax.net.ssl.keyStorePassword",
-//						keyStorePwd);
-//				System.setProperty("javax.net.ssl.trustStore",
-//						keyStoreFile);
-//				System.setProperty("javax.net.ssl.trustStorePassword",
-//						keyStorePwd);
 				System.setProperty("https.cipherSuites",
 						cipherSuites);
 				System.setProperty("https.protocols",
@@ -679,18 +670,7 @@ public class PDQQueryManager
 			int resultSetSize,
 			String existingQueryId) throws IOException
 	{
-//		if ((familyName == null) ||
-//			(familyName.length() == 0))
-//		{
-//			throw new FamilyNameParamMissingException("FamilyName parameter is required");
-//		}
-//		
-//		if ((gender == null) ||
-//			(gender.length() == 0))
-//		{
-//			throw new GenderParamMissingException("Gender parameter is required");			
-//		}
-		
+
 		PRPAIN201305UV02 pRPA_IN201305UV02 = new PRPAIN201305UV02(); 
 		
 		// ITS version...
@@ -830,8 +810,6 @@ public class PDQQueryManager
 		
 		if ((otherIDsScopingOrganization != null) &&
 			(otherIDsScopingOrganization.length() > 0))
-//		    ((otherIDsScopingOrganizationOID != null) &&
-//			 (otherIDsScopingOrganizationOID.length() > 0)))
 		{
 			// Populate otherIDsScopingOrganization...
 			PRPAMT201306UV02OtherIDsScopingOrganization otherIDsScopingOrg = new PRPAMT201306UV02OtherIDsScopingOrganization();

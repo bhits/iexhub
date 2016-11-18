@@ -178,15 +178,6 @@ public class PIXManager
 							+ propertiesFile);
 				}
 
-				// TCP over SSL (secure) syslog
-//				System.setProperty("javax.net.ssl.keyStore",
-//						keyStoreFile);
-//				System.setProperty("javax.net.ssl.keyStorePassword",
-//						keyStorePwd);
-//				System.setProperty("javax.net.ssl.trustStore",
-//						keyStoreFile);
-//				System.setProperty("javax.net.ssl.trustStorePassword",
-//						keyStorePwd);
 				System.setProperty("https.cipherSuites",
 						cipherSuites);
 				System.setProperty("https.protocols",
@@ -1205,30 +1196,6 @@ public class PIXManager
 		
 		// Create PatientPerson...
 		PRPAMT201301UV02Person patientPerson = new PRPAMT201301UV02Person();
-		
-//		// Other ID's specified...
-//		if (fhirIdentifiers != null)
-//		{
-//			for (IdentifierDt fhirId : fhirIdentifiers)
-//			{
-//				PRPAMT201301UV02OtherIDs asOtherId = new PRPAMT201301UV02OtherIDs();
-//				asOtherId.getClassCode().add("SD");
-//				II otherId = new II();
-//				otherId.setRoot(fhirId.getSystemElement().getValueAsString());
-//				otherId.setExtension(fhirId.getValue());
-//				asOtherId.getId().add(otherId);
-//				
-//				COCTMT150002UV01Organization scopingOrg = new COCTMT150002UV01Organization();
-//				scopingOrg.setClassCode("ORG");
-//				scopingOrg.setDeterminerCode("INSTANCE");
-//				II scopingOrgId = new II();
-//				scopingOrgId.setRoot(fhirId.getSystemElement().getValueAsString());
-//				scopingOrg.getId().add(scopingOrgId);
-//				asOtherId.setScopingOrganization(scopingOrg);
-//				
-//				patientPerson.getAsOtherIDs().add(asOtherId);
-//			}
-//		}
 		
 		EnFamily enFamily = null;
 		if ((familyName != null) &&

@@ -328,15 +328,6 @@ public class XdsBRepositoryManager
 							+ propertiesFile);
 				}
 
-				// TCP over SSL (secure) syslog
-//				System.setProperty("javax.net.ssl.keyStore",
-//						keyStoreFile);
-//				System.setProperty("javax.net.ssl.keyStorePassword",
-//						keyStorePwd);
-//				System.setProperty("javax.net.ssl.trustStore",
-//						keyStoreFile);
-//				System.setProperty("javax.net.ssl.trustStorePassword",
-//						keyStorePwd);
 				System.setProperty("https.cipherSuites",
 						cipherSuites);
 				System.setProperty("https.protocols",
@@ -757,34 +748,6 @@ public class XdsBRepositoryManager
 				slot.setValueList(valueList);
 				extrinsicObject.getSlot().add(slot);
 			}
-			
-			// Create rim:Name if necessary...
-//			xPath = XPathFactory.newInstance().newXPath();
-//			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/title",
-//			        doc.getDocumentElement(),
-//			        XPathConstants.NODESET);
-//			if (nodes.getLength() > 0)
-//			{
-//				InternationalStringType docName = new InternationalStringType();
-//				LocalizedStringType localizedName = new LocalizedStringType();
-//				localizedName.setValue(((Element)nodes.item(0)).getNodeValue());
-//				docName.getLocalizedString().add(localizedName);
-//				extrinsicObject.setName(docName);
-//			}
-
-			// Create rim:Description if necessary...
-//			xPath = XPathFactory.newInstance().newXPath();
-//			nodes = (NodeList)xPath.evaluate("/ClinicalDocument/comments",
-//			        doc.getDocumentElement(),
-//			        XPathConstants.NODESET);
-//			if (nodes.getLength() > 0)
-//			{
-//				InternationalStringType docComments = new InternationalStringType();
-//				LocalizedStringType localizedComments = new LocalizedStringType();
-//				localizedComments.setValue(((Element)nodes.item(0)).getTextContent());
-//				docComments.getLocalizedString().add(localizedComments);
-//				extrinsicObject.setDescription(docComments);
-//			}
 
 			// Create classifications - start with document author(s)...
 			ArrayList<ClassificationType> documentAuthorClassifications = new ArrayList<ClassificationType>();
@@ -1075,24 +1038,6 @@ public class XdsBRepositoryManager
 			        XPathConstants.NODESET);
 			if (nodes.getLength() > 0)
 			{
-//				for (int i = 0; i < nodes.getLength(); ++i)
-//				{
-//					ExternalIdentifierType externalIdentifierPatientId = new ExternalIdentifierType();
-//					externalIdentifierPatientId.setId(UUID.randomUUID().toString());
-//					externalIdentifierPatientId.setRegistryObject(documentId);
-//					externalIdentifierPatientId.setIdentificationScheme(ExtrinsicObjectExternalIdentifierPatientIdIdentificationScheme);
-//					externalIdentifierPatientId.setValue(((Element)nodes.item(i)).getAttribute("extension")
-//							+ "^^^&amp;"
-//							+ ((Element)nodes.item(i)).getAttribute("root")
-//							+ "&amp;ISO");
-//					text = new InternationalStringType();
-//					localizedText = new LocalizedStringType();
-//					localizedText.setValue(ExtrinsicObjectExternalIdentifierPatientIdName);
-//					text.getLocalizedString().add(localizedText);
-//					externalIdentifierPatientId.setName(text);
-//					extrinsicObject.getExternalIdentifier().add(externalIdentifierPatientId);
-//				}
-				
 				ExternalIdentifierType externalIdentifierPatientId = new ExternalIdentifierType();
 				externalIdentifierPatientId.setId(UUID.randomUUID().toString());
 				externalIdentifierPatientId.setRegistryObject(documentId);
@@ -1116,21 +1061,6 @@ public class XdsBRepositoryManager
 			        XPathConstants.NODESET);
 			if (nodes.getLength() > 0)
 			{
-//				for (int i = 0; i < nodes.getLength(); ++i)
-//				{
-//					ExternalIdentifierType externalIdentifierPatientId = new ExternalIdentifierType();
-//					externalIdentifierPatientId.setId(UUID.randomUUID().toString());
-//					externalIdentifierPatientId.setRegistryObject(documentId);
-//					externalIdentifierPatientId.setIdentificationScheme(ExtrinsicObjectExternalIdentifierUniqueIdIdentificationScheme);
-//					externalIdentifierPatientId.setValue(((Element)nodes.item(i)).getAttribute("root"));
-//					text = new InternationalStringType();
-//					localizedText = new LocalizedStringType();
-//					localizedText.setValue(ExtrinsicObjectExternalIdentifierUniqueIdName);
-//					text.getLocalizedString().add(localizedText);
-//					externalIdentifierPatientId.setName(text);
-//					extrinsicObject.getExternalIdentifier().add(externalIdentifierPatientId);
-//				}
-				
 				ExternalIdentifierType externalIdentifierDocumentId = new ExternalIdentifierType();
 				externalIdentifierDocumentId.setId(UUID.randomUUID().toString());
 				externalIdentifierDocumentId.setRegistryObject(documentId);
@@ -1302,7 +1232,7 @@ public class XdsBRepositoryManager
 			
 			// Create SubmissionSet Association for RegistryObjectList...
 			AssociationType1 submissionSetAssociation = new AssociationType1();
-			submissionSetAssociation.setId(/*UUID.randomUUID().toString()*/ "as01");
+			submissionSetAssociation.setId("as01");
 			submissionSetAssociation.setAssociationType("urn:oasis:names:tc:ebxml-regrep:AssociationType:HasMember");
 			submissionSetAssociation.setSourceObject(submissionSetId);
 			submissionSetAssociation.setTargetObject(documentId);
@@ -1382,15 +1312,8 @@ public class XdsBRepositoryManager
 			UUID previousDocumentUuid = (updateDocument) ? UUID.fromString(contract.getId().getIdPart())
 					: null;
 			UUID newDocumentUuid = UUID.randomUUID();
-//			long hi = entryUuid.getMostSignificantBits();
-//			long lo = entryUuid.getLeastSignificantBits();
-//			byte[] bytes = ByteBuffer.allocate(16).putLong(hi).putLong(lo).array();
-//			BigInteger big = new BigInteger(bytes);
-			String documentIdToUse = /*"urn:oid:"
-					+*/ contract.getIdentifier().getValue(); //"2.25."
-//					+ big.toString().replace('-',
-//							'0');
-			
+			String documentIdToUse = contract.getIdentifier().getValue();
+
 			ProvideAndRegisterDocumentSetRequestType documentSetRequest = new ProvideAndRegisterDocumentSetRequestType();
 
 			// Create SubmitObjectsRequest...
@@ -1762,21 +1685,9 @@ public class XdsBRepositoryManager
 			externalIdentifierUniqueId.setId(UUID.randomUUID().toString());
 			externalIdentifierUniqueId.setRegistryObject("urn:uuid:" + newDocumentUuid.toString());
 			externalIdentifierUniqueId.setIdentificationScheme(extrinsicObjectExternalIdentifierUniqueIdIdentificationScheme);
-			
-//			if (testMode)
-//			{
-//				DateTime testDocId = DateTime.now(DateTimeZone.UTC);
-//				externalIdentifierDocumentId.setValue(contract.getIdentifier().getSystem()
-//						+ "^"
-//						+ testDocId.getMillis());
-//			}
-//			else
-//			{
-				externalIdentifierUniqueId.setValue(//contract.getIdentifier().getSystem()
-//						+ "^"
-						/*+*/ documentIdToUse);
-//			}
-				
+
+			externalIdentifierUniqueId.setValue(documentIdToUse);
+
 			text = new InternationalStringType();
 			localizedText = new LocalizedStringType();
 			localizedText.setValue(extrinsicObjectExternalIdentifierUniqueIdName);
@@ -1915,7 +1826,7 @@ public class XdsBRepositoryManager
 			
 			// Create SubmissionSet Association for RegistryObjectList...
 			AssociationType1 submissionSetAssociation = new AssociationType1();
-			submissionSetAssociation.setId(/*UUID.randomUUID().toString()*/ "as01");
+			submissionSetAssociation.setId("as01");
 			submissionSetAssociation.setAssociationType("urn:oasis:names:tc:ebxml-regrep:AssociationType:HasMember");
 			submissionSetAssociation.setSourceObject(submissionSetId);
 			submissionSetAssociation.setTargetObject("urn:uuid:" + newDocumentUuid.toString());
@@ -1936,8 +1847,7 @@ public class XdsBRepositoryManager
 				rplcAssociation.setAssociationType("urn:ihe:iti:2007:AssociationType:RPLC");
 				rplcAssociation.setTargetObject("urn:uuid:"
 						+ previousDocumentUuid.toString());
-				rplcAssociation.setSourceObject("urn:uuid:" + newDocumentUuid.toString() ///*(contract.getIdentifier().getValue().startsWith("urn:uuid:")) ?*/ contract.getIdentifier().getValue()
-						/*: "urn:uuid:" + contract.getIdentifier().getValue()*/);
+				rplcAssociation.setSourceObject("urn:uuid:" + newDocumentUuid.toString());
 				
 				registryObjectList.getIdentifiable().add(objectFactory.createAssociation(rplcAssociation));
 				

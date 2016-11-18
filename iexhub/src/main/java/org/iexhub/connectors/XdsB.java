@@ -204,15 +204,6 @@ public class XdsB
 							+ propertiesFile);
 				}
 
-				// TCP over SSL (secure) syslog
-//				System.setProperty("javax.net.ssl.keyStore",
-//						keyStoreFile);
-//				System.setProperty("javax.net.ssl.keyStorePassword",
-//						keyStorePwd);
-//				System.setProperty("javax.net.ssl.trustStore",
-//						keyStoreFile);
-//				System.setProperty("javax.net.ssl.trustStorePassword",
-//						keyStorePwd);
 				System.setProperty("https.cipherSuites",
 						cipherSuites);
 				System.setProperty("https.protocols",
@@ -259,48 +250,6 @@ public class XdsB
 
 				if (enableTLS)
 				{
-//					registryStub._getServiceClient().getOptions().setProperty(RampartMessageData.KEY_RAMPART_POLICY,
-//				            loadPolicy("policy.xml"));
-
-//					registryStub._getServiceClient().getOptions().setProperty(org.apache.axis2.transport.http.HTTPConstants.HTTP_PROTOCOL_VERSION,
-//							org.apache.axis2.transport.http.HTTPConstants.HEADER_PROTOCOL_10);
-					
-//					System.setProperty("javax.net.ssl.trustStore",
-//							"/temp/1264.jks");
-//					System.setProperty("javax.net.ssl.trustStorePassword",
-//							"IEXhub");
-//					registryStub._getServiceClient().engageModule("rampart");
-					
-//					Policy policy = loadPolicy("c:/temp/policy.xml");
-					
-//					RampartConfig rampartConfig = new RampartConfig();
-//					rampartConfig.setUser("client");
-//					rampartConfig.setPwCbClass("org.iexhub.connectors.PWCBHandler");
-//
-//					CryptoConfig sigCrypto = new CryptoConfig();
-//					sigCrypto.setProvider("org.apache.ws.security.components.crypto.Merlin");
-//
-//					Properties props = new Properties();
-//					props.setProperty("org.apache.ws.security.crypto.merlin.keystore.type", "JKS");
-//					props.setProperty("org.apache.ws.security.crypto.merlin.file",
-//							"c:/temp/1264.jks");
-//					props.setProperty("org.apache.ws.security.crypto.merlin.keystore.password",
-//							"IEXhub");
-//
-//					sigCrypto.setProp(props);
-//					rampartConfig.setSigCryptoConfig(sigCrypto);
-//
-////					Policy policy = new Policy();
-//					policy.addAssertion(rampartConfig);
-
-//					System.setProperty("javax.net.ssl.keyStore",
-//							KeyStoreFile);
-//					System.setProperty("javax.net.ssl.keyStorePassword",
-//							KeyStorePwd);
-//					registryStub._getServiceClient().getOptions().setProperty(RampartMessageData.KEY_RAMPART_POLICY,
-//							loadPolicy("c:/temp/policy.xml"));
-//					registryStub._getServiceClient().getAxisService().getPolicySubject().attachPolicy(loadPolicy("c:/temp/policy.xml"));
-
 					System.setProperty("javax.net.ssl.keyStore",
 							keyStoreFile);
 					System.setProperty("javax.net.ssl.keyStorePassword",
@@ -366,50 +315,6 @@ public class XdsB
 			throw e;
 		}
 	}
-
-	 /**
-     * Load policy file from classpath.
-	 * @throws IOException 
-	 * @throws FileNotFoundException 
-     */
-//    private static org.apache.neethi.Policy loadPolicy(String xmlPath)
-//    		throws XMLStreamException,
-//    		FileNotFoundException
-//    {
-//    	StAXOMBuilder builder = new StAXOMBuilder(xmlPath);
-//        Policy policy = PolicyEngine.getPolicy(builder.getDocumentElement());
-//
-//        RampartConfig rc = new RampartConfig();
-//        rc.setUser("client");
-//        rc.setPwCbClass(PWCBHandler.class.getName());
-//
-//        CryptoConfig encryptionCryptoConfig = new CryptoConfig();
-//        encryptionCryptoConfig.setProvider("org.apache.ws.security.components.crypto.Merlin");
-////        encryptionCryptoConfig.setCryptoKey("org.apache.ws.security.crypto.merlin.file");
-//
-//        Properties cryptoProperties = new Properties();
-//        cryptoProperties.put("org.apache.ws.security.crypto.merlin.keystore.type",
-//        		"JKS");
-//        cryptoProperties.put("org.apache.ws.security.crypto.merlin.file",
-//        		KeyStoreFile);
-//        cryptoProperties.put("org.apache.ws.security.crypto.merlin.keystore.password",
-//        		KeyStorePwd);
-//        encryptionCryptoConfig.setProp(cryptoProperties);
-//        rc.setEncrCryptoConfig(encryptionCryptoConfig);
-//
-//        Properties sslProperties = new Properties();
-//        sslProperties.put("javax.net.ssl.trustStore",
-//				KeyStoreFile);
-//        sslProperties.put("javax.net.ssl.trustStorePassword",
-//        		KeyStorePwd);
-//        SSLConfig sslConfig = new SSLConfig();
-//        sslConfig.setProp(sslProperties);
-//        rc.setSSLConfig(sslConfig);
-//
-//        policy.addAssertion(rc);
-//        
-//        return policy;
-//    }
 
 	/**
 	 * @param queryText
