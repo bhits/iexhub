@@ -198,16 +198,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.antlr</groupId>
-			<artifactId>antlr4</artifactId>
-			<version>${antlr4.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.antlr</groupId>
-			<artifactId>antlr4-runtime</artifactId>
-			<version>${antlr4-runtime.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>org.mdmi</groupId>
 			<artifactId>org.mdmi.core</artifactId>
 			<version>${mdmi.version}</version>
@@ -267,11 +257,6 @@
 			<groupId>org.apache.axis2</groupId>
 			<artifactId>axis2-transport-http</artifactId>
 			<version>${axis2.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.sun.mail</groupId>
-			<artifactId>javax.mail</artifactId>
-			<version>${javax.mail.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sourceforge.nrl</groupId>
