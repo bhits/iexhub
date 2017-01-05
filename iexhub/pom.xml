@@ -70,7 +70,7 @@
 		<geronimo-activation.version>1.1</geronimo-activation.version>
 		<javax.activation.version>1.1</javax.activation.version>
 		<jsr311-api.version>1.1.1</jsr311-api.version>
-		<hapi-fhir.version>2.2</hapi-fhir.version>
+		<hapi-fhir.version>2.1</hapi-fhir.version>
 		<mdmi.version>1.0.0-SNAPSHOT</mdmi.version>
 		<opensaml.version>2.6.4</opensaml.version>
 		<junit.version>4.12</junit.version>
