@@ -106,7 +106,7 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 		PAGE_PROVIDER = JaxRsContractPageProvider.PAGE_PROVIDER;
 	}
 	
-	static final String PATH = "/ContractContract";
+	static final String PATH = "/Contract";
 
 	public JaxRsContractRestProvider() {
 		super(JaxRsContractRestProvider.class);
