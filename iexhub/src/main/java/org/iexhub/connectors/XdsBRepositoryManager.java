@@ -21,11 +21,6 @@ import XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.lcm._3.SubmitObjec
 import XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rim._3.*;
 import XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rs._3.RegistryResponseType;
 import XdsBDocumentRepository.org.iexhub.services.client.DocumentRepository_ServiceStub;
-import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
-import ca.uhn.fhir.model.dstu2.resource.Contract;
-import ca.uhn.fhir.model.dstu2.resource.Patient;
-import ca.uhn.fhir.model.primitive.StringDt;
 import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.soap.SOAPFactory;
@@ -33,6 +28,7 @@ import org.apache.axis2.AxisFault;
 import org.apache.axis2.Constants;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.hl7.fhir.dstu3.model.*;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.iexhub.exceptions.DocumentTypeUnsupportedException;
 import org.iexhub.exceptions.UnexpectedServerException;
@@ -1276,32 +1272,34 @@ public class XdsBRepositoryManager
 	}
 
 	/**
-	 * @param contract
+	 *
+	 * @param consent
 	 * @param xmlContent
 	 * @param mimeType
 	 * @return
 	 * @throws Exception
 	 */
-	public RegistryResponseType provideAndRegisterDocumentSet(Contract contract,
+	public RegistryResponseType provideAndRegisterDocumentSet(Consent consent,
 			byte[] xmlContent,
 			String mimeType)
 			throws Exception
 	{
-		return provideAndRegisterDocumentSet(contract,
+		return provideAndRegisterDocumentSet(consent,
 				xmlContent,
 				mimeType,
 				false);
 	}
 
 	/**
-	 * @param contract
+	 *
+	 * @param consent
 	 * @param xmlContent
 	 * @param mimeType
 	 * @param updateDocument
 	 * @return
 	 * @throws Exception
 	 */
-	public RegistryResponseType provideAndRegisterDocumentSet(Contract contract,
+	public RegistryResponseType provideAndRegisterDocumentSet(Consent consent,
 			byte[] xmlContent,
 			String mimeType,
 			boolean updateDocument)
@@ -1309,10 +1307,10 @@ public class XdsBRepositoryManager
 	{
 		try
 		{
-			UUID previousDocumentUuid = (updateDocument) ? UUID.fromString(contract.getId().getIdPart())
+			UUID previousDocumentUuid = (updateDocument) ? UUID.fromString(consent.getIdElement().getIdPart())
 					: null;
 			UUID newDocumentUuid = UUID.randomUUID();
-			String documentIdToUse = contract.getIdentifier().getValue();
+			String documentIdToUse = consent.getIdentifier().getValue();
 
 			ProvideAndRegisterDocumentSetRequestType documentSetRequest = new ProvideAndRegisterDocumentSetRequestType();
 
@@ -1334,7 +1332,7 @@ public class XdsBRepositoryManager
 			slot.setName("creationTime");
 			valueList = new ValueListType();
 			Calendar dateVal = Calendar.getInstance();
-			dateVal.setTime(contract.getIssued());
+			dateVal.setTime(consent.getDateTime());
 		    valueList.getValue().add(new StringBuilder()
 					.append(dateVal.get(Calendar.YEAR))
 					.append(String.format("%02d", (dateVal.get(Calendar.MONTH) + 1)))
@@ -1357,7 +1355,7 @@ public class XdsBRepositoryManager
 			slot = new SlotType1();
 			slot.setName("serviceStartTime");
 			valueList = new ValueListType();
-			dateVal.setTime(contract.getTermFirstRep().getApplies().getStart());
+			dateVal.setTime(consent.getPeriod().getStart());
 		    valueList.getValue().add(new StringBuilder()
 					.append(dateVal.get(Calendar.YEAR))
 					.append(String.format("%02d", (dateVal.get(Calendar.MONTH) + 1)))
@@ -1372,7 +1370,7 @@ public class XdsBRepositoryManager
 			slot = new SlotType1();
 			slot.setName("serviceStopTime");
 			valueList = new ValueListType();
-			dateVal.setTime(contract.getTermFirstRep().getApplies().getEnd());
+			dateVal.setTime(consent.getPeriod().getEnd());
 		    valueList.getValue().add(new StringBuilder()
 					.append(dateVal.get(Calendar.YEAR))
 					.append(String.format("%02d", (dateVal.get(Calendar.MONTH) + 1)))
@@ -1384,11 +1382,12 @@ public class XdsBRepositoryManager
 			extrinsicObject.getSlot().add(slot);
 
 			// Create sourcePatientId rim:Slot...
-			ResourceReferenceDt consentSubjectRef = contract.getSubject().get(0);
+			Contract cont;
+			Reference consentSubjectRef = consent.getConsentor().get(0);
 			IBaseResource referencedSubject = consentSubjectRef.getResource();
 			String referencedId = referencedSubject.getIdElement().getIdPart();
-			Patient patient = (getContainedResource(Patient.class, contract.getContained().getContainedResources(), referencedId) == null) ? null
-					: (Patient)getContainedResource(Patient.class, contract.getContained().getContainedResources(), referencedId);
+			Patient patient = (getContainedResource(Patient.class, consent.getContained(), referencedId) == null) ? null
+					: (Patient)getContainedResource(Patient.class, consent.getContained(), referencedId);
 			slot = new SlotType1();
 			slot.setName("sourcePatientId");
 			valueList = new ValueListType();
@@ -1443,8 +1442,8 @@ public class XdsBRepositoryManager
 
 		    // Administrative gender code
 		    valueList.getValue().add("PID-8|"
-		    		+ ((patient.getGender().compareToIgnoreCase("female") == 0) || (patient.getGender().compareToIgnoreCase("f") == 0) ? "F"
-		    				: (((patient.getGender().compareToIgnoreCase("male") == 0) || (patient.getGender().compareToIgnoreCase("m") == 0) ? "M"
+		    		+ ((patient.getGender().getDefinition().compareToIgnoreCase("female") == 0) || (patient.getGender().getDefinition().compareToIgnoreCase("f") == 0) ? "F"
+		    				: (((patient.getGender().getDefinition().compareToIgnoreCase("male") == 0) || (patient.getGender().getDefinition().compareToIgnoreCase("m") == 0) ? "M"
 		    						: "U"))));
 
 		    // Address info
@@ -1456,7 +1455,7 @@ public class XdsBRepositoryManager
 
 				// Street address line
 				StringBuilder addressLine = new StringBuilder();
-				for (StringDt lineItem : patient.getAddress().get(0).getLine())
+				for (StringType lineItem : patient.getAddress().get(0).getLine())
 				{
 					addressLine.append(lineItem.getValue());
 				}
@@ -1852,11 +1851,13 @@ public class XdsBRepositoryManager
 				registryObjectList.getIdentifiable().add(objectFactory.createAssociation(rplcAssociation));
 				
 				// Replace old contract identifier with new one...
-				contract.getId().setValueAsString(newDocumentUuid.toString());
+				consent.getId();
+						//setValueAsString(newDocumentUuid.toString());
+
 			}
 			else
 			{
-				contract.getId().setValueAsString(newDocumentUuid.toString());
+				cont.getId().setValueAsString(newDocumentUuid.toString());
 			}
 			
 			submitObjectsRequest.setRegistryObjectList(registryObjectList);
@@ -1891,11 +1892,11 @@ public class XdsBRepositoryManager
 	}
 
 	private Object getContainedResource(Class<?> resourceClass,
-			List<IResource> containedResources,
+			List<Resource> containedResources,
 			String idValue)
 	{
 		Object retVal = null;
-		for (IResource resource : containedResources)
+		for (Resource resource : containedResources)
 		{
 			if ((resource.getClass().equals(resourceClass)) &&
 				(resource.getIdElement().getIdPart().equalsIgnoreCase(idValue)))

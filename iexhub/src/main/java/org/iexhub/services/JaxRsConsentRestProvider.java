@@ -19,6 +19,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import org.apache.log4j.Logger;
 import org.hl7.fhir.dstu3.model.Consent;
+import org.hl7.fhir.dstu3.model.codesystems.IdentifierType;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.iexhub.connectors.XdsB;
 import org.iexhub.connectors.XdsBRepositoryManager;
@@ -84,7 +85,7 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
         PAGE_PROVIDER = JaxRsContractPageProvider.PAGE_PROVIDER;
     }
 
-    static final String PATH = "/Contract";
+    static final String PATH = "/Consent";
 
     public JaxRsConsentRestProvider() {
         super(JaxRsConsentRestProvider.class);
@@ -123,14 +124,14 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
     }
 
     /**
-     * Contract create
-     * @param contract
+     * Consent Create
+     * @param consent
      * @param theConditional
      * @return
      * @throws Exception
      */
     @Create
-    public MethodOutcome create(@ResourceParam final Contract contract, @ConditionalUrlParam String theConditional) throws Exception
+    public MethodOutcome create(@ResourceParam final Consent consent, @ConditionalUrlParam String theConditional) throws Exception
     {
         log.info("Entered FHIR Contract create service");
 
@@ -164,18 +165,18 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
             // Serialize document to XML...
             IParser xmlParser = fhirCtxt.newXmlParser();
             xmlParser.setPrettyPrint(true);
-            String xmlContent = xmlParser.encodeResourceToString(contract);
+            String xmlContent = xmlParser.encodeResourceToString(consent);
 
             // ITI-41 ProvideAndRegisterDocumentSet message...
-            XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rs._3.RegistryResponseType response = xdsBRepositoryManager.provideAndRegisterDocumentSet(contract,
+            XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rs._3.RegistryResponseType response = xdsBRepositoryManager.provideAndRegisterDocumentSet(consent,
                     xmlContent.getBytes(),
                     "text/xml");
 
             if ((response.getRegistryErrorList() == null) || (response.getRegistryErrorList().getRegistryError().isEmpty()))
             {
                 result.setCreated(true);
-                result.setId(contract.getId());
-                result.setResource(contract);
+                result.setId(consent.getIdElement());
+                result.setResource(consent);
             }
         }
         catch (Exception e)
@@ -196,7 +197,7 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
      * @throws Exception
      */
     @Search
-    public List<Contract> search(@RequiredParam(name = Patient.SP_IDENTIFIER) final IdentifierDt identifier) throws Exception
+    public List<Contract> search(@RequiredParam(name = Patient.SP_IDENTIFIER) final IdentifierType identifier) throws Exception
     {
         log.info("Entered FHIR Contract search service");
 
