@@ -49,7 +49,7 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
     private static String iExHubAssigningAuthority = "ISO";
     private static String xdsBRegistryEndpointURI = null;
     private static String xdsBRepositoryEndpointURI = null;
-    private static FhirContext fhirCtxt = new FhirContext();
+    private static FhirContext fhirCtxt = FhirContext.forDstu3();
     private static String privacyConsentClassificationType = "uuid:f0306f51-975f-434e-a61c-c59651d33983";
 
     /**
