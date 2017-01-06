@@ -1382,7 +1382,6 @@ public class XdsBRepositoryManager
 			extrinsicObject.getSlot().add(slot);
 
 			// Create sourcePatientId rim:Slot...
-			Contract cont;
 			Reference consentSubjectRef = consent.getConsentor().get(0);
 			IBaseResource referencedSubject = consentSubjectRef.getResource();
 			String referencedId = referencedSubject.getIdElement().getIdPart();
@@ -1851,13 +1850,11 @@ public class XdsBRepositoryManager
 				registryObjectList.getIdentifiable().add(objectFactory.createAssociation(rplcAssociation));
 				
 				// Replace old contract identifier with new one...
-				consent.getId();
-						//setValueAsString(newDocumentUuid.toString());
-
+				consent.getIdElement().setValue(newDocumentUuid.toString());
 			}
 			else
 			{
-				cont.getId().setValueAsString(newDocumentUuid.toString());
+				consent.getIdElement().setValueAsString(newDocumentUuid.toString());
 			}
 			
 			submitObjectsRequest.setRegistryObjectList(registryObjectList);
