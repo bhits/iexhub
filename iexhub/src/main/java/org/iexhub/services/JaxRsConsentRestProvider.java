@@ -18,9 +18,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import org.apache.log4j.Logger;
-import org.hl7.fhir.dstu3.model.Consent;
+import org.hl7.fhir.dstu3.model.*;
 import org.hl7.fhir.dstu3.model.codesystems.IdentifierType;
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.instance.model.api.IIdType;
 import org.iexhub.connectors.XdsB;
 import org.iexhub.connectors.XdsBRepositoryManager;
 import org.iexhub.exceptions.ContractIdParamMissingException;
@@ -133,7 +134,7 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
     @Create
     public MethodOutcome create(@ResourceParam final Consent consent, @ConditionalUrlParam String theConditional) throws Exception
     {
-        log.info("Entered FHIR Contract create service");
+        log.info("Entered FHIR Consent create service");
 
         if (props == null)
         {
@@ -186,27 +187,27 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
             throw new UnexpectedServerException("Error - " + e.getMessage());
         }
 
-        log.info("Exiting FHIR Contract create service");
+        log.info("Exiting FHIR Consent create service");
         return result;
     }
 
     /**
-     * Contract search
+     *
      * @param identifier
      * @return
      * @throws Exception
      */
     @Search
-    public List<Contract> search(@RequiredParam(name = Patient.SP_IDENTIFIER) final IdentifierType identifier) throws Exception
+    public List<Consent> search(@RequiredParam(name = Patient.SP_IDENTIFIER) final Identifier identifier) throws Exception
     {
-        log.info("Entered FHIR Contract search service");
+        log.info("Entered FHIR Consent search service");
 
         if (props == null)
         {
             loadProperties();
         }
 
-        List<Contract> result = null;
+        List<Consent> result = null;
 
         try
         {
@@ -386,7 +387,7 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
                     }
                     else
                     {
-                        result = new ArrayList<Contract>();
+                        result = new ArrayList<Consent>();
 
                         if (documentSetResponse.getRetrieveDocumentSetResponse().getRetrieveDocumentSetResponseTypeSequence_type0() != null)
                         {
@@ -413,9 +414,9 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
                                             fileOutStream.close();
 
                                             IParser xmlParser = fhirCtxt.newXmlParser();
-                                            Contract contract = (Contract)xmlParser.parseResource(new InputStreamReader(new FileInputStream(filename)));
-                                            contract.setId(documentUuids.get(document.getDocumentUniqueId().getLongName()));
-                                            result.add(contract);
+                                            Consent consent = (Consent)xmlParser.parseResource(new InputStreamReader(new FileInputStream(filename)));
+                                            consent.setId(documentUuids.get(document.getDocumentUniqueId().getLongName()));
+                                            result.add(consent);
                                         }
                                         else
                                         {
@@ -447,21 +448,21 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
     }
 
     /**
-     * Contract find
+     * Consent find
      * @param id
-     * @return matching contract
+     * @return
      * @throws Exception
      */
     @Read
-    public Contract find(@IdParam final IdDt id) throws Exception
+    public Consent find(@IdParam final IdType id) throws Exception
     {
         if ((id == null) ||
                 (id.isEmpty()))
         {
-            throw new ContractIdParamMissingException("Contract ID parameter missing");
+            throw new ContractIdParamMissingException("Consent ID parameter missing");
         }
 
-        log.info(String.format("Entered FHIR Contract find (by ID) service, ID=%s",
+        log.info(String.format("Entered FHIR Consent find (by ID) service, ID=%s",
                 id.getValueAsString()));
 
         if (props == null)
@@ -490,9 +491,8 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
             throw new UnexpectedServerException("Error - " + e.getMessage());
         }
 
-        Contract result = null;
+        Consent result = null;
         HashMap<String, String> documentUniqueIds = new HashMap<String, String>();
-        HashMap<String, String> documentUuids = new HashMap<String, String>();
         documentUniqueIds.put(id.getIdPart(),
                 null);
 
@@ -527,7 +527,7 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
         }
         else
         {
-            result = new Contract();
+            result = new Consent();
 
             if (documentSetResponse.getRetrieveDocumentSetResponse().getRetrieveDocumentSetResponseTypeSequence_type0() != null)
             {
@@ -538,9 +538,9 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
                     {
                         if (docResponseArray.length > 1)
                         {
-                            log.error(String.format("Multiple contract resources found when only one expected during find operation, resource count=%d",
+                            log.error(String.format("Multiple Consent resources found when only one expected during find operation, resource count=%d",
                                     docResponseArray.length));
-                            throw new MultipleResourcesFoundException(String.format("Multiple contract resources found when only one expected during find operation, resource count=%d",
+                            throw new MultipleResourcesFoundException(String.format("Multiple Consent resources found when only one expected during find operation, resource count=%d",
                                     docResponseArray.length));
                         }
 
@@ -561,9 +561,9 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
                             fileOutStream.close();
 
                             IParser xmlParser = fhirCtxt.newXmlParser();
-                            result = (Contract)xmlParser.parseResource(new InputStreamReader(new FileInputStream(filename)));
+                            result = (Consent)xmlParser.parseResource(new InputStreamReader(new FileInputStream(filename)));
 
-                            ResourceReferenceDt consentSubjectRef = result.getSubject().get(0);
+                            Reference consentSubjectRef = result.getConsentor().get(0);
                             IBaseResource referencedSubject = consentSubjectRef.getResource();
                             String referencedId = referencedSubject.getIdElement().getIdPart();
 
@@ -663,7 +663,7 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
             }
         }
 
-        log.info("Exiting FHIR Contract find (by ID) service");
+        log.info("Exiting FHIR Consent find (by ID) service");
         return result;
     }
 
@@ -699,8 +699,8 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
     }
 
     @Override
-    public Class<Contract> getResourceType() {
-        return Contract.class;
+    public Class<Consent> getResourceType() {
+        return Consent.class;
     }
 
     @Override
@@ -714,9 +714,9 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
     }
 
     @Update
-    public MethodOutcome update(@ResourceParam final Contract contract, @ConditionalUrlParam String theConditional) throws Exception
+    public MethodOutcome update(@ResourceParam final Consent consent, @ConditionalUrlParam String theConditional) throws Exception
     {
-        log.info("Entered FHIR Contract update service");
+        log.info("Entered FHIR Consent update service");
 
         if (props == null)
         {
@@ -748,10 +748,10 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
             // Serialize document to XML...
             IParser xmlParser = fhirCtxt.newXmlParser();
             xmlParser.setPrettyPrint(true);
-            String xmlContent = xmlParser.encodeResourceToString(contract);
+            String xmlContent = xmlParser.encodeResourceToString(consent);
 
             // ITI-41 ProvideAndRegisterDocumentSet message...
-            XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rs._3.RegistryResponseType response = xdsBRepositoryManager.provideAndRegisterDocumentSet(contract,
+            XdsBDocumentRepository.oasis.names.tc.ebxml_regrep.xsd.rs._3.RegistryResponseType response = xdsBRepositoryManager.provideAndRegisterDocumentSet(consent,
                     xmlContent.getBytes(),
                     "text/xml",
                     true);
@@ -759,8 +759,8 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
             if ((response.getRegistryErrorList() == null) || (response.getRegistryErrorList().getRegistryError().isEmpty()))
             {
                 result.setCreated(true);
-                result.setId(contract.getId());
-                result.setResource(contract);
+                result.setId(consent.getIdElement());
+                result.setResource(consent);
             }
         }
         catch (Exception e)
@@ -770,7 +770,7 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
             throw new UnexpectedServerException("Error - " + e.getMessage());
         }
 
-        log.info("Exiting FHIR Contract create service");
+        log.info("Exiting FHIR Consent create service");
         return result;
     }
 }
