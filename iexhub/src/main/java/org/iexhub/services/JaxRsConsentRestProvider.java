@@ -35,7 +35,7 @@ import java.util.*;
 public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Consent>
 {
     /** Logger */
-    public static Logger log = Logger.getLogger(JaxRsConsentRestProvider.class);
+    private Logger log = Logger.getLogger(this.getClass());
 
     private static XdsBRepositoryManager xdsBRepositoryManager = null;
     private static XdsB xdsB = null;
@@ -442,10 +442,7 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
 
         if (props == null)
         {
-            if (props == null)
-            {
-                loadProperties();
-            }
+           loadProperties();
         }
 
         try
