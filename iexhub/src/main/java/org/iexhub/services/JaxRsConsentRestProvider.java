@@ -58,7 +58,7 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
     public static final IPagingProvider PAGE_PROVIDER;
     static
     {
-        PAGE_PROVIDER = JaxRsContractPageProvider.PAGE_PROVIDER;
+        PAGE_PROVIDER = JaxRsConsentPageProvider.PAGE_PROVIDER;
     }
 
     static final String PATH = "/Consent";
