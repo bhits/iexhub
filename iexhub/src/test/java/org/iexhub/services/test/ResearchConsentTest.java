@@ -132,6 +132,7 @@ public class ResearchConsentTest {
         consent.getIdentifier().setSystem(uriPrefix + iExHubDomainOid)
                 .setValue("consent GUID");
         consent.getCategoryFirstRep().addCoding().setSystem("urn:oid:2.16.840.1.113883.5.4").setCode("IDSCL");
+        //TODO: Where to set ContractTypeCodesEnum.DISCLOSURE?
         //research
          consent.addPurpose(new Coding()
                 .setSystem("http://hl7.org/fhir/contractsubtypecodes")
@@ -153,14 +154,13 @@ public class ResearchConsentTest {
         Reference consentSignature = new Reference();
         consentSignature.setDisplay(testPatientResource.getNameFirstRep().getNameAsSingleString());
         consentSignature.setReference("#" + testPatientResource.getId());
-        /*
+          /*
 		consent.getConsentorFirstRep().
 				.setType(new Coding("http://hl7.org/fhir/contractsignertypecodes", "1.2.840.10065.1.12.1.7", ""));
 		consent.getSignerFirstRep().setParty(patientReference);
 		*/
         consent.getConsentor().add(consentSignature);
 
-        // set terms of consent and intended recipient(s)
         consent.getPeriod().setStart(new DateType("2016-05-10").toCalendar().getTime());
         consent.getPeriod().setEnd(new DateType("2016-05-10").toCalendar().getTime());
 
@@ -174,6 +174,7 @@ public class ResearchConsentTest {
         ListResource list = new ListResource();
         list.setId(new IdType(includedDataListId));
         list.setTitle("List of included data types");
+
         // specifies how the list items are to be used
         CodeableConcept includeCodeValue = new CodeableConcept();
         includeCodeValue.addCoding(new Coding()
@@ -201,6 +202,7 @@ public class ResearchConsentTest {
         Reference itemReference1 = new Reference("#item1");
         researchStudyEntry.setItem(itemReference1);
         list.addEntry(researchStudyEntry);
+
         // add list to contract
         consent.getRecipientFirstRep().setReference("#" + includedDataListId);
         consent.getContained().add(list);
