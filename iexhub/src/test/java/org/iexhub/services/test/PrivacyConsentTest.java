@@ -220,6 +220,7 @@ public class PrivacyConsentTest {
 				.setSystem("urn:oid:2.16.840.1.113883.5.25")
 				.setCode("PSY")
 				.setDisplay("Psychiatry Related Data"));
+		summaryNoteEntry.setFlag(summaryNoteCode);
 		summaryNoteEntry.setDeleted(false);
 
 		Basic basicItem2 = new Basic();
