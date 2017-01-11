@@ -17,7 +17,6 @@
 package org.iexhub.services.test;
 
 import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.model.api.IResource;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.hl7.fhir.dstu3.model.*;
@@ -222,7 +221,7 @@ public class ResearchConsentTest {
         } catch (IOException e) {
             fail("Write resource to JSON:" + e.getMessage());
         }
-        Contract consentFromFile = null;
+        Consent consentFromFile = null;
         String readContractString = "";
         try {
             readContractString = FileUtils
@@ -230,24 +229,24 @@ public class ResearchConsentTest {
         } catch (IOException e) {
             fail("Reading resource from file error:" + e.getMessage());
         }
-        consentFromFile = (Contract) ctxt.newXmlParser().parseResource(readContractString);
-        if (!consentFromFile.getActionReason().isEmpty()) {
+        consentFromFile = (Consent) ctxt.newXmlParser().parseResource(readContractString);
+        if (consentFromFile.getPurpose().size() != 0) {
             // read purpose of use
-            Iterator<CodeableConcept> purposeOfUseIterator = consentFromFile.getActionReason().iterator();
+            Iterator<Coding> purposeOfUseIterator = consentFromFile.getPurpose().iterator();
             while (purposeOfUseIterator.hasNext()) {
-                CodeableConcept cd = purposeOfUseIterator.next();
-                assertTrue(cd.getCodingFirstRep().getCode().equalsIgnoreCase("HRESCH"));
+                Coding cd = purposeOfUseIterator.next();
+                assertTrue(cd.getCode().equalsIgnoreCase("HRESCH"));
             }
         }
-        if (!consentFromFile.getSubject().isEmpty()) {
-            Reference consentSubjectRef = consentFromFile.getSubject().get(0);
+        if (consentFromFile.getConsentor().size() != 0) {
+            Reference consentSubjectRef = consentFromFile.getConsentor().get(0);
             IBaseResource referencedSubject = consentSubjectRef.getResource();
             String referencedId = referencedSubject.getIdElement().getIdPart();
             assertTrue(referencedId.equalsIgnoreCase(patientId));
             ListIterator<Resource> containedResources = consentFromFile.getContained().listIterator();
             Patient subjectPatientResource = null;
             while (containedResources.hasNext()) {
-                IResource cr = (IResource) containedResources.next();
+                Resource cr = containedResources.next();
                 if (cr.getIdElement().getIdPart().equalsIgnoreCase(referencedId)) {
                     subjectPatientResource = (Patient) cr;
                     HumanName n = subjectPatientResource.getName().get(0);
