@@ -64,7 +64,7 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
     static final String PATH = "/Consent";
 
     public JaxRsConsentRestProvider() {
-        super(JaxRsConsentRestProvider.class);
+        super(fhirCtxt,JaxRsConsentRestProvider.class);
     }
 
     private void loadProperties()
@@ -173,7 +173,7 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
      * @throws Exception
      */
     @Search
-    public List<Consent> search(@RequiredParam(name = Patient.SP_IDENTIFIER) final Identifier identifier) throws Exception
+    public List<Consent> search(@RequiredParam(name = Patient.SP_IDENTIFIER) final IdType identifier) throws Exception
     {
         log.info("Entered FHIR Consent search service");
 
@@ -211,7 +211,7 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
                 referencedId = "'"
                         + referencedId
                         + "^^^&"
-                        + identifier.getSystem()
+                        + identifier.getId()
                         + "&"
                         + iExHubAssigningAuthority
                         + "'";
