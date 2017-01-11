@@ -16,17 +16,17 @@
  *******************************************************************************/
 package org.iexhub.services;
 
-import java.util.concurrent.ConcurrentHashMap;
+import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.jaxrs.server.AbstractJaxRsConformanceProvider;
+import ca.uhn.fhir.rest.server.Constants;
+import ca.uhn.fhir.rest.server.IResourceProvider;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-
-import ca.uhn.fhir.jaxrs.server.AbstractJaxRsConformanceProvider;
-import ca.uhn.fhir.rest.server.Constants;
-import ca.uhn.fhir.rest.server.IResourceProvider;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * IExHub FHIR Conformance Service
@@ -52,7 +52,7 @@ public class JaxRsConformanceProvider extends AbstractJaxRsConformanceProvider {
 	 */
 	public JaxRsConformanceProvider()
 	{
-		super(SERVER_VERSION, SERVER_DESCRIPTION, SERVER_NAME);
+		super(FhirContext.forDstu3(),SERVER_DESCRIPTION,SERVER_NAME,SERVER_VERSION );
 	}
 
 	@Override

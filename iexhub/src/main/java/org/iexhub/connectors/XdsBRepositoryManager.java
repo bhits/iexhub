@@ -1413,7 +1413,7 @@ public class XdsBRepositoryManager
 
 			    StringBuilder name = new StringBuilder();
 			    name.append("PID-5|"
-			    		+ ((patient.getName().get(0).getFamilyAsSingleString() != null) ? patient.getName().get(0).getFamilyAsSingleString()
+			    		+ ((patient.getName().get(0).getFamily() != null) ? patient.getName().get(0).getFamily()
 			    				: "")
 			    		+ "^");
 
@@ -1507,7 +1507,7 @@ public class XdsBRepositoryManager
 					: ""));
 
 			// Family name
-			authorName.append(((patient.getName().get(0).getFamilyAsSingleString() != null) ? (patient.getName().get(0).getFamilyAsSingleString())
+			authorName.append(((patient.getName().get(0).getFamily() != null) ? (patient.getName().get(0).getFamily())
 					: ""));
 
 			// Suffix
