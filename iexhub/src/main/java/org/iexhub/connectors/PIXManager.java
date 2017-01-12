@@ -899,6 +899,7 @@ public class PIXManager
 		{
 			for (Reference resourceRef : fhirPatientResource.getGeneralPractitioner())
 			{
+			    if(resourceRef.getResource()!=null){
 				if (resourceRef.getResource().getClass() == Organization.class)
 				{
 					Organization careProvider = (Organization)resourceRef.getResource();
@@ -959,7 +960,7 @@ public class PIXManager
 					}
 				}
 			}
-		}
+		}}
 		else
 		{
 			II providerId = new II();
