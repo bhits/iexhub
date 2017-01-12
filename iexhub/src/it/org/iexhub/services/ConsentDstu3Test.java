@@ -15,7 +15,7 @@
  *     Anthony Sute, Ioana Singureanu
  *******************************************************************************/
 /**
- * FHIR Contract Resource Test
+ * FHIR Consent Resource Test
  * 
  */
 package org.iexhub.services;
@@ -188,7 +188,7 @@ public class ConsentDstu3Test {
 					.encodeResourceToString(consent);
 			FileUtils.writeStringToFile(new File(testResourcesPath+"/JSON/"+currentTest+".json"), jsonEncodedGranularConsent);
 			
-			//  invoke Contract service
+			//  invoke Consent service
 			createMethodOutcome = client.create().resource(consent).prefer(PreferReturnEnum.REPRESENTATION).execute();
 		}
 		catch (Exception e)
@@ -210,7 +210,7 @@ public class ConsentDstu3Test {
 					.returnBundle(Bundle.class).execute();
 			//TODO: How to set retrievedConsent ???
 
-			assertTrue("Error - unexpected return value for testSearchContract",
+			assertTrue("Error - unexpected return value for testSearchConsent",
 					((response != null) && (retrievedConsent.size() == 1)));
 		}
 		catch (Exception e)
@@ -218,8 +218,8 @@ public class ConsentDstu3Test {
 			fail(e.getMessage());
 		}
 
-		// Now update the contract.  Note that the document entry UUID (i.e., Contract resource ID) should not be modified by the client as this is required by the
-		//   XDS.b document repository to establish the association between the old and new contract.  However, a new document unique ID (i.e., Contract resource
+		// Now update the consent.  Note that the document entry UUID (i.e., Contract resource ID) should not be modified by the client as this is required by the
+		//   XDS.b document repository to establish the association between the old and new consent.  However, a new document unique ID (i.e., Contract resource
 		//   identifier) must be stored in the retrieved Contract because the NIST test server (and likely other implementations) requires that the replacement
 		//   document have a different unique ID.  This is shown below...
 		MethodOutcome updateMethodOutcome = null;
@@ -229,7 +229,7 @@ public class ConsentDstu3Test {
 			//   old document being replaced to "Deprecated".
 			retrievedConsent.get(0).getIdentifier().setSystem(uriPrefix + iExHubDomainOid).setValue("2.25." + Long.toString(DateTime.now(DateTimeZone.UTC).getMillis()));
 
-            // TODO - This is where you would make changes to the contract...
+            // TODO - This is where you would make changes to the consent...
 			
 			updateMethodOutcome = client.update().resource(retrievedConsent.get(0)).prefer(PreferReturnEnum.REPRESENTATION).execute();
 			assertTrue("Update failed",
@@ -240,13 +240,13 @@ public class ConsentDstu3Test {
 			fail(e.getMessage());
 		}
 
-		// Alternative way of looking for a Contract resource - FHIR Find using the document unique ID which is the Contract resource identifier...
+		// Alternative way of looking for a Consent resource - FHIR Find using the document unique ID which is the Consent resource identifier...
 		try
 		{
 			Consent findVal = client.read(Consent.class,
 					((Consent)updateMethodOutcome.getResource()).getIdentifier().getValue());
 			
-			assertTrue("Error - unexpected return value for testFindContract",
+			assertTrue("Error - unexpected return value for testFindConsent",
 					findVal != null);
 		}
 		catch (Exception e)
@@ -261,7 +261,7 @@ public class ConsentDstu3Test {
 	 * IdDt id)}.
 	 */
 	@Test
-	public void testFindContract() {
+	public void testFindConsent() {
 
 		try {
 			Logger logger = LoggerFactory.getLogger(ConsentDstu3Test.class);
@@ -276,7 +276,7 @@ public class ConsentDstu3Test {
 			Consent retVal = client.read(Consent.class,
 					/*iExHubDomainOid + "." + consentId*/ /*"2.25.1469220780502"*/ "2.25.1471531116858");
 			
-			assertTrue("Error - unexpected return value for testFindContract", retVal != null);
+			assertTrue("Error - unexpected return value for testFindConsent", retVal != null);
 		} catch (Exception e) {
 			fail(e.getMessage());
 		}
@@ -288,7 +288,7 @@ public class ConsentDstu3Test {
 	 * final IdDt id)}.
 	 */
 	@Test
-	public void testSearchContract() {
+	public void testSearchConsent() {
 
 		try {
 			Logger logger = LoggerFactory.getLogger(ConsentDstu3Test.class);
@@ -308,7 +308,7 @@ public class ConsentDstu3Test {
 					.where(Patient.IDENTIFIER.exactly().identifier(searchParam.getId()))
 					.returnBundle(Bundle.class).execute();
 
-			assertTrue("Error - unexpected return value for testSearchContract", response != null);
+			assertTrue("Error - unexpected return value for testSearchConsent", response != null);
 		} catch (Exception e) {
 			fail(e.getMessage());
 		}
@@ -323,7 +323,7 @@ public class ConsentDstu3Test {
 	@Test
 	public void testCreateBasicConsent() {
 
-		// Create a Privacy Consent as a Contract to be submitted as document
+		// Create a Privacy Consent as a Consent to be submitted as document
 		// using ITI-41
 		String currentTest = "BasicConsent";
 		try {
@@ -350,7 +350,7 @@ public class ConsentDstu3Test {
 			IGenericClient client = ctxt.newRestfulGenericClient(serverBaseUrl);
 			client.registerInterceptor(loggingInterceptor);
 			 
-			//  invoke Contract service
+			//  invoke Consent service
 			client.create().resource(consent).execute();
 		} catch (Exception e) {
 			fail( e.getMessage());
@@ -366,7 +366,7 @@ public class ConsentDstu3Test {
 	@Test
 	public void testUpdateBasicConsent() {
 
-		// Create a Privacy Consent as a Contract to be submitted as document
+		// Create a Privacy Consent as a Consent to be submitted as document
 		// using ITI-41
 		String currentTest = "BasicConsentUpdate";
 		try {
@@ -393,7 +393,7 @@ public class ConsentDstu3Test {
 			IGenericClient client = ctxt.newRestfulGenericClient(serverBaseUrl);
 			client.registerInterceptor(loggingInterceptor);
 			
-			//  invoke Contract service
+			//  invoke Consent service
 			client.update().resource(consent).execute();
 		} catch (Exception e) {
 			fail( e.getMessage());
@@ -410,7 +410,7 @@ public class ConsentDstu3Test {
 	public void testCreateGranularConsent() {
 
 		String currentTest = "GranularConsent";
-		// Create a Privacy Consent as a Contract to be submitted as document
+		// Create a Privacy Consent as a Consent to be submitted as document
 		// using ITI-41
 		try {
 			Logger logger = LoggerFactory.getLogger(ConsentDstu3Test.class);
@@ -490,7 +490,7 @@ public class ConsentDstu3Test {
 			substanceAbuseRelatedEntry.setItem(itemReference3);
 			list.addEntry(substanceAbuseRelatedEntry);
 
-			// add list to contract
+			// add list to consent
 			consent.getRecipientFirstRep().setReference("#" + includedDataListId);
 			consent.getContained().add(list);
 			//add items as Basic resources
