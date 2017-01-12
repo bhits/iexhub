@@ -502,9 +502,9 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 						null,
 						null,
 						null,
-						(id.getId().contains("^")) ? id.getId().split("\\^")[0]
-								: id.getId(),
-						(id.getId().contains("^")) ? id.getId().split("\\^")[1]
+						(id.getIdPart().contains("^")) ? id.getIdPart().split("\\^")[0]
+								: id.getIdPart(),
+						(id.getIdPart().contains("^")) ? id.getIdPart().split("\\^")[1]
 								: null,
 						null,
 						null);
