@@ -21,8 +21,6 @@
 package org.iexhub.services;
 
 import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.model.dstu2.composite.IdentifierDt;
-import ca.uhn.fhir.model.dstu2.resource.*;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.api.PreferReturnEnum;
 import ca.uhn.fhir.rest.client.IGenericClient;
@@ -51,8 +49,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class ConsentDstu3Test {
-	private static String testResourcesPath = "src/test/resources/";
-	private static String propertiesFile = /*testResourcesPath+"/properties/IExHub.properties"*/ "c:/temp/IExHub.properties";
+	private static String testResourcesPath = "C:/intellij-workspaces/c2s-ws/iexhub-fork/iexhub/src/test/resources"; //"src/test/resources/"
+	private static String propertiesFile = "c:/temp/IExHub.properties"; //testResourcesPath+"/properties/IExHub.properties";
 	private static Properties properties = new Properties();
 	private static String uriPrefix = ""; //"urn:oid:";
 	private static String iExHubDomainOid = "2.16.840.1.113883.3.72.5.9.1";
@@ -302,13 +300,13 @@ public class ConsentDstu3Test {
 			IGenericClient client = ctxt.newRestfulGenericClient(serverBaseUrl);
 			client.registerInterceptor(loggingInterceptor);
 
-			IdentifierDt searchParam = new IdentifierDt(iExHubDomainOid/*"1.3.6.1.4.1.21367.2005.13.20.1000"*/,
-					defaultPatientId);
-			ca.uhn.fhir.model.dstu2.resource.Bundle response = client
+			Identifier searchParam = new Identifier();
+			searchParam.setSystem(iExHubDomainOid).setValue(defaultPatientId);
+			Bundle response = client
 					.search()
 					.forResource(Consent.class)
-					.where(Patient.IDENTIFIER.exactly().identifier(searchParam))
-					.returnBundle(ca.uhn.fhir.model.dstu2.resource.Bundle.class).execute();
+					.where(Patient.IDENTIFIER.exactly().identifier(searchParam.getId()))
+					.returnBundle(Bundle.class).execute();
 
 			assertTrue("Error - unexpected return value for testSearchContract", response != null);
 		} catch (Exception e) {
