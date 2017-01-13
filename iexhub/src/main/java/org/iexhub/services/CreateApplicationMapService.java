@@ -15,23 +15,23 @@
  *     Anthony Sute, Ioana Singureanu
  *******************************************************************************/
 package org.iexhub.services;
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+
+import org.apache.commons.io.FileUtils;
+import org.iexhub.exceptions.MapFileCreationException;
+import org.iexhub.exceptions.URLToMapFileCopyException;
+import org.iexhub.exceptions.UnexpectedServerException;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
-
-import org.apache.commons.io.FileUtils;
-import org.iexhub.exceptions.MapFileCreationException;
-import org.iexhub.exceptions.URLToMapFileCopyException;
-import org.iexhub.exceptions.UnexpectedServerException;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * @author A. Sute

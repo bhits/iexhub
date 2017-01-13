@@ -16,17 +16,6 @@
  *******************************************************************************/
 package org.iexhub.connectors;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Properties;
-import java.util.UUID;
-
 import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.soap.SOAPFactory;
@@ -36,7 +25,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.iexhub.exceptions.UnexpectedServerException;
 import org.iexhub.services.client.DocumentRegistry_ServiceStub;
-import org.iexhub.services.client.DocumentRepository_ServiceStub;
 import org.iexhub.services.client.DocumentRegistry_ServiceStub.AdhocQueryRequest;
 import org.iexhub.services.client.DocumentRegistry_ServiceStub.AdhocQueryResponse;
 import org.iexhub.services.client.DocumentRegistry_ServiceStub.AdhocQueryType;
@@ -46,6 +34,7 @@ import org.iexhub.services.client.DocumentRegistry_ServiceStub.ReturnType_type0;
 import org.iexhub.services.client.DocumentRegistry_ServiceStub.SlotType1;
 import org.iexhub.services.client.DocumentRegistry_ServiceStub.ValueListType;
 import org.iexhub.services.client.DocumentRegistry_ServiceStub.ValueListTypeSequence;
+import org.iexhub.services.client.DocumentRepository_ServiceStub;
 import org.iexhub.services.client.DocumentRepository_ServiceStub.DocumentRequest_type0;
 import org.iexhub.services.client.DocumentRepository_ServiceStub.RetrieveDocumentSetRequest;
 import org.iexhub.services.client.DocumentRepository_ServiceStub.RetrieveDocumentSetRequestType;
@@ -56,6 +45,17 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.productivity.java.syslog4j.Syslog;
 import org.productivity.java.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Properties;
+import java.util.UUID;
 
 
 /**
