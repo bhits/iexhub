@@ -109,8 +109,7 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 	private static String pdqManagerEndpointUri = null;
 	private static String pixManagerEndpointUri = null;
 	private static FhirContext fhirCtxt = FhirContext.forDstu3();
-	private static FhirValidator fhirValidator = null;
-	
+
 	/**
 	 * The HAPI paging provider for this server
 	 */
