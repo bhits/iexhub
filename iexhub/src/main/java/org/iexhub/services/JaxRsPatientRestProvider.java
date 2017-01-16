@@ -16,25 +16,48 @@
  *******************************************************************************/
 package org.iexhub.services;
 
-import PDQSupplier.org.hl7.v3.*;
+import PDQSupplier.org.hl7.v3.AD;
+import PDQSupplier.org.hl7.v3.COCTMT150003UV03ContactParty;
+import PDQSupplier.org.hl7.v3.COCTMT150003UV03Organization;
+import PDQSupplier.org.hl7.v3.ON;
+import PDQSupplier.org.hl7.v3.PN;
+import PDQSupplier.org.hl7.v3.PRPAIN201306UV02;
+import PDQSupplier.org.hl7.v3.PRPAIN201306UV02MFMIMT700711UV01Subject1;
+import PDQSupplier.org.hl7.v3.PRPAMT201310UV02OtherIDs;
+import PDQSupplier.org.hl7.v3.PRPAMT201310UV02Person;
+import PDQSupplier.org.hl7.v3.TEL;
 import PIXManager.org.hl7.v3.MCCIIN000002UV01;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.jaxrs.server.AbstractJaxRsResourceProvider;
 import ca.uhn.fhir.model.primitive.DateDt;
-import ca.uhn.fhir.rest.annotation.*;
+import ca.uhn.fhir.rest.annotation.ConditionalUrlParam;
+import ca.uhn.fhir.rest.annotation.Create;
+import ca.uhn.fhir.rest.annotation.IdParam;
+import ca.uhn.fhir.rest.annotation.OptionalParam;
+import ca.uhn.fhir.rest.annotation.Read;
+import ca.uhn.fhir.rest.annotation.RequiredParam;
+import ca.uhn.fhir.rest.annotation.ResourceParam;
+import ca.uhn.fhir.rest.annotation.Search;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.param.DateParam;
 import ca.uhn.fhir.rest.param.StringParam;
 import ca.uhn.fhir.rest.param.TokenParam;
-import ca.uhn.fhir.rest.server.*;
+import ca.uhn.fhir.rest.server.AddProfileTagEnum;
+import ca.uhn.fhir.rest.server.BundleInclusionRule;
 import ca.uhn.fhir.rest.server.Constants;
+import ca.uhn.fhir.rest.server.ETagSupportEnum;
+import ca.uhn.fhir.rest.server.IPagingProvider;
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
 import ca.uhn.fhir.rest.server.interceptor.IServerInterceptor;
 import ca.uhn.fhir.validation.FhirValidator;
 import org.apache.log4j.Logger;
-import org.hl7.fhir.dstu3.model.*;
+import org.hl7.fhir.dstu3.model.Address;
 import org.hl7.fhir.dstu3.model.Enumerations.AdministrativeGender;
+import org.hl7.fhir.dstu3.model.HumanName;
+import org.hl7.fhir.dstu3.model.IdType;
+import org.hl7.fhir.dstu3.model.Organization;
 import org.hl7.fhir.dstu3.model.Organization.OrganizationContactComponent;
+import org.hl7.fhir.dstu3.model.Patient;
 import org.iexhub.connectors.PDQQueryManager;
 import org.iexhub.connectors.PIXManager;
 import org.iexhub.exceptions.FamilyNameParamMissingException;
@@ -52,8 +75,12 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 
 
 
