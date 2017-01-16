@@ -70,14 +70,13 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
 
     private static XdsBRepositoryManager xdsBRepositoryManager = null;
     private static XdsB xdsB = null;
-
     private static Properties props = null;
     private static boolean testMode = false;
     private static String propertiesFile = "/temp/IExHub.properties";
     private static String cdaToJsonTransformXslt = null;
-    private static String iExHubDomainOid = "2.16.840.1.113883.3.72.5.9.1";
-    private static String xdsBRepositoryUniqueId = "1.3.6.1.4.1.21367.13.40.216";
-    private static String iExHubAssigningAuthority = "ISO";
+    private static String iExHubDomainOid = null;
+    private static String xdsBRepositoryUniqueId = null;
+    private static String iExHubAssigningAuthority = null;
     private static String xdsBRegistryEndpointURI = null;
     private static String xdsBRepositoryEndpointURI = null;
     private static FhirContext fhirCtxt = FhirContext.forDstu3();
