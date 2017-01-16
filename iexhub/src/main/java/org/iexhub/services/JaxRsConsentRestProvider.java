@@ -99,22 +99,28 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
 
     private void loadProperties()
     {
-        try
-        {
+        try {
             props = new Properties();
             props.load(new FileInputStream(propertiesFile));
-            JaxRsConsentRestProvider.testMode = (props.getProperty("TestMode") == null) ? JaxRsConsentRestProvider.testMode
-                    : Boolean.parseBoolean(props.getProperty("TestMode"));
-            JaxRsConsentRestProvider.cdaToJsonTransformXslt = (props.getProperty("CDAToJSONTransformXSLT") == null) ? JaxRsConsentRestProvider.cdaToJsonTransformXslt
-                    : props.getProperty("CDAToJSONTransformXSLT");
-            JaxRsConsentRestProvider.iExHubDomainOid = (props.getProperty("IExHubDomainOID") == null) ? JaxRsConsentRestProvider.iExHubDomainOid
-                    : props.getProperty("IExHubDomainOID");
-            JaxRsConsentRestProvider.iExHubAssigningAuthority = (props.getProperty("IExHubAssigningAuthority") == null) ? JaxRsConsentRestProvider.iExHubAssigningAuthority
-                    : props.getProperty("IExHubAssigningAuthority");
-            JaxRsConsentRestProvider.xdsBRepositoryEndpointURI = (props.getProperty("XdsBRepositoryEndpointURI") == null) ? JaxRsConsentRestProvider.xdsBRepositoryEndpointURI
-                    : props.getProperty("XdsBRepositoryEndpointURI");
-            JaxRsConsentRestProvider.xdsBRepositoryUniqueId = (props.getProperty("XdsBRepositoryUniqueId") == null) ? JaxRsConsentRestProvider.xdsBRepositoryUniqueId
-                    : props.getProperty("XdsBRepositoryUniqueId");
+
+            String tempTestMode = props.getProperty("TestMode");
+            JaxRsConsentRestProvider.testMode = ((tempTestMode == null) || tempTestMode.isEmpty()) ? JaxRsConsentRestProvider.testMode
+                    : Boolean.parseBoolean(tempTestMode);
+
+            JaxRsConsentRestProvider.cdaToJsonTransformXslt = (JaxRsConsentRestProvider.cdaToJsonTransformXslt == null) ? props.getProperty("CDAToJSONTransformXSLT")
+                    : JaxRsConsentRestProvider.cdaToJsonTransformXslt;
+
+            JaxRsConsentRestProvider.iExHubDomainOid = (JaxRsConsentRestProvider.iExHubDomainOid == null) ? props.getProperty("IExHubDomainOID")
+                    : JaxRsConsentRestProvider.iExHubDomainOid ;
+
+            JaxRsConsentRestProvider.iExHubAssigningAuthority = (JaxRsConsentRestProvider.iExHubAssigningAuthority == null) ? props.getProperty("IExHubAssigningAuthority")
+                    : JaxRsConsentRestProvider.iExHubAssigningAuthority;
+
+            JaxRsConsentRestProvider.xdsBRepositoryEndpointURI = (JaxRsConsentRestProvider.xdsBRepositoryEndpointURI == null) ? props.getProperty("XdsBRepositoryEndpointURI")
+                    : JaxRsConsentRestProvider.xdsBRepositoryEndpointURI;
+
+            JaxRsConsentRestProvider.xdsBRepositoryUniqueId = (JaxRsConsentRestProvider.xdsBRepositoryUniqueId == null) ? props.getProperty("XdsBRepositoryUniqueId")
+                    : JaxRsConsentRestProvider.xdsBRepositoryUniqueId;
         }
         catch (IOException e)
         {
