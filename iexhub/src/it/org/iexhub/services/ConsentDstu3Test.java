@@ -63,15 +63,17 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class ConsentDstu3Test {
-	private static String testResourcesPath = "C:/intellij-workspaces/c2s-ws/iexhub-fork/iexhub/src/test/resources"; //"src/test/resources/"
-	private static String propertiesFile = "c:/temp/IExHub.properties"; //testResourcesPath+"/properties/IExHub.properties";
+	private static final String testResourcesPath = "C:/intellij-workspaces/c2s-ws/iexhub-fork/iexhub/src/test/resources"; //"src/test/resources/"
+	private static final String propertiesFile = "c:/temp/IExHub.properties"; //testResourcesPath+"/properties/IExHub.properties";
 	private static Properties properties = new Properties();
 	private static String uriPrefix = ""; //"urn:oid:";
-	private static String iExHubDomainOid = "2.16.840.1.113883.3.72.5.9.1";
-	private static String iExHubAssigningAuthority = "ISO";
-	private static int fhirClientSocketTimeout = 5000;
+	private static String iExHubDomainOid = null;
+	private static String iExHubAssigningAuthority = null;
+	private static int fhirClientSocketTimeout = 0;
+
 	// IExHub FHIR server base
-	private static String serverBaseUrl = "http://localhost:8080/iexhub/services";
+	private static final String serverBaseUrl = "http://localhost:8080/iexhub/services"; //"http://fhirtest.uhn.ca/baseDstu2";
+
 	// FHIR objects used to create a Consent
 	private static Patient testPatientResource = new Patient();
 	private static Organization sourceOrganizationResource = new Organization();
@@ -84,21 +86,18 @@ public class ConsentDstu3Test {
 	private static String sourceOrganizationId = "sourceOrgOID";
 	private static String sourcePractitionerId = "sourcePractitionerNPI";
 	private static String recipientPractitionerId = "recipientPractitionerNPI";
+	private static final String includedDataListId = "includedListOfDataTypes";
 	//FHIr context singleton
 	private static FhirContext ctxt = FhirContext.forDstu3();
 	static {
 		try {
 			properties.load(new FileInputStream(propertiesFile));
-			ConsentDstu3Test.iExHubDomainOid = (properties.getProperty("IExHubDomainOID") == null)
-					? ConsentDstu3Test.iExHubDomainOid : properties.getProperty("IExHubDomainOID");
-			ConsentDstu3Test.iExHubAssigningAuthority = (properties.getProperty("IExHubAssigningAuthority") == null)
-					? ConsentDstu3Test.iExHubAssigningAuthority
-					: properties.getProperty("IExHubAssigningAuthority");
-			ConsentDstu3Test.fhirClientSocketTimeout = (properties
-					.getProperty("FHIRClientSocketTimeoutInMs") == null) ? ConsentDstu3Test.fhirClientSocketTimeout
-							: Integer.parseInt(properties.getProperty("FHIRClientSocketTimeoutInMs"));
-			ConsentDstu3Test.iExHubDomainOid = (properties.getProperty("IExHubDomainOID") == null) ? ConsentDstu3Test.iExHubDomainOid
-					: properties.getProperty("IExHubDomainOID");
+			ConsentDstu3Test.iExHubDomainOid = (ConsentDstu3Test.iExHubDomainOid == null) ?  properties.getProperty("IExHubDomainOID")
+					: "2.16.840.1.113883.3.72.5.9.1";
+			ConsentDstu3Test.iExHubAssigningAuthority = (ConsentDstu3Test.iExHubAssigningAuthority == null) ? properties.getProperty("IExHubAssigningAuthority")
+					:"ISO";
+			ConsentDstu3Test.fhirClientSocketTimeout = (ConsentDstu3Test.fhirClientSocketTimeout == 0)? Integer.parseInt(properties.getProperty("FHIRClientSocketTimeoutInMs"))
+					: 5000;
 		} catch (IOException e) {
 			throw new UnexpectedServerException(
 					"Error encountered loading properties file, " + propertiesFile + ", " + e.getMessage());
@@ -186,7 +185,7 @@ public class ConsentDstu3Test {
 		loggingInterceptor.setLogger(logger);
 
 		// create FHIR client
-		IGenericClient client = ctxt.newRestfulGenericClient(serverBaseUrl /*"http://fhirtest.uhn.ca/baseDstu2"*/);
+		IGenericClient client = ctxt.newRestfulGenericClient(serverBaseUrl);
 		client.registerInterceptor(loggingInterceptor);
 
 		// Create a Consent for the user...
@@ -222,7 +221,7 @@ public class ConsentDstu3Test {
 					.forResource(Consent.class)
 					.where(Patient.IDENTIFIER.exactly().identifier(searchParam.getId()))
 					.returnBundle(Bundle.class).execute();
-			//TODO: How to set retrievedConsent ???
+			//TODO: Find out how to set retrievedConsent from response. In DSTU2, it was response.getAllPopulatedChildElementsOfType(Contract.class);
 
 			assertTrue("Error - unexpected return value for testSearchConsent",
 					((response != null) && (retrievedConsent.size() == 1)));
@@ -435,7 +434,7 @@ public class ConsentDstu3Test {
 
 			Consent consent = createBasicTestConsent();
 			// add granular preferences
-			String includedDataListId = "includedListOfDataTypes";
+
 			ListResource list = new ListResource();
 			list.setId(new IdType(includedDataListId));
 			list.setTitle("List of included data types");
