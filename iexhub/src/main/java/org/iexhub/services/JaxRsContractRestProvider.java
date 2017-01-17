@@ -33,8 +33,11 @@ import javax.ejb.Stateless;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.iexhub.config.IExHubConfig;
 import org.iexhub.connectors.XdsB;
 import org.iexhub.connectors.XdsBRepositoryManager;
 import org.iexhub.exceptions.ContractIdParamMissingException;
@@ -85,9 +88,7 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 	private static XdsBRepositoryManager xdsBRepositoryManager = null;
 	private static XdsB xdsB = null;
 
-	private static Properties props = null;
 	private static boolean testMode = false;
-	private static String propertiesFile = "/temp/IExHub.properties";
 	private static String cdaToJsonTransformXslt = null;
 	private static String iExHubDomainOid = "2.16.840.1.113883.3.72.5.9.1";
 	private static String xdsBRepositoryUniqueId = "1.3.6.1.4.1.21367.13.40.216";
@@ -96,6 +97,7 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 	private static String xdsBRepositoryEndpointURI = null;
 	private static FhirContext fhirCtxt = new FhirContext();
 	private static String privacyConsentClassificationType = "uuid:f0306f51-975f-434e-a61c-c59651d33983";
+	private final String testOutputPath;
 
 	/**
 	 * The HAPI paging provider for this server
@@ -110,38 +112,19 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 
 	public JaxRsContractRestProvider() {
 		super(JaxRsContractRestProvider.class);
+		loadProperties();
+		this.testOutputPath = IExHubConfig.getProperty("TestOutputPath");
+		assert StringUtils.isNotBlank(this.testOutputPath) : "'TestOutputPath' property must be configured";
 	}
 
 	private void loadProperties()
 	{
-		try
-		{
-			props = new Properties();
-			props.load(new FileInputStream(propertiesFile));
-			JaxRsContractRestProvider.testMode = (props.getProperty("TestMode") == null) ? JaxRsContractRestProvider.testMode
-					: Boolean.parseBoolean(props.getProperty("TestMode"));
-			JaxRsContractRestProvider.cdaToJsonTransformXslt = (props.getProperty("CDAToJSONTransformXSLT") == null) ? JaxRsContractRestProvider.cdaToJsonTransformXslt
-					: props.getProperty("CDAToJSONTransformXSLT");
-			JaxRsContractRestProvider.iExHubDomainOid = (props.getProperty("IExHubDomainOID") == null) ? JaxRsContractRestProvider.iExHubDomainOid
-					: props.getProperty("IExHubDomainOID");
-			JaxRsContractRestProvider.iExHubAssigningAuthority = (props.getProperty("IExHubAssigningAuthority") == null) ? JaxRsContractRestProvider.iExHubAssigningAuthority
-					: props.getProperty("IExHubAssigningAuthority");
-			JaxRsContractRestProvider.xdsBRepositoryEndpointURI = (props.getProperty("XdsBRepositoryEndpointURI") == null) ? JaxRsContractRestProvider.xdsBRepositoryEndpointURI
-					: props.getProperty("XdsBRepositoryEndpointURI");
-			JaxRsContractRestProvider.xdsBRepositoryUniqueId = (props.getProperty("XdsBRepositoryUniqueId") == null) ? JaxRsContractRestProvider.xdsBRepositoryUniqueId
-					: props.getProperty("XdsBRepositoryUniqueId");
-		}
-		catch (IOException e)
-		{
-			log.error("Error encountered loading properties file, "
-					+ propertiesFile
-					+ ", "
-					+ e.getMessage());
-			throw new UnexpectedServerException("Error encountered loading properties file, "
-					+ propertiesFile
-					+ ", "
-					+ e.getMessage());
-		}
+		JaxRsContractRestProvider.testMode = IExHubConfig.getProperty("TestMode", JaxRsContractRestProvider.testMode);
+		JaxRsContractRestProvider.cdaToJsonTransformXslt = IExHubConfig.getProperty("CDAToJSONTransformXSLT", JaxRsContractRestProvider.cdaToJsonTransformXslt);
+		JaxRsContractRestProvider.iExHubDomainOid = IExHubConfig.getProperty("IExHubDomainOID", JaxRsContractRestProvider.iExHubDomainOid);
+		JaxRsContractRestProvider.iExHubAssigningAuthority = IExHubConfig.getProperty("IExHubAssigningAuthority", JaxRsContractRestProvider.iExHubAssigningAuthority);
+		JaxRsContractRestProvider.xdsBRepositoryEndpointURI = IExHubConfig.getProperty("XdsBRepositoryEndpointURI", JaxRsContractRestProvider.xdsBRepositoryEndpointURI);
+		JaxRsContractRestProvider.xdsBRepositoryUniqueId = IExHubConfig.getProperty("XdsBRepositoryUniqueId", JaxRsContractRestProvider.xdsBRepositoryUniqueId);
 	}
 	
 	/**
@@ -155,11 +138,6 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 	public MethodOutcome create(@ResourceParam final Contract contract, @ConditionalUrlParam String theConditional) throws Exception
 	{
 		log.info("Entered FHIR Contract create service");
-		
-		if (props == null)
-		{
-			loadProperties();
-		}
 
 		MethodOutcome result = new MethodOutcome().setCreated(false);
 	
@@ -221,11 +199,6 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 	public List<Contract> search(@RequiredParam(name = Patient.SP_IDENTIFIER) final IdentifierDt identifier) throws Exception
 	{
 		log.info("Entered FHIR Contract search service");
-		
-		if (props == null)
-		{
-			loadProperties();
-		}
 
 		List<Contract> result = null;
 		
@@ -424,7 +397,7 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 										String mimeType = document.getMimeType().getLongName();
 										if (mimeType.compareToIgnoreCase("text/xml") == 0)
 										{
-											String filename = "test/" + document.getDocumentUniqueId().getLongName() + ".xml";
+											final String filename = this.testOutputPath + "/" + document.getDocumentUniqueId().getLongName() + ".xml";
 											log.info("Persisting document to filesystem, filename="
 													+ filename);
 											DataHandler dh = document.getDocument();
@@ -484,14 +457,6 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 
 		log.info(String.format("Entered FHIR Contract find (by ID) service, ID=%s",
 				id.getValueAsString()));
-
-		if (props == null)
-		{
-			if (props == null)
-			{
-				loadProperties();
-			}
-		}
 
 		try
 		{
@@ -572,7 +537,7 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 						String mimeType = document.getMimeType().getLongName();
 						if (mimeType.compareToIgnoreCase("text/xml") == 0)
 						{
-							String filename = "test/" + document.getDocumentUniqueId().getLongName() + ".xml";
+							final String filename = this.testOutputPath + "/" + document.getDocumentUniqueId().getLongName() + ".xml";
 							log.info("Persisting document to filesystem, filename="
 									+ filename);
 							DataHandler dh = document.getDocument();
@@ -738,11 +703,6 @@ public class JaxRsContractRestProvider extends AbstractJaxRsResourceProvider<Con
 	public MethodOutcome update(@ResourceParam final Contract contract, @ConditionalUrlParam String theConditional) throws Exception
 	{
 		log.info("Entered FHIR Contract update service");
-		
-		if (props == null)
-		{
-			loadProperties();
-		}
 
 		MethodOutcome result = new MethodOutcome().setCreated(false);
 		

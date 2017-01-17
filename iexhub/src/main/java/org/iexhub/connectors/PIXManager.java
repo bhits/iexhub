@@ -29,6 +29,7 @@ import org.apache.axiom.om.OMElement;
 import org.apache.axis2.AxisFault;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.iexhub.config.IExHubConfig;
 import org.iexhub.exceptions.FamilyNameParamMissingException;
 import org.iexhub.exceptions.PatientIdParamMissingException;
 import org.iexhub.exceptions.UnexpectedServerException;
@@ -42,13 +43,11 @@ import org.productivity.java.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig;
 
 import javax.xml.bind.JAXBElement;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Base64;
-import java.util.Properties;
 import java.util.UUID;
 
 
@@ -60,7 +59,7 @@ import java.util.UUID;
 
 public class PIXManager
 {
-    private static String keyStoreFile = "c:/temp/1264.jks";
+    private static String keyStoreFile = IExHubConfig.getConfigLocationPath("1264.jks");
 	private static String keyStorePwd = "IEXhub";
 	private static String cipherSuites = "TLS_RSA_WITH_AES_128_CBC_SHA";
 	private static String httpsProtocols = "TLSv1";
@@ -68,14 +67,13 @@ public class PIXManager
 	
 	private static boolean logPixRequestMessages = false;
 	private static boolean logPixResponseMessages = false;
-	private static String logOutputPath = "c:/temp/";
+	private static String logOutputPath = "/java/iexhub/logs";
 	private static boolean logSyslogAuditMsgsLocally = false;
 
 	private static String iti44AuditMsgTemplate = null;
 	private static String iti45AuditMsgTemplate = null;
 	private static SSLTCPNetSyslogConfig sysLogConfig = null;
-	private static final String propertiesFile = "/temp/IExHub.properties";
-	
+
     /** Logger */
     public static Logger log = Logger.getLogger(PIXManager.class);
 
@@ -105,113 +103,75 @@ public class PIXManager
 	public PIXManager(String endpointURI,
 			boolean enableTLS) throws AxisFault, Exception
 	{
-		Properties props = new Properties();
-		try
+		PIXManager.logSyslogAuditMsgsLocally = IExHubConfig.getProperty("LogSyslogAuditMsgsLocally", PIXManager.logSyslogAuditMsgsLocally);
+		PIXManager.iExHubSenderDeviceId = IExHubConfig.getProperty("IExHubSenderDeviceID", PIXManager.iExHubSenderDeviceId);
+		PIXManager.patientIdAssigningAuthority = IExHubConfig.getProperty("PatientIDAssigningAuthority", PIXManager.patientIdAssigningAuthority);
+		PIXManager.logOutputPath = IExHubConfig.getProperty("LogOutputPath", PIXManager.logOutputPath);
+		PIXManager.logPixRequestMessages = IExHubConfig.getProperty("LogPIXRequestMessages", PIXManager.logPixRequestMessages);
+		PIXManager.logPixResponseMessages = IExHubConfig.getProperty("LogPIXResponseMessages", PIXManager.logPixResponseMessages);
+		PIXManager.keyStoreFile = IExHubConfig.getProperty("PIXKeyStoreFile", PIXManager.keyStoreFile);
+		PIXManager.keyStorePwd = IExHubConfig.getProperty("PIXKeyStorePwd", PIXManager.keyStorePwd);
+		PIXManager.cipherSuites = IExHubConfig.getProperty("PIXCipherSuites", PIXManager.cipherSuites);
+		PIXManager.httpsProtocols = IExHubConfig.getProperty("PIXHttpsProtocols", PIXManager.httpsProtocols);
+		PIXManager.debugSsl = IExHubConfig.getProperty("DebugSSL", PIXManager.debugSsl);
+		PIXManager.receiverApplicationName = IExHubConfig.getProperty("PIXReceiverApplicationName", PIXManager.receiverApplicationName);
+		PIXManager.receiverApplicationRepresentedOrganization = IExHubConfig.getProperty("PIXReceiverApplicationRepresentedOrganization", PIXManager.receiverApplicationRepresentedOrganization);
+		PIXManager.providerOrganizationName = IExHubConfig.getProperty("PIXProviderOrganizationName", PIXManager.providerOrganizationName);
+		PIXManager.providerOrganizationContactTelecom = IExHubConfig.getProperty("PIXProviderOrganizationContactTelecom", PIXManager.providerOrganizationContactTelecom);
+		PIXManager.providerOrganizationOid = IExHubConfig.getProperty("PIXProviderOrganizationOID", PIXManager.providerOrganizationOid);
+		PIXManager.queryIdOid = IExHubConfig.getProperty("PIXQueryIdOID", PIXManager.queryIdOid);
+		PIXManager.dataSourceOid = IExHubConfig.getProperty("PIXDataSourceOID", PIXManager.dataSourceOid);
+		PIXManager.iExHubDomainOid = IExHubConfig.getProperty("IExHubDomainOID", PIXManager.iExHubDomainOid);
+		PIXManager.iExHubAssigningAuthority = IExHubConfig.getProperty("IExHubAssigningAuthority", PIXManager.iExHubAssigningAuthority);
+
+		// If endpoint URI's are null, then set to the values in the properties file...
+		if (endpointURI == null)
 		{
-			props.load(new FileInputStream(propertiesFile));
-			
-			PIXManager.logSyslogAuditMsgsLocally = (props.getProperty("LogSyslogAuditMsgsLocally") == null) ? PIXManager.logSyslogAuditMsgsLocally
-					: Boolean.parseBoolean(props.getProperty("LogSyslogAuditMsgsLocally"));
-			PIXManager.iExHubSenderDeviceId = (props.getProperty("IExHubSenderDeviceID") == null) ? PIXManager.iExHubSenderDeviceId
-					: props.getProperty("IExHubSenderDeviceID");
-			PIXManager.patientIdAssigningAuthority = (props.getProperty("PatientIDAssigningAuthority") == null) ? PIXManager.patientIdAssigningAuthority
-					: props.getProperty("PatientIDAssigningAuthority");
-			PIXManager.logOutputPath = (props.getProperty("LogOutputPath") == null) ? PIXManager.logOutputPath
-					: props.getProperty("LogOutputPath");
-			PIXManager.logPixRequestMessages = (props.getProperty("LogPIXRequestMessages") == null) ? PIXManager.logPixRequestMessages
-					: Boolean.parseBoolean(props.getProperty("LogPIXRequestMessages"));
-			PIXManager.logPixResponseMessages = (props.getProperty("LogPIXResponseMessages") == null) ? PIXManager.logPixResponseMessages
-					: Boolean.parseBoolean(props.getProperty("LogPIXResponseMessages"));
-			PIXManager.keyStoreFile = (props.getProperty("PIXKeyStoreFile") == null) ? PIXManager.keyStoreFile
-					: props.getProperty("PIXKeyStoreFile");
-			PIXManager.keyStorePwd = (props.getProperty("PIXKeyStorePwd") == null) ? PIXManager.keyStorePwd
-					: props.getProperty("PIXKeyStorePwd");
-			PIXManager.cipherSuites = (props.getProperty("PIXCipherSuites") == null) ? PIXManager.cipherSuites
-					: props.getProperty("PIXCipherSuites");
-			PIXManager.httpsProtocols = (props.getProperty("PIXHttpsProtocols") == null) ? PIXManager.httpsProtocols
-					: props.getProperty("PIXHttpsProtocols");
-			PIXManager.debugSsl = (props.getProperty("DebugSSL") == null) ? PIXManager.debugSsl
-					: Boolean.parseBoolean(props.getProperty("DebugSSL"));
-			PIXManager.receiverApplicationName = (props.getProperty("PIXReceiverApplicationName") == null) ? PIXManager.receiverApplicationName
-					: props.getProperty("PIXReceiverApplicationName");
-			PIXManager.receiverApplicationRepresentedOrganization = (props.getProperty("PIXReceiverApplicationRepresentedOrganization") == null) ? PIXManager.receiverApplicationRepresentedOrganization
-					: props.getProperty("PIXReceiverApplicationRepresentedOrganization");
-			PIXManager.providerOrganizationName = (props.getProperty("PIXProviderOrganizationName") == null) ? PIXManager.providerOrganizationName
-					: props.getProperty("PIXProviderOrganizationName");
-			PIXManager.providerOrganizationContactTelecom = (props.getProperty("PIXProviderOrganizationContactTelecom") == null) ? PIXManager.providerOrganizationContactTelecom
-					: props.getProperty("PIXProviderOrganizationContactTelecom");
-			PIXManager.providerOrganizationOid = (props.getProperty("PIXProviderOrganizationOID") == null) ? PIXManager.providerOrganizationOid
-					: props.getProperty("PIXProviderOrganizationOID");
-			PIXManager.queryIdOid = (props.getProperty("PIXQueryIdOID") == null) ? PIXManager.queryIdOid
-					: props.getProperty("PIXQueryIdOID");
-			PIXManager.dataSourceOid = (props.getProperty("PIXDataSourceOID") == null) ? PIXManager.dataSourceOid
-					: props.getProperty("PIXDataSourceOID");
-			PIXManager.iExHubDomainOid = (props.getProperty("IExHubDomainOID") == null) ? PIXManager.iExHubDomainOid
-					: props.getProperty("IExHubDomainOID");
-			PIXManager.iExHubAssigningAuthority = (props.getProperty("IExHubAssigningAuthority") == null) ? PIXManager.iExHubAssigningAuthority
-					: props.getProperty("IExHubAssigningAuthority");
-			
-			// If endpoint URI's are null, then set to the values in the properties file...
-			if (endpointURI == null)
-			{
-				endpointURI = props.getProperty("PIXManagerEndpointURI");
-			}
-			
-			PIXManager.endpointUri = endpointURI;
-
-			// If Syslog server host is specified, then configure...
-			iti44AuditMsgTemplate = props.getProperty("Iti44AuditMsgTemplate");
-			iti45AuditMsgTemplate = props.getProperty("Iti45AuditMsgTemplate");
-			String syslogServerHost = props.getProperty("SyslogServerHost");
-			int syslogServerPort = (props.getProperty("SyslogServerPort") != null) ? Integer.parseInt(props.getProperty("SyslogServerPort"))
-					: -1;
-			if ((syslogServerHost != null) &&
-				(syslogServerHost.length() > 0) &&
-				(syslogServerPort > -1))
-			{
-				if ((iti44AuditMsgTemplate == null) ||
-					(iti45AuditMsgTemplate == null))
-				{
-					log.error("ITI-44 and/or ITI-45 audit message templates not specified in properties file, "
-							+ propertiesFile);
-					throw new UnexpectedServerException("ITI-44 and/or ITI-45 audit message templates not specified in properties file, "
-							+ propertiesFile);
-				}
-
-				System.setProperty("https.cipherSuites",
-						cipherSuites);
-				System.setProperty("https.protocols",
-						httpsProtocols);
-				
-				if (debugSsl)
-				{
-					System.setProperty("javax.net.debug",
-							"ssl");
-				}
-
-				sysLogConfig = new SSLTCPNetSyslogConfig();
-				sysLogConfig.setHost(syslogServerHost);
-				sysLogConfig.setPort(syslogServerPort);
-				sysLogConfig.setKeyStore(keyStoreFile);
-				sysLogConfig.setKeyStorePassword(keyStorePwd);
-				sysLogConfig.setTrustStore(keyStoreFile);
-				sysLogConfig.setTrustStorePassword(keyStorePwd);
-				sysLogConfig.setUseStructuredData(true);
-				sysLogConfig.setMaxMessageLength(8192);
-				Syslog.createInstance("sslTcp",
-						sysLogConfig);
-			}
+			endpointURI = IExHubConfig.getProperty("PIXManagerEndpointURI");
 		}
-		catch (IOException e)
+
+		PIXManager.endpointUri = endpointURI;
+
+		// If Syslog server host is specified, then configure...
+		iti44AuditMsgTemplate = IExHubConfig.getProperty("Iti44AuditMsgTemplate");
+		iti45AuditMsgTemplate = IExHubConfig.getProperty("Iti45AuditMsgTemplate");
+		String syslogServerHost = IExHubConfig.getProperty("SyslogServerHost");
+		int syslogServerPort = IExHubConfig.getProperty("SyslogServerPort", -1);
+		if ((syslogServerHost != null) &&
+			(syslogServerHost.length() > 0) &&
+			(syslogServerPort > -1))
 		{
-			log.error("Error encountered loading properties file, "
-					+ propertiesFile
-					+ ", "
-					+ e.getMessage());
-			throw new UnexpectedServerException("Error encountered loading properties file, "
-					+ propertiesFile
-					+ ", "
-					+ e.getMessage());
+			if ((iti44AuditMsgTemplate == null) ||
+				(iti45AuditMsgTemplate == null))
+			{
+				log.error("ITI-44 and/or ITI-45 audit message templates not specified in properties file, "
+						+ IExHubConfig.CONFIG_FILE);
+				throw new UnexpectedServerException("ITI-44 and/or ITI-45 audit message templates not specified in properties file, "
+						+ IExHubConfig.CONFIG_FILE);
+			}
+
+			System.setProperty("https.cipherSuites",
+					cipherSuites);
+			System.setProperty("https.protocols",
+					httpsProtocols);
+
+			if (debugSsl)
+			{
+				System.setProperty("javax.net.debug",
+						"ssl");
+			}
+
+			sysLogConfig = new SSLTCPNetSyslogConfig();
+			sysLogConfig.setHost(syslogServerHost);
+			sysLogConfig.setPort(syslogServerPort);
+			sysLogConfig.setKeyStore(keyStoreFile);
+			sysLogConfig.setKeyStorePassword(keyStorePwd);
+			sysLogConfig.setTrustStore(keyStoreFile);
+			sysLogConfig.setTrustStorePassword(keyStorePwd);
+			sysLogConfig.setUseStructuredData(true);
+			sysLogConfig.setMaxMessageLength(8192);
+			Syslog.createInstance("sslTcp",
+					sysLogConfig);
 		}
 
 		try

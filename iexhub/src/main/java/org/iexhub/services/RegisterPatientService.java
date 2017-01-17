@@ -27,6 +27,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.iexhub.config.IExHubConfig;
 import org.iexhub.connectors.PIXManager;
 import org.iexhub.exceptions.*;
 
@@ -42,7 +44,13 @@ public class RegisterPatientService
 {
 	private static boolean TestMode = false;
 	private static String PIXManagerEndpointURI = "http://129.6.24.79:9090";
-	
+	private final String testOutputPath;
+
+	public RegisterPatientService() {
+		this.testOutputPath = IExHubConfig.getProperty("TestOutputPath");
+		assert StringUtils.isNotBlank(this.testOutputPath) : "'TestOutputPath' property must be configured";
+	}
+
 	@GET
 	@Consumes({MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_JSON})
@@ -98,7 +106,7 @@ public class RegisterPatientService
 			// Return canned document for sprint #16 demo.  Sprint #17 will return JSON created by MDMI map (code below outside of this block).
 			try
 			{
-				retVal = FileUtils.readFileToString(new File("test/sampleJson.txt"));
+				retVal = FileUtils.readFileToString(new File(this.testOutputPath + "/sampleJson.txt"));
 				return Response.status(Response.Status.OK).entity(retVal).type(MediaType.APPLICATION_XML).build();
 			}
 			catch (Exception e)

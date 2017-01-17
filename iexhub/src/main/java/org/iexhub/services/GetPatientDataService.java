@@ -22,7 +22,9 @@ import jersey.repackaged.com.google.common.collect.Collections2;
 import jersey.repackaged.com.google.common.collect.MapDifference;
 import jersey.repackaged.com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.iexhub.config.IExHubConfig;
 import org.iexhub.connectors.XdsB;
 import org.iexhub.connectors.XdsBRepositoryManager;
 import org.iexhub.exceptions.*;
@@ -60,7 +62,6 @@ import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.util.*;
 
@@ -79,15 +80,19 @@ public class GetPatientDataService
     /** Logger */
     public static Logger log = Logger.getLogger(GetPatientDataService.class);
 
-	private static Properties props = null;
 	private static XdsB xdsB = null;
 	private static boolean testMode = false;
-	private static String propertiesFile = "/temp/IExHub.properties";
 	private static String xdsBRepositoryUniqueId = "1.3.6.1.4.1.21367.13.40.216";
 	private static String cdaToJsonTransformXslt = null;
 	private static String iExHubDomainOid = "1.3.6.1.4.1.21367.13.50.300132";
 	private static String iExHubAssigningAuthority = "ISO";
 	private static String testJSONDocumentPathname= null;
+	private final String testOutputPath;
+
+	public GetPatientDataService() {
+		this.testOutputPath = IExHubConfig.getProperty("TestOutputPath");
+		assert StringUtils.isNotBlank(this.testOutputPath) : "'TestOutputPath' property must be configured";
+	}
 
 	@GET
 	@Consumes({MediaType.APPLICATION_JSON})
@@ -97,40 +102,16 @@ public class GetPatientDataService
 		log.info("Entered getPatientData service");
 		
 		boolean tls = false;
-		if (props == null)
-		{
-			try
-			{
-				props = new Properties();
-				props.load(new FileInputStream(propertiesFile));
-				tls = (props.getProperty("XdsBRegistryEndpointURI") == null) ? false
-						: ((props.getProperty("XdsBRegistryEndpointURI").toLowerCase().contains("https") ? true
-								: false));
-				GetPatientDataService.testMode = (props.getProperty("TestMode") == null) ? GetPatientDataService.testMode
-						: Boolean.parseBoolean(props.getProperty("TestMode"));
-				GetPatientDataService.testJSONDocumentPathname = (props.getProperty("TestJSONDocumentPathname") == null) ? GetPatientDataService.testJSONDocumentPathname
-						: props.getProperty("TestJSONDocumentPathname");
-				GetPatientDataService.cdaToJsonTransformXslt = (props.getProperty("CDAToJSONTransformXSLT") == null) ? GetPatientDataService.cdaToJsonTransformXslt
-						: props.getProperty("CDAToJSONTransformXSLT");
-				GetPatientDataService.iExHubDomainOid = (props.getProperty("IExHubDomainOID") == null) ? GetPatientDataService.iExHubDomainOid
-						: props.getProperty("IExHubDomainOID");
-				GetPatientDataService.iExHubAssigningAuthority = (props.getProperty("IExHubAssigningAuthority") == null) ? GetPatientDataService.iExHubAssigningAuthority
-						: props.getProperty("IExHubAssigningAuthority");
-				GetPatientDataService.xdsBRepositoryUniqueId = (props.getProperty("XdsBRepositoryUniqueId") == null) ? GetPatientDataService.xdsBRepositoryUniqueId
-						: props.getProperty("XdsBRepositoryUniqueId");
-			}
-			catch (IOException e)
-			{
-				log.error("Error encountered loading properties file, "
-						+ propertiesFile
-						+ ", "
-						+ e.getMessage());
-				throw new UnexpectedServerException("Error encountered loading properties file, "
-						+ propertiesFile
-						+ ", "
-						+ e.getMessage());
-			}
-		}
+
+		tls = (IExHubConfig.getProperty("XdsBRegistryEndpointURI") == null) ? false
+				: ((IExHubConfig.getProperty("XdsBRegistryEndpointURI").toLowerCase().contains("https") ? true
+						: false));
+		GetPatientDataService.testMode = IExHubConfig.getProperty("TestMode", GetPatientDataService.testMode);
+		GetPatientDataService.testJSONDocumentPathname = IExHubConfig.getProperty("TestJSONDocumentPathname", GetPatientDataService.testJSONDocumentPathname);
+		GetPatientDataService.cdaToJsonTransformXslt = IExHubConfig.getProperty("CDAToJSONTransformXSLT", GetPatientDataService.cdaToJsonTransformXslt);
+		GetPatientDataService.iExHubDomainOid = IExHubConfig.getProperty("IExHubDomainOID", GetPatientDataService.iExHubDomainOid);
+		GetPatientDataService.iExHubAssigningAuthority = IExHubConfig.getProperty("IExHubAssigningAuthority", GetPatientDataService.iExHubAssigningAuthority);
+		GetPatientDataService.xdsBRepositoryUniqueId = IExHubConfig.getProperty("XdsBRepositoryUniqueId", GetPatientDataService.xdsBRepositoryUniqueId);
 		
 		String retVal = "";
 		GetPatientDataResponse patientDataResponse = new GetPatientDataResponse();
@@ -311,7 +292,7 @@ public class GetPatientDataService
 									String mimeType = docResponseArray[0].getMimeType().getLongName();
 									if (mimeType.compareToIgnoreCase("text/xml") == 0)
 									{
-										String filename = "test/" + document.getDocumentUniqueId().getLongName() + ".xml";
+										final String filename = this.testOutputPath + "/" + document.getDocumentUniqueId().getLongName() + ".xml";
 										log.info("Persisting document to filesystem, filename="
 												+ filename);
 										DataHandler dh = document.getDocument();
@@ -368,13 +349,13 @@ public class GetPatientDataService
 												        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 												        factory.setNamespaceAware(true);
 												        DocumentBuilder builder = factory.newDocumentBuilder();
-												        Document mappedDoc = builder.parse(new File(/*"test/" + document.getDocumentUniqueId().getLongName() + "_TransformedToPatientPortalXML.xml"*/ filename));
+												        Document mappedDoc = builder.parse(new File(filename));
 												        DOMSource source = new DOMSource(mappedDoc);
 												 
 												        TransformerFactory transformerFactory = TransformerFactory.newInstance();
 												        
 												        Transformer transformer = transformerFactory.newTransformer(new StreamSource(GetPatientDataService.cdaToJsonTransformXslt));
-														String jsonFilename = "test/" + document.getDocumentUniqueId().getLongName() + ".json";
+														final String jsonFilename = this.testOutputPath + "/" + document.getDocumentUniqueId().getLongName() + ".json";
 														File jsonFile = new File(jsonFilename);
 														FileOutputStream jsonFileOutStream = new FileOutputStream(jsonFile);
 												        StreamResult result = new StreamResult(jsonFileOutStream);
@@ -454,39 +435,20 @@ public class GetPatientDataService
 		log.info("Entered getPatientData service");
 
 		boolean tls = false;
-		if (props == null)
-		{
-			try
-			{
-				props = new Properties();
-				props.load(new FileInputStream(propertiesFile));
-				tls = (props.getProperty("XdsBRegistryEndpointURI") == null) ? false
-						: ((props.getProperty("XdsBRegistryEndpointURI").toLowerCase().contains("https") ? true
-						: false));
-				GetPatientDataService.testMode = (props.getProperty("TestMode") == null) ? GetPatientDataService.testMode
-						: Boolean.parseBoolean(props.getProperty("TestMode"));
-				GetPatientDataService.testJSONDocumentPathname = (props.getProperty("TestJSONDocumentPathname") == null) ? GetPatientDataService.testJSONDocumentPathname
-						: props.getProperty("TestJSONDocumentPathname");
-				GetPatientDataService.cdaToJsonTransformXslt = (props.getProperty("CDAToJSONTransformXSLT") == null) ? GetPatientDataService.cdaToJsonTransformXslt
-						: props.getProperty("CDAToJSONTransformXSLT");
-				GetPatientDataService.iExHubDomainOid = (props.getProperty("IExHubDomainOID") == null) ? GetPatientDataService.iExHubDomainOid
-						: props.getProperty("IExHubDomainOID");
-				GetPatientDataService.iExHubAssigningAuthority = (props.getProperty("IExHubAssigningAuthority") == null) ? GetPatientDataService.iExHubAssigningAuthority
-						: props.getProperty("IExHubAssigningAuthority");
-				GetPatientDataService.xdsBRepositoryUniqueId = (props.getProperty("XdsBRepositoryUniqueId") == null) ? GetPatientDataService.xdsBRepositoryUniqueId
-						: props.getProperty("XdsBRepositoryUniqueId");
-			}
-			catch (IOException e)
-			{
-				log.error("Error encountered loading properties file, "+ propertiesFile + ", " + e.getMessage());
-				throw new UnexpectedServerException("Error encountered loading properties file, " + propertiesFile + ", " + e.getMessage());
-			}
-		}
+		tls = (IExHubConfig.getProperty("XdsBRegistryEndpointURI") == null) ? false
+				: ((IExHubConfig.getProperty("XdsBRegistryEndpointURI").toLowerCase().contains("https") ? true
+				: false));
+		GetPatientDataService.testMode = IExHubConfig.getProperty("TestMode", GetPatientDataService.testMode);
+		GetPatientDataService.testJSONDocumentPathname = IExHubConfig.getProperty("TestJSONDocumentPathname", GetPatientDataService.testJSONDocumentPathname);
+		GetPatientDataService.cdaToJsonTransformXslt = IExHubConfig.getProperty("CDAToJSONTransformXSLT", GetPatientDataService.cdaToJsonTransformXslt);
+		GetPatientDataService.iExHubDomainOid = IExHubConfig.getProperty("IExHubDomainOID", GetPatientDataService.iExHubDomainOid);
+		GetPatientDataService.iExHubAssigningAuthority = IExHubConfig.getProperty("IExHubAssigningAuthority", GetPatientDataService.iExHubAssigningAuthority);
+		GetPatientDataService.xdsBRepositoryUniqueId = IExHubConfig.getProperty("XdsBRepositoryUniqueId", GetPatientDataService.xdsBRepositoryUniqueId);
 
 		String retVal = "";
 		GetPatientDataResponse patientDataResponse = new GetPatientDataResponse();
 		DocumentsResponseDto documentsResponseDto = new DocumentsResponseDto();
-		ArrayList<PatientDocument> patientDocuments = new ArrayList<PatientDocument>();
+		List<PatientDocument> patientDocuments = new ArrayList<>();
 
 		if (!testMode)
 		{
@@ -679,14 +641,11 @@ public class GetPatientDataService
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response publishDocument(ClinicalDocumentRequest clinicalDocumentRequest)
 	{
-		Properties props = new Properties();
-
 		try
 		{
 			byte[] document = clinicalDocumentRequest.getDocument();
-			props.load(new FileInputStream(propertiesFile));
-			String xdsBRegistryEndpointURI = props.getProperty("XdsBRegistryEndpointURI");
-			String xdsBRepositoryEndpointURI = props.getProperty("XdsBRepositoryEndpointURI");
+			String xdsBRegistryEndpointURI = IExHubConfig.getProperty("XdsBRegistryEndpointURI");
+			String xdsBRepositoryEndpointURI = IExHubConfig.getProperty("XdsBRepositoryEndpointURI");
 			XdsBRepositoryManager XdsBRepository = new XdsBRepositoryManager(xdsBRegistryEndpointURI, xdsBRepositoryEndpointURI);
 			XdsBRepository.provideAndRegisterDocumentSet(document ,"text/xml" );
 		}
@@ -702,15 +661,15 @@ public class GetPatientDataService
 
 	private String invokeMap(String sourceFilename)
 	{
-		String trgMap = "test/PatientPortalMap.xmi";
+		String trgMap = this.testOutputPath + "/PatientPortalMap.xmi";
 		String trgMdl = "PatientPortal.CCD";
-		String trgMsg = "test/PP_minimal.xml";
+		String trgMsg = this.testOutputPath + "/PP_minimal.xml";
 		String srcMap = null;
 		String srcMdl = null;
 		String cnvElm = "";
 		File sourceDataSetFile = null;
 		
-		File rootDir = new File(System.getProperties().getProperty("user.dir"));
+		File rootDir = new File(this.testOutputPath);
 
 		// initialize the runtime, using the current folder as the root folder
 		Mdmi.INSTANCE.initialize(rootDir);
@@ -719,7 +678,7 @@ public class GetPatientDataService
 		String retVal = null;
 		try
 		{
-			srcMap = "test/CCDA.9.1.xmi";
+			srcMap = this.testOutputPath + "/CCDA.9.1.xmi";
 			srcMdl = "CCDMessageGroup.CCD";
 
 			// 1. check to make sure the maps and messages exist

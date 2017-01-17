@@ -20,13 +20,10 @@
 package org.iexhub.connectors;
 
 import org.apache.log4j.Logger;
+import org.iexhub.config.IExHubConfig;
 import org.iexhub.exceptions.UnexpectedServerException;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Properties;
 
 import static java.nio.file.Files.readAllBytes;
 import static java.nio.file.Paths.get;
@@ -43,10 +40,9 @@ public class XdsBRepositoryManagerTest
     /** Logger */
     public static final Logger log = Logger.getLogger(XdsBRepositoryManagerTest.class);
 
-	private static String propertiesFile = "/temp/IExHub.properties";
     private static String xdsBRegistryEndpointURI = "http://ihexds.nist.gov:80/tf6/services/xdsregistryb";
 	private static String xdsBRepositoryEndpointURI = "http://ihexds.nist.gov:80/tf6/services/xdsrepositoryb";
-	private static String cdaFilename = "/temp/b2 Adam Everyman ToC-PlayWeb.xml";
+	private static String cdaFilename = IExHubConfig.getConfigLocationPath("b2 Adam Everyman ToC-PlayWeb.xml");
 
 //	private static final String xdsBRegistryTLSEndpointURI = "	https://nist1:9085/tf6/services/xdsregistryb";
 //	private static final String xdsBRepositoryTLSEndpointURI = "https://nist1:9085/tf6/services/xdsrepositoryb";
@@ -69,25 +65,8 @@ public class XdsBRepositoryManagerTest
 
 	@Before
 	public void loadProperties(){
-		Properties props = new Properties();
-		try
-		{
-			props.load(new FileInputStream(propertiesFile));
-			xdsBRegistryEndpointURI = props.getProperty("XdsBRegistryEndpointURI");
-			xdsBRepositoryEndpointURI = props.getProperty("XdsBRepositoryEndpointURI");
-			cdaFilename = props.getProperty("CCDToPublish");
-		}
-		catch (IOException e)
-		{
-			log.error("Error encountered loading properties file, "
-					+ propertiesFile
-					+ ", "
-					+ e.getMessage());
-			throw new UnexpectedServerException("Error encountered loading properties file, "
-					+ propertiesFile
-					+ ", "
-					+ e.getMessage());
-		}
+		xdsBRegistryEndpointURI = IExHubConfig.getProperty("XdsBRegistryEndpointURI");
+		xdsBRepositoryEndpointURI = IExHubConfig.getProperty("XdsBRepositoryEndpointURI");
 	}
 
 	@Test
@@ -124,10 +103,10 @@ public class XdsBRepositoryManagerTest
 	@Test
 	public void testTLSProvideAndRegisterDocumentSet()
 	{
-//		String cdaFilename = "c:/temp/b2 Adam Everyman ToC_IHERED-2298.xml";
-//		String cdaFilename = "c:/temp/b2 Adam Everyman ToC_IHEGREEN-2376.xml";
-//		String cdaFilename = "c:/temp/b2 Adam Everyman ToC_IHEBLUE-1019.xml";
-		String cdaFilename = "c:/temp/Sally_Share_b1_Ambulatory_v3.xml";
+//		String cdaFilename = IExHubConfig.getConfigLocationPath("b2 Adam Everyman ToC_IHERED-2298.xml");
+//		String cdaFilename = IExHubConfig.getConfigLocationPath("b2 Adam Everyman ToC_IHEGREEN-2376.xml");
+//		String cdaFilename = IExHubConfig.getConfigLocationPath("b2 Adam Everyman ToC_IHEBLUE-1019.xml");
+		String cdaFilename = IExHubConfig.getConfigLocationPath("Sally_Share_b1_Ambulatory_v3.xml");;
 		try
 		{
 			log.info("Repository TLS ProvideAndRegisterDocumentSet (ITI-41) unit test started...");

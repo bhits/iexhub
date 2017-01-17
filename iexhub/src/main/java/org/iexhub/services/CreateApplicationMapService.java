@@ -29,6 +29,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.iexhub.config.IExHubConfig;
 import org.iexhub.exceptions.MapFileCreationException;
 import org.iexhub.exceptions.URLToMapFileCopyException;
 import org.iexhub.exceptions.UnexpectedServerException;
@@ -41,6 +43,13 @@ import org.iexhub.exceptions.UnexpectedServerException;
 @Path("/CreateApplicationMap")
 public class CreateApplicationMapService
 {
+	private final String testOutputPath;
+
+	public CreateApplicationMapService(){
+		this.testOutputPath =  IExHubConfig.getProperty("TestOutputPath");
+		assert StringUtils.isNotBlank(this.testOutputPath) : "'TestOutputPath' property must be configured";
+	}
+
 	@POST
 	@Produces("application/xml")
 	public Response createApplicationMap(@QueryParam("applicationId") String applicationId,
@@ -49,7 +58,7 @@ public class CreateApplicationMapService
 	{
 		try
 		{
-			File destinationRootDir = new File(System.getProperties().getProperty("user.dir"), "test");
+			File destinationRootDir = new File(testOutputPath);
 			
 			// mappingFile may be either the XML mapping itself or a URI pointing to a file containing the XML mapping.  To test
 			//   for the URI, try to construct a URI object...

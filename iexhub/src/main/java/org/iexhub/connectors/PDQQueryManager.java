@@ -17,20 +17,19 @@
 package org.iexhub.connectors;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Base64;
-import java.util.Properties;
 import java.util.UUID;
 
 import org.apache.axiom.om.OMElement;
 import org.apache.axis2.AxisFault;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.iexhub.config.IExHubConfig;
 import org.iexhub.exceptions.UnexpectedServerException;
 
 import PDQSupplier.org.hl7.v3.*;
@@ -53,7 +52,7 @@ import org.productivity.java.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig;
 
 public class PDQQueryManager
 {
-    private static String keyStoreFile = "c:/temp/1264.jks";
+    private static String keyStoreFile = IExHubConfig.getConfigLocationPath("1264.jks");
 	private static String keyStorePwd = "IEXhub";
 	private static String cipherSuites = "TLS_RSA_WITH_AES_128_CBC_SHA";
 	private static String httpsProtocols = "TLSv1";
@@ -61,12 +60,11 @@ public class PDQQueryManager
 
 	private static boolean logPdqRequestMessages = false;
 	private static boolean logPdqResponseMessages = false;
-	private static String logOutputPath = "c:/temp/";
+	private static String logOutputPath = "/java/iexhub/logs";
 	private static boolean logSyslogAuditMsgsLocally = false;
 
 	private static String iti47AuditMsgTemplate = null;
 	private static SSLTCPNetSyslogConfig sysLogConfig = null;
-	private static final String propertiesFile = "/temp/IExHub.properties";
 
 	/** Logger */
     public static Logger log = Logger.getLogger(PDQQueryManager.class);
@@ -93,128 +91,102 @@ public class PDQQueryManager
 	public PDQQueryManager(String endpointURI,
 			boolean enableTLS) throws AxisFault, Exception
 	{
-		Properties props = new Properties();
-		try
+		PDQQueryManager.logSyslogAuditMsgsLocally = IExHubConfig.getProperty("LogSyslogAuditMsgsLocally", PDQQueryManager.logSyslogAuditMsgsLocally);
+		PDQQueryManager.iExHubSenderDeviceId = IExHubConfig.getProperty("IExHubSenderDeviceID", PDQQueryManager.iExHubSenderDeviceId );
+		PDQQueryManager.logOutputPath = IExHubConfig.getProperty("LogOutputPath", PDQQueryManager.logOutputPath);
+		PDQQueryManager.logPdqRequestMessages = IExHubConfig.getProperty("LogPDQRequestMessages", PDQQueryManager.logPdqRequestMessages);
+		PDQQueryManager.logPdqResponseMessages = IExHubConfig.getProperty("LogPDQResponseMessages", PDQQueryManager.logPdqResponseMessages);
+		PDQQueryManager.keyStoreFile = IExHubConfig.getProperty("PDQKeyStoreFile", PDQQueryManager.keyStoreFile);
+		PDQQueryManager.keyStorePwd = IExHubConfig.getProperty("PDQKeyStorePwd", PDQQueryManager.keyStorePwd);
+		PDQQueryManager.cipherSuites = IExHubConfig.getProperty("PDQCipherSuites", PDQQueryManager.cipherSuites);
+		PDQQueryManager.httpsProtocols = IExHubConfig.getProperty("PDQHttpsProtocols", PDQQueryManager.httpsProtocols);
+		PDQQueryManager.debugSsl = IExHubConfig.getProperty("DebugSSL", PDQQueryManager.debugSsl);
+		PDQQueryManager.receiverApplicationName = IExHubConfig.getProperty("PDQReceiverApplicationName", PDQQueryManager.receiverApplicationName);
+		PDQQueryManager.receiverTelecomValue = IExHubConfig.getProperty("PDQReceiverTelecomValue", PDQQueryManager.receiverTelecomValue);
+		PDQQueryManager.queryIdOid = IExHubConfig.getProperty("PDQQueryIdOID", PDQQueryManager.queryIdOid);
+		PDQQueryManager.otherIDsScopingOrganizationOid = IExHubConfig.getProperty("PDQOtherIDsScopingOrganizationOID", PDQQueryManager.otherIDsScopingOrganizationOid);
+		PDQQueryManager.receiverApplicationRepresentedOrganization = IExHubConfig.getProperty("PDQReceiverApplicationRepresentedOrganization", PDQQueryManager.receiverApplicationRepresentedOrganization);
+		PDQQueryManager.iExHubDomainOid = IExHubConfig.getProperty("IExHubDomainOID", PDQQueryManager.iExHubDomainOid);
+
+		// If endpoint URI's are null, then set to the values in the properties file...
+		if (endpointURI == null)
 		{
-			props.load(new FileInputStream(propertiesFile));
-			
-			PDQQueryManager.logSyslogAuditMsgsLocally = (props.getProperty("LogSyslogAuditMsgsLocally") == null) ? PDQQueryManager.logSyslogAuditMsgsLocally
-					: Boolean.parseBoolean(props.getProperty("LogSyslogAuditMsgsLocally"));
-			PDQQueryManager.iExHubSenderDeviceId = (props.getProperty("IExHubSenderDeviceID") == null) ? PDQQueryManager.iExHubSenderDeviceId
-					: props.getProperty("IExHubSenderDeviceID");
-			PDQQueryManager.logOutputPath = (props.getProperty("LogOutputPath") == null) ? PDQQueryManager.logOutputPath
-					: props.getProperty("LogOutputPath");
-			PDQQueryManager.logPdqRequestMessages = (props.getProperty("LogPDQRequestMessages") == null) ? PDQQueryManager.logPdqRequestMessages
-					: Boolean.parseBoolean(props.getProperty("LogPDQRequestMessages"));
-			PDQQueryManager.logPdqResponseMessages = (props.getProperty("LogPDQResponseMessages") == null) ? PDQQueryManager.logPdqResponseMessages
-					: Boolean.parseBoolean(props.getProperty("LogPDQResponseMessages"));
-			PDQQueryManager.keyStoreFile = (props.getProperty("PDQKeyStoreFile") == null) ? PDQQueryManager.keyStoreFile
-					: props.getProperty("PDQKeyStoreFile");
-			PDQQueryManager.keyStorePwd = (props.getProperty("PDQKeyStorePwd") == null) ? PDQQueryManager.keyStorePwd
-					: props.getProperty("PDQKeyStorePwd");
-			PDQQueryManager.cipherSuites = (props.getProperty("PDQCipherSuites") == null) ? PDQQueryManager.cipherSuites
-					: props.getProperty("PDQCipherSuites");
-			PDQQueryManager.httpsProtocols = (props.getProperty("PDQHttpsProtocols") == null) ? PDQQueryManager.httpsProtocols
-					: props.getProperty("PDQHttpsProtocols");
-			PDQQueryManager.debugSsl = (props.getProperty("DebugSSL") == null) ? PDQQueryManager.debugSsl
-					: Boolean.parseBoolean(props.getProperty("DebugSSL"));
-			PDQQueryManager.receiverApplicationName = (props.getProperty("PDQReceiverApplicationName") == null) ? PDQQueryManager.receiverApplicationName
-					: props.getProperty("PDQReceiverApplicationName");
-			PDQQueryManager.receiverTelecomValue = (props.getProperty("PDQReceiverTelecomValue") == null) ? PDQQueryManager.receiverTelecomValue
-					: props.getProperty("PDQReceiverTelecomValue");
-			PDQQueryManager.queryIdOid = (props.getProperty("PDQQueryIdOID") == null) ? PDQQueryManager.queryIdOid
-					: props.getProperty("PDQQueryIdOID");
-			PDQQueryManager.otherIDsScopingOrganizationOid = (props.getProperty("PDQOtherIDsScopingOrganizationOID") == null) ? PDQQueryManager.otherIDsScopingOrganizationOid
-					: props.getProperty("PDQOtherIDsScopingOrganizationOID");
-			PDQQueryManager.receiverApplicationRepresentedOrganization = (props.getProperty("PDQReceiverApplicationRepresentedOrganization") == null) ? PDQQueryManager.receiverApplicationRepresentedOrganization
-					: props.getProperty("PDQReceiverApplicationRepresentedOrganization");
-			PDQQueryManager.iExHubDomainOid = (props.getProperty("IExHubDomainOID") == null) ? PDQQueryManager.iExHubDomainOid
-					: props.getProperty("IExHubDomainOID");
-
-			// If endpoint URI's are null, then set to the values in the properties file...
-			if (endpointURI == null)
-			{
-				endpointURI = props.getProperty("PDQManagerEndpointURI");
-			}
-			
-			PDQQueryManager.endpointUri = endpointURI;
-
-			// If Syslog server host is specified, then configure...
-			iti47AuditMsgTemplate = props.getProperty("Iti47AuditMsgTemplate");
-			String syslogServerHost = props.getProperty("SyslogServerHost");
-			int syslogServerPort = (props.getProperty("SyslogServerPort") != null) ? Integer.parseInt(props.getProperty("SyslogServerPort"))
-					: -1;
-			if ((syslogServerHost != null) &&
-				(syslogServerHost.length() > 0) &&
-				(syslogServerPort > -1))
-			{
-				if (iti47AuditMsgTemplate == null)
-				{
-					log.error("ITI-47 audit message templates not specified in properties file, "
-							+ propertiesFile);
-					throw new UnexpectedServerException("ITI-47 audit message templates not specified in properties file, "
-							+ propertiesFile);
-				}
-
-				System.setProperty("https.cipherSuites",
-						cipherSuites);
-				System.setProperty("https.protocols",
-						httpsProtocols);
-				
-				if (debugSsl)
-				{
-					System.setProperty("javax.net.debug",
-							"ssl");
-				}
-
-				sysLogConfig = new SSLTCPNetSyslogConfig();
-				sysLogConfig.setHost(syslogServerHost);
-				sysLogConfig.setPort(syslogServerPort);
-				sysLogConfig.setKeyStore(keyStoreFile);
-				sysLogConfig.setKeyStorePassword(keyStorePwd);
-				sysLogConfig.setTrustStore(keyStoreFile);
-				sysLogConfig.setTrustStorePassword(keyStorePwd);
-				sysLogConfig.setUseStructuredData(true);
-				sysLogConfig.setMaxMessageLength(8192);
-				Syslog.createInstance("sslTcp",
-						sysLogConfig);
-			}
-
-			// Instantiate PDQSupplier client stub and enable WS-Addressing...
-			pdqSupplierStub = new PDQSupplier_ServiceStub(endpointURI);
-			pdqSupplierStub._getServiceClient().engageModule("addressing");
-
-			if (enableTLS)
-			{
-				System.setProperty("javax.net.ssl.keyStore",
-						keyStoreFile);
-				System.setProperty("javax.net.ssl.keyStorePassword",
-						keyStorePwd);
-				System.setProperty("javax.net.ssl.trustStore",
-						keyStoreFile);
-				System.setProperty("javax.net.ssl.trustStorePassword",
-						keyStorePwd);
-				System.setProperty("https.cipherSuites",
-						cipherSuites);
-				System.setProperty("https.protocols",
-						httpsProtocols);
-				
-				if (debugSsl)
-				{
-					System.setProperty("javax.net.debug",
-							"ssl");
-				}
-				
-				pdqSupplierStub._getServiceClient().engageModule("rampart");
-			}
-
-			log.info("PDQQueryManager connector successfully initialized, endpointURI="
-					+ endpointURI);
+			endpointURI = IExHubConfig.getProperty("PDQManagerEndpointURI");
 		}
-		catch (Exception e)
+
+		PDQQueryManager.endpointUri = endpointURI;
+
+		// If Syslog server host is specified, then configure...
+		iti47AuditMsgTemplate = IExHubConfig.getProperty("Iti47AuditMsgTemplate");
+		String syslogServerHost = IExHubConfig.getProperty("SyslogServerHost");
+		int syslogServerPort = IExHubConfig.getProperty("SyslogServerPort", -1);
+		if ((syslogServerHost != null) &&
+			(syslogServerHost.length() > 0) &&
+			(syslogServerPort > -1))
 		{
-			throw e;
+			if (iti47AuditMsgTemplate == null)
+			{
+				log.error("ITI-47 audit message templates not specified in properties file, "
+						+ IExHubConfig.CONFIG_FILE);
+				throw new UnexpectedServerException("ITI-47 audit message templates not specified in properties file, "
+						+ IExHubConfig.CONFIG_FILE);
+			}
+
+			System.setProperty("https.cipherSuites",
+					cipherSuites);
+			System.setProperty("https.protocols",
+					httpsProtocols);
+
+			if (debugSsl)
+			{
+				System.setProperty("javax.net.debug",
+						"ssl");
+			}
+
+			sysLogConfig = new SSLTCPNetSyslogConfig();
+			sysLogConfig.setHost(syslogServerHost);
+			sysLogConfig.setPort(syslogServerPort);
+			sysLogConfig.setKeyStore(keyStoreFile);
+			sysLogConfig.setKeyStorePassword(keyStorePwd);
+			sysLogConfig.setTrustStore(keyStoreFile);
+			sysLogConfig.setTrustStorePassword(keyStorePwd);
+			sysLogConfig.setUseStructuredData(true);
+			sysLogConfig.setMaxMessageLength(8192);
+			Syslog.createInstance("sslTcp",
+					sysLogConfig);
 		}
+
+		// Instantiate PDQSupplier client stub and enable WS-Addressing...
+		pdqSupplierStub = new PDQSupplier_ServiceStub(endpointURI);
+		pdqSupplierStub._getServiceClient().engageModule("addressing");
+
+		if (enableTLS)
+		{
+			System.setProperty("javax.net.ssl.keyStore",
+					keyStoreFile);
+			System.setProperty("javax.net.ssl.keyStorePassword",
+					keyStorePwd);
+			System.setProperty("javax.net.ssl.trustStore",
+					keyStoreFile);
+			System.setProperty("javax.net.ssl.trustStorePassword",
+					keyStorePwd);
+			System.setProperty("https.cipherSuites",
+					cipherSuites);
+			System.setProperty("https.protocols",
+					httpsProtocols);
+
+			if (debugSsl)
+			{
+				System.setProperty("javax.net.debug",
+						"ssl");
+			}
+
+			pdqSupplierStub._getServiceClient().engageModule("rampart");
+		}
+
+		log.info("PDQQueryManager connector successfully initialized, endpointURI="
+				+ endpointURI);
+
 	}
 
 	/**
