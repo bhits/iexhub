@@ -53,14 +53,7 @@ import PDQSupplier.org.hl7.v3.TEL;
 import PIXManager.org.hl7.v3.MCCIIN000002UV01;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.jaxrs.server.AbstractJaxRsResourceProvider;
-import ca.uhn.fhir.model.dstu2.composite.AddressDt;
-import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
-import ca.uhn.fhir.model.dstu2.resource.Organization;
-import ca.uhn.fhir.model.dstu2.resource.Organization.Contact;
-import ca.uhn.fhir.model.dstu2.resource.Patient;
-import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
 import ca.uhn.fhir.model.primitive.DateDt;
-import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.rest.annotation.ConditionalUrlParam;
 import ca.uhn.fhir.rest.annotation.Create;
 import ca.uhn.fhir.rest.annotation.IdParam;
@@ -81,6 +74,39 @@ import ca.uhn.fhir.rest.server.IPagingProvider;
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
 import ca.uhn.fhir.rest.server.interceptor.IServerInterceptor;
 import ca.uhn.fhir.validation.FhirValidator;
+import org.apache.log4j.Logger;
+import org.hl7.fhir.dstu3.model.Address;
+import org.hl7.fhir.dstu3.model.Enumerations.AdministrativeGender;
+import org.hl7.fhir.dstu3.model.HumanName;
+import org.hl7.fhir.dstu3.model.IdType;
+import org.hl7.fhir.dstu3.model.Organization;
+import org.hl7.fhir.dstu3.model.Organization.OrganizationContactComponent;
+import org.hl7.fhir.dstu3.model.Patient;
+import org.iexhub.connectors.PDQQueryManager;
+import org.iexhub.connectors.PIXManager;
+import org.iexhub.exceptions.FamilyNameParamMissingException;
+import org.iexhub.exceptions.PatientIdParamMissingException;
+import org.iexhub.exceptions.UnexpectedServerException;
+
+import javax.ejb.Local;
+import javax.ejb.Stateless;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.xml.bind.JAXBElement;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.Serializable;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
+
+
 
 /**
  * FHIR Patient Implementation supports: find, search, and create.
@@ -104,9 +130,8 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 	private static String iExHubAssigningAuthority = "ISO";
 	private static String pdqManagerEndpointUri = null;
 	private static String pixManagerEndpointUri = null;
-	private static FhirContext fhirCtxt = null;
-	private static FhirValidator fhirValidator = null;
-	
+	private static FhirContext fhirCtxt = FhirContext.forDstu3();
+
 	/**
 	 * The HAPI paging provider for this server
 	 */
@@ -120,8 +145,8 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 
 	public JaxRsPatientRestProvider()
 	{
-		super(JaxRsPatientRestProvider.class);
-		loadProperties();
+		super(fhirCtxt, JaxRsPatientRestProvider.class);
+        loadProperties();
 	}
 
 	private void loadProperties()
@@ -193,9 +218,9 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 	 * @param patientPerson
 	 * @return patient address as FHIR Address datatype
 	 */
-	private AddressDt populateFhirAddress(PRPAMT201310UV02Person patientPerson)
+	private Address populateFhirAddress(PRPAMT201310UV02Person patientPerson)
 	{
-		AddressDt fhirAddr = new AddressDt();
+		Address fhirAddr = new Address();
 
 		for (AD addr : patientPerson.getAddr())
 		{
@@ -237,9 +262,9 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 	 * @param contact
 	 * @return FHIR Address datatype
 	 */
-	private AddressDt populateFhirAddress(COCTMT150003UV03ContactParty contact)
+	private Address populateFhirAddress(COCTMT150003UV03ContactParty contact)
 	{
-		AddressDt fhirAddr = new AddressDt();
+		Address fhirAddr = new Address();
 
 		for (AD addr : contact.getAddr())
 		{
@@ -315,14 +340,14 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 				{
 					for (PN name : patientPerson.getName())
 					{
-						HumanNameDt fhirName = new HumanNameDt();
+						HumanName fhirName = new HumanName();
 
 						for (Serializable nameComponent : name.getContent())
 						{
 							JAXBElement<?> testNameComponent = (JAXBElement<?>) nameComponent;
 							if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.EnFamily.class)
 							{
-								fhirName.addFamily(((PDQSupplier.org.hl7.v3.EnFamily)testNameComponent.getValue()).getContent().get(0).toString());
+								fhirName.setFamily(((PDQSupplier.org.hl7.v3.EnFamily)testNameComponent.getValue()).getContent().get(0).toString());
 							}
 							else
 							if (testNameComponent.getValue().getClass() == PDQSupplier.org.hl7.v3.EnGiven.class)
@@ -338,9 +363,9 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 				// Extract gender if present...
 				if (patientPerson.getAdministrativeGenderCode() != null)
 				{
-					patient.setGender((patientPerson.getAdministrativeGenderCode().getCode().compareToIgnoreCase("M") == 0) ? AdministrativeGenderEnum.MALE
-							: (patientPerson.getAdministrativeGenderCode().getCode().compareToIgnoreCase("F") == 0) ? AdministrativeGenderEnum.FEMALE
-									: AdministrativeGenderEnum.UNKNOWN);
+					patient.setGender((patientPerson.getAdministrativeGenderCode().getCode().compareToIgnoreCase("M") == 0) ? AdministrativeGender.MALE
+							: (patientPerson.getAdministrativeGenderCode().getCode().compareToIgnoreCase("F") == 0) ? AdministrativeGender.FEMALE
+									: AdministrativeGender.UNKNOWN);
 				}
 				
 				// Extract telecom if present...
@@ -365,7 +390,7 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 							.append(String.format("%02d", (birthDateCalendar.get(Calendar.MONTH) + 1)))
 							.append("-")
 							.append(String.format("%02d", birthDateCalendar.get(Calendar.DAY_OF_MONTH))).toString());
-					patient.setBirthDate(birthDate);
+					patient.setBirthDate(new Date(patientPerson.getBirthTime().getValue()));
 				}
 				
 				// Extract address if present...
@@ -384,7 +409,7 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 				
 				// Create Organization FHIR resource and set its ID...
 				Organization organization = new Organization();
-				organization.getId().setValue(provider.getId().get(0).getRoot());
+				organization.setId(provider.getId().get(0).getRoot());
 
 				// Extract name if present...
 				if (provider.getName() != null)
@@ -407,7 +432,7 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 				{
 					for (COCTMT150003UV03ContactParty contact : provider.getContactParty())
 					{
-						Contact organizationContact = new Contact();
+						OrganizationContactComponent organizationContact = new OrganizationContactComponent();
 						
 						if (contact.getTelecom() != null)
 						{
@@ -426,10 +451,10 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 						organization.getContact().add(organizationContact);
 					}
 				}
+				patient.addGeneralPractitioner().setReference("#"
+						+ organization.getId());
 
-				patient.addCareProvider().setReference("#"
-						+ organization.getId().getValue());
-				patient.getContained().getContainedResources().add(organization);
+				patient.getContained().add(organization);
 			}
 			
 			result.add(patient);
@@ -445,7 +470,7 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 	 * @throws Exception
 	 */
 	@Read
-	public Patient find(@IdParam final IdDt id) throws Exception
+	public Patient find(@IdParam final IdType id) throws Exception
 	{
 		if ((id == null) ||
 			(id.isEmpty()))
@@ -454,7 +479,7 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 		}
 
 		log.info(String.format("Entered FHIR Patient find (by ID) service, ID=%s",
-				id.getValueAsString()));
+				id.getValue()));
 
 		Patient result = null;
 		
@@ -510,7 +535,7 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 				}
 				else
 				{
-					throw new ResourceNotFoundException(id);
+					throw new ResourceNotFoundException(id.getId());
 				}
 			}
 			catch (Exception e)

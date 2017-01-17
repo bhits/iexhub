@@ -20,28 +20,30 @@
 package org.iexhub.services;
 
 import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
-import ca.uhn.fhir.model.dstu2.composite.IdentifierDt;
-import ca.uhn.fhir.model.dstu2.resource.Organization;
-import ca.uhn.fhir.model.dstu2.resource.Organization.Contact;
-import ca.uhn.fhir.model.dstu2.resource.Patient;
-import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
-import ca.uhn.fhir.model.dstu2.valueset.IdentifierUseEnum;
-import ca.uhn.fhir.model.primitive.DateDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.client.IGenericClient;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
 import org.apache.commons.io.FileUtils;
+import org.hl7.fhir.dstu3.model.Bundle;
+import org.hl7.fhir.dstu3.model.Enumerations;
+import org.hl7.fhir.dstu3.model.HumanName;
+import org.hl7.fhir.dstu3.model.Identifier;
+import org.hl7.fhir.dstu3.model.Identifier.IdentifierUse;
+import org.hl7.fhir.dstu3.model.Organization;
+import org.hl7.fhir.dstu3.model.Organization.OrganizationContactComponent;
+import org.hl7.fhir.dstu3.model.Patient;
 import org.iexhub.exceptions.UnexpectedServerException;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -91,7 +93,7 @@ public class PatientResourceTest {
 
 		try {
 			Logger logger = LoggerFactory.getLogger(PatientResourceTest.class);
-			FhirContext ctxt = new FhirContext();
+			FhirContext ctxt = FhirContext.forDstu3();
 			ctxt.getRestfulClientFactory().setSocketTimeout(PatientResourceTest.fhirClientSocketTimeout);
 
 			LoggingInterceptor loggingInterceptor = new LoggingInterceptor();
@@ -135,7 +137,7 @@ public class PatientResourceTest {
 
 		try {
 			Logger logger = LoggerFactory.getLogger(PatientResourceTest.class);
-			FhirContext ctxt = new FhirContext();
+			FhirContext ctxt = FhirContext.forDstu3();
 			ctxt.getRestfulClientFactory().setSocketTimeout(PatientResourceTest.fhirClientSocketTimeout);
 
 			LoggingInterceptor loggingInterceptor = new LoggingInterceptor();
@@ -158,7 +160,7 @@ public class PatientResourceTest {
 			// Patient.ADDRESS_POSTALCODE
 			// Patient.IDENTIFIER
 			// Patient.TELECOM
-			ca.uhn.fhir.model.dstu2.resource.Bundle response = client.search().forResource(Patient.class)
+			Bundle response = client.search().forResource(Patient.class)
 					// .where(Patient.FAMILY.matches().values("HINOJOXS"))
 					// .and(Patient.GIVEN.matches().values("JOYCE"))
 					.where(Patient.FAMILY.matches().values("SMITH")).and(Patient.GIVEN.matches().values("ANDREW"))
@@ -166,7 +168,7 @@ public class PatientResourceTest {
 					// MUST specify as YYYY-MM-DD
 					// .and(Patient.TELECOM.exactly().identifier("tel:706-750-4736"))
 					// // MUST specify as "tel:XXX-XXX-XXXX" if phone number
-					.returnBundle(ca.uhn.fhir.model.dstu2.resource.Bundle.class).execute();
+					.returnBundle(Bundle.class).execute();
 			assertTrue("Error - unexpected return value for testSearchPatient", response != null);
 		} catch (Exception e) {
 			fail("Error - " + e.getMessage());
@@ -200,26 +202,26 @@ public class PatientResourceTest {
 		try {
 			Patient patientResource = new Patient();
 			// pat.addName().addFamily("HINOJOXS").addGiven("JOYCE");
-			patientResource.addName().addFamily("SMITH").addGiven("BOB");
+			patientResource.addName().setFamily("SMITH").addGiven("BOB");
 			// SSN
 			patientResource.addIdentifier().setSystem(uriPrefix + "2.16.840.1.113883.4.1").setValue("321-54-9876");
 			// MRN - the "official" identifier used to refer to this patient
 			// identity
 			// The server checks the "use" to determine that this is the official/trusted identifier supplied by the application
 			patientResource.addIdentifier().setSystem(uriPrefix + iExHubDomainOid)
-			        .setUse(IdentifierUseEnum.OFFICIAL)
+			        .setUse(IdentifierUse.OFFICIAL)
 					.setValue("MRN");
 			//
-			List<IdentifierDt> idList = patientResource.getIdentifier();
+			List<Identifier> idList = patientResource.getIdentifier();
 			// find the "official" identifier aka MRN
-			IdentifierDt mrn = null; 
+			Identifier mrn = null;
 			if (idList != null) {
-				Iterator<IdentifierDt> idIterator = idList.iterator();
+				Iterator<Identifier> idIterator = idList.iterator();
 				while (idIterator.hasNext()) {
-					IdentifierDt id = idIterator.next();
-					String use = id.getUse();
+					Identifier id = idIterator.next();
+					IdentifierUse use = id.getUse();
 					
-					if ((use!= null) && (use.equals(IdentifierUseEnum.OFFICIAL.getCode()))) {
+					if ((use!= null) && (use.equals(IdentifierUse.OFFICIAL))) {
 						// this is the official identifier
 						mrn = id;
 						break;
@@ -231,11 +233,11 @@ public class PatientResourceTest {
 			assertTrue(mrn!=null);
 			assertTrue(mrn.getValue().equals("MRN"));
 			assertTrue(mrn.getSystem().equals(uriPrefix + iExHubDomainOid));
-			patientResource.setGender(AdministrativeGenderEnum.MALE);
+			patientResource.setGender(Enumerations.AdministrativeGender.MALE);
 			Calendar dobCalendar = Calendar.getInstance();
 			dobCalendar.set(1978, 11, 8);
-			DateDt dob = new DateDt();
-			dob.setValue(dobCalendar.getTime());
+			Date dob = new Date();
+			dob=dobCalendar.getTime();
 			patientResource.setBirthDate(dob);
 			patientResource.addTelecom().setValue("tel:408-555-1010");
 			// Provider organization...
@@ -246,21 +248,20 @@ public class PatientResourceTest {
 			organizationResource.setName("Provider Organization");
 			organizationResource.addAddress().addLine("1 Main Street").setCity("Cupertino").setState("CA")
 					.setPostalCode("95014");
-			Contact organizationContact = new Contact();
+			OrganizationContactComponent organizationContact = new OrganizationContactComponent();
 			organizationContact.addTelecom().setValue("tel:408-555-1212");
-			HumanNameDt contactName = new HumanNameDt();
-			contactName.addFamily().setValue("JONES");
-			contactName.addGiven().setValue("MARTHA");
+			HumanName contactName = new HumanName();
+			contactName.setFamily("JONES");
+			contactName.addGiven("MARTHA");
 			organizationContact.setName(contactName);
-			List<Contact> contacts = new ArrayList<Contact>();
+			List<OrganizationContactComponent> contacts = new ArrayList<OrganizationContactComponent>();
 			contacts.add(organizationContact);
 			organizationResource.setContact(contacts);
-			patientResource.addCareProvider().setReference("#urn:oid:2.16.840.1.113883.6.1");
-			patientResource.getContained().getContainedResources().add(organizationResource);
+			patientResource.addGeneralPractitioner().setReference("#urn:oid:2.16.840.1.113883.6.1");
+			patientResource.getContained().add(organizationResource);
 			Logger logger = LoggerFactory.getLogger(PatientResourceTest.class);
-			FhirContext ctxt = new FhirContext();
+			FhirContext ctxt = FhirContext.forDstu3();
 			// Set FHIR DSTU2
-			FhirContext.forDstu2();
 			ctxt.getRestfulClientFactory().setSocketTimeout(PatientResourceTest.fhirClientSocketTimeout);
 
 			LoggingInterceptor loggingInterceptor = new LoggingInterceptor();
@@ -309,24 +310,24 @@ public class PatientResourceTest {
 		// ITI-44-Source-Feed message
 		try {
 			Patient patientResource = new Patient();
-			patientResource.addName().addFamily("ALPHA").addGiven("ALAN");
+			patientResource.addName().setFamily("ALPHA").addGiven("ALAN");
 			// SSN
 			patientResource.addIdentifier().setSystem(uriPrefix + "2.16.840.1.113883.4.1").setValue("123-45-6789");
 			// MRN - the "official" identifier used to refer to this patient
 			// identity
 			// The server checks the "use" to determine how to invoke the PIX
 			// Add service
-			patientResource.addIdentifier().setSystem(uriPrefix + iExHubDomainOid).setUse(IdentifierUseEnum.OFFICIAL)
+			patientResource.addIdentifier().setSystem(uriPrefix + iExHubDomainOid).setUse(IdentifierUse.OFFICIAL)
 					.setValue("PIX");
-			patientResource.setGender(AdministrativeGenderEnum.MALE);
+			patientResource.setGender(Enumerations.AdministrativeGender.MALE);
 			Calendar dobCalendar = Calendar.getInstance();
 			dobCalendar.set(1978, 11, 8);
-			DateDt dob = new DateDt();
-			dob.setValue(dobCalendar.getTime());
+			Date dob = new Date();
+			dob=dobCalendar.getTime();
 			patientResource.setBirthDate(dob);
 
 			Logger logger = LoggerFactory.getLogger(PatientResourceTest.class);
-			FhirContext ctxt = new FhirContext();
+			FhirContext ctxt =FhirContext.forDstu3();
 			ctxt.getRestfulClientFactory().setSocketTimeout(PatientResourceTest.fhirClientSocketTimeout);
 
 			LoggingInterceptor loggingInterceptor = new LoggingInterceptor();

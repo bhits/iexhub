@@ -16,13 +16,66 @@
  *******************************************************************************/
 package org.iexhub.connectors;
 
+import PDQSupplier.org.hl7.v3.AD;
+import PDQSupplier.org.hl7.v3.ActClassControlAct;
+import PDQSupplier.org.hl7.v3.AdxpCity;
+import PDQSupplier.org.hl7.v3.AdxpPostalCode;
+import PDQSupplier.org.hl7.v3.AdxpState;
+import PDQSupplier.org.hl7.v3.AdxpStreetAddressLine;
+import PDQSupplier.org.hl7.v3.CD;
+import PDQSupplier.org.hl7.v3.CE;
+import PDQSupplier.org.hl7.v3.CS;
+import PDQSupplier.org.hl7.v3.CommunicationFunctionType;
+import PDQSupplier.org.hl7.v3.EN;
+import PDQSupplier.org.hl7.v3.EnFamily;
+import PDQSupplier.org.hl7.v3.EnGiven;
+import PDQSupplier.org.hl7.v3.EntityClassDevice;
+import PDQSupplier.org.hl7.v3.II;
+import PDQSupplier.org.hl7.v3.INT;
+import PDQSupplier.org.hl7.v3.IVLTS;
+import PDQSupplier.org.hl7.v3.MCCIIN000002UV01;
+import PDQSupplier.org.hl7.v3.MCCIMT000100UV01Agent;
+import PDQSupplier.org.hl7.v3.MCCIMT000100UV01Device;
+import PDQSupplier.org.hl7.v3.MCCIMT000100UV01Organization;
+import PDQSupplier.org.hl7.v3.MCCIMT000100UV01Receiver;
+import PDQSupplier.org.hl7.v3.MCCIMT000100UV01Sender;
+import PDQSupplier.org.hl7.v3.MCCIMT000300UV01Acknowledgement;
+import PDQSupplier.org.hl7.v3.MCCIMT000300UV01Device;
+import PDQSupplier.org.hl7.v3.MCCIMT000300UV01Receiver;
+import PDQSupplier.org.hl7.v3.MCCIMT000300UV01Sender;
+import PDQSupplier.org.hl7.v3.MCCIMT000300UV01TargetMessage;
+import PDQSupplier.org.hl7.v3.ObjectFactory;
+import PDQSupplier.org.hl7.v3.PN;
+import PDQSupplier.org.hl7.v3.PRPAIN201305UV02;
+import PDQSupplier.org.hl7.v3.PRPAIN201305UV02QUQIMT021001UV01ControlActProcess;
+import PDQSupplier.org.hl7.v3.PRPAIN201306UV02;
+import PDQSupplier.org.hl7.v3.PRPAMT201306UV02LivingSubjectAdministrativeGender;
+import PDQSupplier.org.hl7.v3.PRPAMT201306UV02LivingSubjectBirthTime;
+import PDQSupplier.org.hl7.v3.PRPAMT201306UV02LivingSubjectId;
+import PDQSupplier.org.hl7.v3.PRPAMT201306UV02LivingSubjectName;
+import PDQSupplier.org.hl7.v3.PRPAMT201306UV02MothersMaidenName;
+import PDQSupplier.org.hl7.v3.PRPAMT201306UV02OtherIDsScopingOrganization;
+import PDQSupplier.org.hl7.v3.PRPAMT201306UV02ParameterList;
+import PDQSupplier.org.hl7.v3.PRPAMT201306UV02PatientAddress;
+import PDQSupplier.org.hl7.v3.PRPAMT201306UV02PatientTelecom;
+import PDQSupplier.org.hl7.v3.PRPAMT201306UV02QueryByParameter;
+import PDQSupplier.org.hl7.v3.QUQIIN000003UV01Type;
+import PDQSupplier.org.hl7.v3.QUQIMT000001UV01ControlActProcess;
+import PDQSupplier.org.hl7.v3.QUQIMT000001UV01QueryContinuation;
+import PDQSupplier.org.hl7.v3.ST;
+import PDQSupplier.org.hl7.v3.TEL;
+import PDQSupplier.org.hl7.v3.TS;
+import PDQSupplier.org.hl7.v3.XActMoodIntentEvent;
+import PDQSupplier.org.iexhub.services.client.PDQSupplier_ServiceStub;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Base64;
+import java.util.Properties;
 import java.util.UUID;
 
 import org.apache.axiom.om.OMElement;
@@ -31,10 +84,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.iexhub.config.IExHubConfig;
 import org.iexhub.exceptions.UnexpectedServerException;
-
-import PDQSupplier.org.hl7.v3.*;
-import PDQSupplier.org.iexhub.services.client.PDQSupplier_ServiceStub;
-
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
@@ -42,6 +91,17 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.productivity.java.syslog4j.Syslog;
 import org.productivity.java.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Base64;
+import java.util.Properties;
+import java.util.UUID;
 
 /**
  * PDQV3 Query 

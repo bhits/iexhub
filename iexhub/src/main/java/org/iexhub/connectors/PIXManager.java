@@ -16,20 +16,77 @@
  *******************************************************************************/
 package org.iexhub.connectors;
 
-import PIXManager.org.hl7.v3.*;
+import PIXManager.org.hl7.v3.AD;
+import PIXManager.org.hl7.v3.ActClassControlAct;
+import PIXManager.org.hl7.v3.AdxpCity;
+import PIXManager.org.hl7.v3.AdxpPostalCode;
+import PIXManager.org.hl7.v3.AdxpState;
+import PIXManager.org.hl7.v3.AdxpStreetAddressLine;
+import PIXManager.org.hl7.v3.CD;
+import PIXManager.org.hl7.v3.CE;
+import PIXManager.org.hl7.v3.COCTMT090003UV01AssignedEntity;
+import PIXManager.org.hl7.v3.COCTMT090003UV01Organization;
+import PIXManager.org.hl7.v3.COCTMT090100UV01AssignedPerson;
+import PIXManager.org.hl7.v3.COCTMT150002UV01Organization;
+import PIXManager.org.hl7.v3.COCTMT150003UV03ContactParty;
+import PIXManager.org.hl7.v3.COCTMT150003UV03Organization;
+import PIXManager.org.hl7.v3.COCTMT150003UV03Person;
+import PIXManager.org.hl7.v3.CS;
+import PIXManager.org.hl7.v3.CommunicationFunctionType;
+import PIXManager.org.hl7.v3.EN;
+import PIXManager.org.hl7.v3.EnFamily;
+import PIXManager.org.hl7.v3.EnGiven;
+import PIXManager.org.hl7.v3.EntityClassDevice;
+import PIXManager.org.hl7.v3.II;
+import PIXManager.org.hl7.v3.MCCIIN000002UV01;
+import PIXManager.org.hl7.v3.MCCIMT000100UV01Agent;
+import PIXManager.org.hl7.v3.MCCIMT000100UV01Device;
+import PIXManager.org.hl7.v3.MCCIMT000100UV01Organization;
+import PIXManager.org.hl7.v3.MCCIMT000100UV01Receiver;
+import PIXManager.org.hl7.v3.MCCIMT000100UV01Sender;
+import PIXManager.org.hl7.v3.MFMIMT700701UV01Custodian;
+import PIXManager.org.hl7.v3.ON;
+import PIXManager.org.hl7.v3.ObjectFactory;
+import PIXManager.org.hl7.v3.PN;
+import PIXManager.org.hl7.v3.PRPAIN201301UV02;
+import PIXManager.org.hl7.v3.PRPAIN201301UV02MFMIMT700701UV01ControlActProcess;
+import PIXManager.org.hl7.v3.PRPAIN201301UV02MFMIMT700701UV01RegistrationEvent;
+import PIXManager.org.hl7.v3.PRPAIN201301UV02MFMIMT700701UV01Subject1;
+import PIXManager.org.hl7.v3.PRPAIN201301UV02MFMIMT700701UV01Subject2;
+import PIXManager.org.hl7.v3.PRPAIN201309UV02;
+import PIXManager.org.hl7.v3.PRPAIN201309UV02QUQIMT021001UV01ControlActProcess;
+import PIXManager.org.hl7.v3.PRPAIN201310UV02;
+import PIXManager.org.hl7.v3.PRPAMT201301UV02OtherIDs;
+import PIXManager.org.hl7.v3.PRPAMT201301UV02Patient;
+import PIXManager.org.hl7.v3.PRPAMT201301UV02Person;
+import PIXManager.org.hl7.v3.PRPAMT201307UV02DataSource;
+import PIXManager.org.hl7.v3.PRPAMT201307UV02ParameterList;
+import PIXManager.org.hl7.v3.PRPAMT201307UV02PatientIdentifier;
+import PIXManager.org.hl7.v3.PRPAMT201307UV02QueryByParameter;
+import PIXManager.org.hl7.v3.ParticipationTargetSubject;
+import PIXManager.org.hl7.v3.QUQIMT021001UV01AuthorOrPerformer;
+import PIXManager.org.hl7.v3.RoleClassContact;
+import PIXManager.org.hl7.v3.ST;
+import PIXManager.org.hl7.v3.TEL;
+import PIXManager.org.hl7.v3.TS;
+import PIXManager.org.hl7.v3.XActMoodIntentEvent;
+import PIXManager.org.hl7.v3.XParticipationAuthorPerformer;
 import PIXManager.org.iexhub.services.client.PIXManager_ServiceStub;
-import ca.uhn.fhir.model.dstu2.composite.*;
-import ca.uhn.fhir.model.dstu2.resource.Organization;
-import ca.uhn.fhir.model.dstu2.resource.Organization.Contact;
-import ca.uhn.fhir.model.dstu2.resource.Patient;
-import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
-import ca.uhn.fhir.model.dstu2.valueset.IdentifierUseEnum;
-import ca.uhn.fhir.model.primitive.StringDt;
 import org.apache.axiom.om.OMElement;
 import org.apache.axis2.AxisFault;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.iexhub.config.IExHubConfig;
+import org.hl7.fhir.dstu3.model.Address;
+import org.hl7.fhir.dstu3.model.ContactPoint;
+import org.hl7.fhir.dstu3.model.Enumerations.AdministrativeGender;
+import org.hl7.fhir.dstu3.model.HumanName;
+import org.hl7.fhir.dstu3.model.Identifier;
+import org.hl7.fhir.dstu3.model.Organization;
+import org.hl7.fhir.dstu3.model.Organization.OrganizationContactComponent;
+import org.hl7.fhir.dstu3.model.Patient;
+import org.hl7.fhir.dstu3.model.Reference;
+import org.hl7.fhir.dstu3.model.StringType;
 import org.iexhub.exceptions.FamilyNameParamMissingException;
 import org.iexhub.exceptions.PatientIdParamMissingException;
 import org.iexhub.exceptions.UnexpectedServerException;
@@ -524,14 +581,14 @@ public class PIXManager
 	 * @param fhirName
 	 * @return
 	 */
-	private PN populatePersonName(HumanNameDt fhirName)
+	private PN populatePersonName(HumanName fhirName)
 	{
 		EnFamily enFamily = null;
-		if ((fhirName.getFamilyAsSingleString() != null) &&
-			(fhirName.getFamilyAsSingleString().length() > 0))
+		if ((fhirName.getFamily() != null) &&
+			(fhirName.getFamily().length() > 0))
 		{
 			enFamily = new EnFamily();
-			enFamily.getContent().add(fhirName.getFamilyAsSingleString());
+			enFamily.getContent().add(fhirName.getFamily());
 		}
 		
 		EnGiven enGiven = null;
@@ -557,13 +614,13 @@ public class PIXManager
 	 * @param fhirAddress
 	 * @return
 	 */
-	private AD populatePatientAddress(AddressDt fhirAddress)
+	private AD populatePatientAddress(Address fhirAddress)
 	{
 		AD address = new AD();
 		if ((fhirAddress.getLine() != null) &&
 			(!fhirAddress.getLine().isEmpty()))
 		{
-			for (StringDt addressLine : fhirAddress.getLine())
+			for (StringType addressLine : fhirAddress.getLine())
 			{
 				AdxpStreetAddressLine streetAddressLine = new AdxpStreetAddressLine();
 				streetAddressLine.getContent().add(addressLine.getValueAsString());
@@ -608,13 +665,13 @@ public class PIXManager
 		String dateOfBirth = (fhirPatientResource.getBirthDate() != null) ? fhirPatientResource.getBirthDateElement().getValueAsString()
 				: null;
 		String gender = (fhirPatientResource.getGender() == null) ? ""
-				: (fhirPatientResource.getGender().compareToIgnoreCase(AdministrativeGenderEnum.MALE.getCode()) == 0) ? "M"
-						: ((fhirPatientResource.getGender().compareToIgnoreCase(AdministrativeGenderEnum.FEMALE.getCode()) == 0) ? "F"
-								: ((fhirPatientResource.getGender().compareToIgnoreCase(AdministrativeGenderEnum.OTHER.getCode()) == 0) ? "UN"
+				: (fhirPatientResource.getGender().compareTo(AdministrativeGender.MALE) == 0) ? "M"
+						: ((fhirPatientResource.getGender().compareTo(AdministrativeGender.FEMALE) == 0) ? "F"
+								: ((fhirPatientResource.getGender().compareTo(AdministrativeGender.OTHER) == 0) ? "UN"
 										: ""));
 		
-		if ((fhirPatientResource.getName().get(0).getFamilyAsSingleString() == null) ||
-			(fhirPatientResource.getName().get(0).getFamilyAsSingleString().length() == 0))
+		if ((fhirPatientResource.getName().get(0).getFamily() == null) ||
+			(fhirPatientResource.getName().get(0).getFamily().length() == 0))
 		{
 			throw new FamilyNameParamMissingException("FamilyName parameter is required");
 		}
@@ -740,10 +797,11 @@ public class PIXManager
 		II constructedPatientId = null;
 		if (fhirPatientResource.getIdentifier() != null)
 		{
-			for (IdentifierDt fhirId : fhirPatientResource.getIdentifier())
+			for (Identifier fhirId : fhirPatientResource.getIdentifier())
 			{
 				if ((fhirId.getUse() != null) &&
-					(fhirId.getUse().equals(IdentifierUseEnum.OFFICIAL.getCode())))
+					(fhirId.getUse().equals(Identifier.IdentifierUse.OFFICIAL)))
+
 				{
 					// This is the official identifier
 					constructedPatientId = new II();
@@ -803,7 +861,7 @@ public class PIXManager
 		if ((fhirPatientResource.getTelecom() != null) &&
 			(!fhirPatientResource.getTelecom().isEmpty()))
 		{
-			for (ContactPointDt contactPoint : fhirPatientResource.getTelecom())
+			for (ContactPoint contactPoint : fhirPatientResource.getTelecom())
 			{
 				// Add if telecom value is present only
 				if( contactPoint.getValue() != null
@@ -857,19 +915,20 @@ public class PIXManager
 		providerOrganization.setDeterminerCode("INSTANCE");
 		providerOrganization.setClassCode("ORG");
 		
-		if ((fhirPatientResource.getCareProvider() != null) &&
-			(!fhirPatientResource.getCareProvider().isEmpty()))
+		if ((fhirPatientResource.getGeneralPractitioner() != null) &&
+			(!fhirPatientResource.getGeneralPractitioner().isEmpty()))
 		{
-			for (ResourceReferenceDt resourceRef : fhirPatientResource.getCareProvider())
+			for (Reference resourceRef : fhirPatientResource.getGeneralPractitioner())
 			{
+			    if(resourceRef.getResource()!=null){
 				if (resourceRef.getResource().getClass() == Organization.class)
 				{
 					Organization careProvider = (Organization)resourceRef.getResource();
 				
 					// Provider ID
 					II providerId = new II();
-					providerId.setRoot((careProvider.getId().getValueAsString().startsWith("#")) ? careProvider.getId().getValueAsString().substring(1)
-							: careProvider.getId().getValueAsString());
+					providerId.setRoot((careProvider.getId().startsWith("#")) ? careProvider.getId().substring(1)
+							: careProvider.getId());
 					providerOrganization.getId().add(providerId);
 					
 					// Provider name
@@ -882,7 +941,7 @@ public class PIXManager
 					}
 					
 					// Create Contact Party if FHIR organization contacts are present...
-					for (Contact fhirOrganizationContact : careProvider.getContact())
+					for (OrganizationContactComponent fhirOrganizationContact : careProvider.getContact())
 					{
 						COCTMT150003UV03ContactParty contactParty = new COCTMT150003UV03ContactParty();
 						contactParty.setClassCode(RoleClassContact.CON);
@@ -891,7 +950,7 @@ public class PIXManager
 						if ((fhirOrganizationContact.getTelecom() != null) &&
 							(!fhirOrganizationContact.getTelecom().isEmpty()))
 						{
-							for (ContactPointDt contactPoint : fhirOrganizationContact.getTelecom())
+							for (ContactPoint contactPoint : fhirOrganizationContact.getTelecom())
 							{
 								TEL contactPartyTelecom = new TEL();
 								contactPartyTelecom.setValue(contactPoint.getValue());
@@ -912,7 +971,7 @@ public class PIXManager
 						if ((careProvider.getAddress() != null) &&
 							(!careProvider.getAddress().isEmpty()))
 						{
-							for (AddressDt fhirAddr : careProvider.getAddress())
+							for (Address fhirAddr : careProvider.getAddress())
 							{
 								contactParty.getAddr().add(populatePatientAddress(fhirAddr));
 							}
@@ -922,7 +981,7 @@ public class PIXManager
 					}
 				}
 			}
-		}
+		}}
 		else
 		{
 			II providerId = new II();

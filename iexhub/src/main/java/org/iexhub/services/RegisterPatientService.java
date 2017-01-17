@@ -16,6 +16,10 @@
  *******************************************************************************/
 package org.iexhub.services;
 
+import PIXManager.org.hl7.v3.MCCIIN000002UV01;
+import org.apache.commons.io.FileUtils;
+import org.iexhub.connectors.PIXManager;
+import org.iexhub.exceptions.UnexpectedServerException;
 import java.io.File;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
