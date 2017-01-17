@@ -18,12 +18,14 @@ import ca.uhn.fhir.rest.server.Constants;
 import ca.uhn.fhir.rest.server.ETagSupportEnum;
 import ca.uhn.fhir.rest.server.IPagingProvider;
 import ca.uhn.fhir.rest.server.interceptor.IServerInterceptor;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.hl7.fhir.dstu3.model.Consent;
 import org.hl7.fhir.dstu3.model.IdType;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.dstu3.model.Reference;
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.iexhub.config.IExHubConfig;
 import org.iexhub.connectors.XdsB;
 import org.iexhub.connectors.XdsBRepositoryManager;
 import org.iexhub.exceptions.ContractIdParamMissingException;
@@ -51,13 +53,11 @@ import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
 
 @Local
 @Path(JaxRsConsentRestProvider.PATH)
@@ -70,9 +70,7 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
 
     private static XdsBRepositoryManager xdsBRepositoryManager = null;
     private static XdsB xdsB = null;
-    private static Properties props = null;
     private static boolean testMode = false;
-    private static String propertiesFile = "/temp/IExHub.properties";
     private static String cdaToJsonTransformXslt = null;
     private static String iExHubDomainOid = null;
     private static String xdsBRepositoryUniqueId = null;
@@ -81,6 +79,7 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
     private static String xdsBRepositoryEndpointURI = null;
     private static FhirContext fhirCtxt = FhirContext.forDstu3();
     private static String privacyConsentClassificationType = "uuid:f0306f51-975f-434e-a61c-c59651d33983";
+    private final String testOutputPath;
 
     /**
      * The HAPI paging provider for this server
@@ -95,44 +94,19 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
 
     public JaxRsConsentRestProvider() {
         super(fhirCtxt,JaxRsConsentRestProvider.class);
+        loadProperties();
+        this.testOutputPath = IExHubConfig.getProperty("TestOutputPath");
+        assert StringUtils.isNotBlank(this.testOutputPath) : "'TestOutputPath' property must be configured";
     }
 
     private void loadProperties()
     {
-        try {
-            props = new Properties();
-            props.load(new FileInputStream(propertiesFile));
-
-            String tempTestMode = props.getProperty("TestMode");
-            JaxRsConsentRestProvider.testMode = ((tempTestMode == null) || tempTestMode.isEmpty()) ? JaxRsConsentRestProvider.testMode
-                    : Boolean.parseBoolean(tempTestMode);
-
-            JaxRsConsentRestProvider.cdaToJsonTransformXslt = (JaxRsConsentRestProvider.cdaToJsonTransformXslt == null) ? props.getProperty("CDAToJSONTransformXSLT")
-                    : JaxRsConsentRestProvider.cdaToJsonTransformXslt;
-
-            JaxRsConsentRestProvider.iExHubDomainOid = (JaxRsConsentRestProvider.iExHubDomainOid == null) ? props.getProperty("IExHubDomainOID")
-                    : JaxRsConsentRestProvider.iExHubDomainOid ;
-
-            JaxRsConsentRestProvider.iExHubAssigningAuthority = (JaxRsConsentRestProvider.iExHubAssigningAuthority == null) ? props.getProperty("IExHubAssigningAuthority")
-                    : JaxRsConsentRestProvider.iExHubAssigningAuthority;
-
-            JaxRsConsentRestProvider.xdsBRepositoryEndpointURI = (JaxRsConsentRestProvider.xdsBRepositoryEndpointURI == null) ? props.getProperty("XdsBRepositoryEndpointURI")
-                    : JaxRsConsentRestProvider.xdsBRepositoryEndpointURI;
-
-            JaxRsConsentRestProvider.xdsBRepositoryUniqueId = (JaxRsConsentRestProvider.xdsBRepositoryUniqueId == null) ? props.getProperty("XdsBRepositoryUniqueId")
-                    : JaxRsConsentRestProvider.xdsBRepositoryUniqueId;
-        }
-        catch (IOException e)
-        {
-            log.error("Error encountered loading properties file, "
-                    + propertiesFile
-                    + ", "
-                    + e.getMessage());
-            throw new UnexpectedServerException("Error encountered loading properties file, "
-                    + propertiesFile
-                    + ", "
-                    + e.getMessage());
-        }
+        JaxRsConsentRestProvider.testMode = IExHubConfig.getProperty("TestMode", JaxRsConsentRestProvider.testMode);
+        JaxRsConsentRestProvider.cdaToJsonTransformXslt = IExHubConfig.getProperty("CDAToJSONTransformXSLT");
+        JaxRsConsentRestProvider.iExHubDomainOid = IExHubConfig.getProperty("IExHubDomainOID");
+        JaxRsConsentRestProvider.iExHubAssigningAuthority = IExHubConfig.getProperty("IExHubAssigningAuthority");
+        JaxRsConsentRestProvider.xdsBRepositoryEndpointURI = IExHubConfig.getProperty("XdsBRepositoryEndpointURI");
+        JaxRsConsentRestProvider.xdsBRepositoryUniqueId = IExHubConfig.getProperty("XdsBRepositoryUniqueId");
     }
 
     /**
@@ -146,11 +120,6 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
     public MethodOutcome create(@ResourceParam final Consent consent, @ConditionalUrlParam String theConditional) throws Exception
     {
         log.info("Entered FHIR Consent create service");
-
-        if (props == null)
-        {
-            loadProperties();
-        }
 
         MethodOutcome result = new MethodOutcome().setCreated(false);
 
@@ -212,11 +181,6 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
     public List<Consent> search(@RequiredParam(name = Patient.SP_IDENTIFIER) final IdType identifier) throws Exception
     {
         log.info("Entered FHIR Consent search service");
-
-        if (props == null)
-        {
-            loadProperties();
-        }
 
         List<Consent> result = null;
 
@@ -415,7 +379,7 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
                                         String mimeType = document.getMimeType().getLongName();
                                         if (mimeType.compareToIgnoreCase("text/xml") == 0)
                                         {
-                                            String filename = "test/" + document.getDocumentUniqueId().getLongName() + ".xml";
+                                            String filename = this.testOutputPath + "/" + document.getDocumentUniqueId().getLongName() + ".xml";
                                             log.info("Persisting document to filesystem, filename="
                                                     + filename);
                                             DataHandler dh = document.getDocument();
@@ -475,11 +439,6 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
 
         log.info(String.format("Entered FHIR Consent find (by ID) service, ID=%s",
                 id.getValueAsString()));
-
-        if (props == null)
-        {
-           loadProperties();
-        }
 
         try
         {
@@ -559,7 +518,7 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
                         String mimeType = document.getMimeType().getLongName();
                         if (mimeType.compareToIgnoreCase("text/xml") == 0)
                         {
-                            String filename = "test/" + document.getDocumentUniqueId().getLongName() + ".xml";
+                            String filename = this.testOutputPath + "/" + document.getDocumentUniqueId().getLongName() + ".xml";
                             log.info("Persisting document to filesystem, filename="
                                     + filename);
                             DataHandler dh = document.getDocument();
@@ -725,11 +684,6 @@ public class JaxRsConsentRestProvider extends AbstractJaxRsResourceProvider<Cons
     public MethodOutcome update(@ResourceParam final Consent consent, @ConditionalUrlParam String theConditional) throws Exception
     {
         log.info("Entered FHIR Consent update service");
-
-        if (props == null)
-        {
-            loadProperties();
-        }
 
         MethodOutcome result = new MethodOutcome().setCreated(false);
 

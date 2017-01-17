@@ -16,8 +16,6 @@
  *******************************************************************************/
 package org.iexhub.services;
 
-import java.util.ArrayList;
-
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.ArrayList;
 import java.util.List;
