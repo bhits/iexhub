@@ -135,7 +135,7 @@ public class PIXManager
 		int syslogServerPort = IExHubConfig.getProperty("SyslogServerPort", -1);
 		if ((syslogServerHost != null) &&
 			(syslogServerHost.length() > 0) &&
-			(syslogServerPort > -1))
+			(syslogServerPort > 0 && syslogServerPort <= 65535))
 		{
 			if ((iti44AuditMsgTemplate == null) ||
 				(iti45AuditMsgTemplate == null))

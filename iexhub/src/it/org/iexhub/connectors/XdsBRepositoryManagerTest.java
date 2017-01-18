@@ -103,9 +103,6 @@ public class XdsBRepositoryManagerTest
 	@Test
 	public void testTLSProvideAndRegisterDocumentSet()
 	{
-//		String cdaFilename = IExHubConfig.getConfigLocationPath("b2 Adam Everyman ToC_IHERED-2298.xml");
-//		String cdaFilename = IExHubConfig.getConfigLocationPath("b2 Adam Everyman ToC_IHEGREEN-2376.xml");
-//		String cdaFilename = IExHubConfig.getConfigLocationPath("b2 Adam Everyman ToC_IHEBLUE-1019.xml");
 		String cdaFilename = IExHubConfig.getConfigLocationPath("Sally_Share_b1_Ambulatory_v3.xml");;
 		try
 		{

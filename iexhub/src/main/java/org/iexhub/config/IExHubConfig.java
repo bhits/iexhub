@@ -12,14 +12,27 @@ import java.util.Optional;
 import java.util.Properties;
 
 public class IExHubConfig {
-    public static final String IEXHUB_CONFIG_LOCATION_PROPERTY = "iexhub.config.location";
+    public static final String IEXHUB_CONFIG_LOCATION_PROP_NAME = "iexhub.config.location";
     public static final String DEFAULT_IEXHUB_CONFIG_LOCATION = "/java/iexhub/config";
 
-    public static final String IEXHUB_CONFIG_FILE_PROPERTY = "iexhub.config.file";
+    public static final String IEXHUB_CONFIG_FILE_PROP_NAME = "iexhub.config.file";
     public static final String DEFAULT_IEXHUB_CONFIG_FILE = "IExHub.properties";
 
-    public static final String CONFIG_LOCATION = Optional.ofNullable(System.getProperty(IEXHUB_CONFIG_LOCATION_PROPERTY)).orElse(DEFAULT_IEXHUB_CONFIG_LOCATION);
-    public static final String CONFIG_FILE = CONFIG_LOCATION + "/" + Optional.ofNullable(System.getProperty(IEXHUB_CONFIG_FILE_PROPERTY)).orElse(DEFAULT_IEXHUB_CONFIG_FILE);
+    /**
+     * Configuration location is externally configurable using
+     * <code>{@value IEXHUB_CONFIG_LOCATION_PROP_NAME}</code> and <code>{@value IEXHUB_CONFIG_FILE_PROP_NAME}</code>
+     * system properties. The external configuration file will be loaded from
+     * <code>${{@value IEXHUB_CONFIG_LOCATION_PROP_NAME}}/${{@value IEXHUB_CONFIG_FILE_PROP_NAME}}</code> file.
+     * <br/>
+     * <p>The default values are:<ul>
+     * <li> <code>{@value IEXHUB_CONFIG_LOCATION_PROP_NAME}</code>: {@value DEFAULT_IEXHUB_CONFIG_LOCATION}
+     * <li> <code>{@value IEXHUB_CONFIG_FILE_PROP_NAME}</code>: {@value DEFAULT_IEXHUB_CONFIG_FILE}
+     *
+     * @see IExHubConfig#DEFAULT_IEXHUB_CONFIG_LOCATION
+     * @see IExHubConfig#DEFAULT_IEXHUB_CONFIG_FILE
+     */
+    public static final String CONFIG_LOCATION = Optional.ofNullable(System.getProperty(IEXHUB_CONFIG_LOCATION_PROP_NAME)).orElse(DEFAULT_IEXHUB_CONFIG_LOCATION);
+    public static final String CONFIG_FILE = CONFIG_LOCATION + "/" + Optional.ofNullable(System.getProperty(IEXHUB_CONFIG_FILE_PROP_NAME)).orElse(DEFAULT_IEXHUB_CONFIG_FILE);
     private static final Logger logger = Logger.getLogger(IExHubConfig.class);
 
     private static final Properties iexhubProperties;

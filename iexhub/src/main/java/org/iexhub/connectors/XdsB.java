@@ -175,7 +175,7 @@ public class XdsB
 		int syslogServerPort = IExHubConfig.getProperty("SyslogServerPort", -1);
 		if ((syslogServerHost != null) &&
 			(syslogServerHost.length() > 0) &&
-			(syslogServerPort > -1))
+			(syslogServerPort > 0 && syslogServerPort <= 65535))
 		{
 			if ((iti18AuditMsgTemplate == null) ||
 				(iti43AuditMsgTemplate == null))

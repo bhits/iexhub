@@ -24,8 +24,6 @@ import org.apache.axiom.om.OMElement;
 import org.apache.axiom.soap.SOAPFactory;
 import org.apache.log4j.Logger;
 import org.iexhub.config.IExHubConfig;
-import org.iexhub.exceptions.UnexpectedServerException;
-import org.iexhub.services.client.DocumentRegistry_ServiceStub.*;
 import org.iexhub.services.client.DocumentRepository_ServiceStub.DocumentResponse_type0;
 import org.iexhub.services.client.DocumentRepository_ServiceStub.RetrieveDocumentSetResponse;
 import org.junit.Before;
@@ -49,7 +47,6 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-import java.io.*;
 import java.text.DateFormat;
 import java.util.HashMap;
 
