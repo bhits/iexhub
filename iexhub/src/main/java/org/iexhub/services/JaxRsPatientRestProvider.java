@@ -146,7 +146,7 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 	public JaxRsPatientRestProvider()
 	{
 		super(fhirCtxt, JaxRsPatientRestProvider.class);
-        loadProperties();
+		loadProperties();
 	}
 
 	private void loadProperties()
