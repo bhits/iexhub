@@ -55,7 +55,9 @@ import java.util.UUID;
 
 public class PIXManager
 {
-    private static String keyStoreFile = IExHubConfig.getConfigLocationPath("1264.jks");
+	public static final int SYSLOG_SERVER_PORT_MIN = 0;
+	public static final int SYSLOG_SERVER_PORT_MAX = 65535;
+	private static String keyStoreFile = IExHubConfig.getConfigLocationPath("1264.jks");
 	private static String keyStorePwd = "IEXhub";
 	private static String cipherSuites = "TLS_RSA_WITH_AES_128_CBC_SHA";
 	private static String httpsProtocols = "TLSv1";
@@ -135,7 +137,7 @@ public class PIXManager
 		int syslogServerPort = IExHubConfig.getProperty("SyslogServerPort", -1);
 		if ((syslogServerHost != null) &&
 			(syslogServerHost.length() > 0) &&
-			(syslogServerPort > 0 && syslogServerPort <= 65535))
+			(syslogServerPort > SYSLOG_SERVER_PORT_MIN && syslogServerPort <= SYSLOG_SERVER_PORT_MAX))
 		{
 			if ((iti44AuditMsgTemplate == null) ||
 				(iti45AuditMsgTemplate == null))

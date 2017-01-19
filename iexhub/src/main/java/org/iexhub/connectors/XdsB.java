@@ -67,6 +67,8 @@ import java.util.UUID;
 
 public class XdsB
 {
+	public static final int SYSLOG_SERVER_PORT_MIN = 0;
+	public static final int SYSLOG_SERVER_PORT_MAX = 65535;
 	private static boolean logXdsBRequestMessages = false;
 	private static String logOutputPath = "/java/iexhub/logs";
 	private static boolean logSyslogAuditMsgsLocally = false;
@@ -175,7 +177,7 @@ public class XdsB
 		int syslogServerPort = IExHubConfig.getProperty("SyslogServerPort", -1);
 		if ((syslogServerHost != null) &&
 			(syslogServerHost.length() > 0) &&
-			(syslogServerPort > 0 && syslogServerPort <= 65535))
+			(syslogServerPort > SYSLOG_SERVER_PORT_MIN && syslogServerPort <= SYSLOG_SERVER_PORT_MAX))
 		{
 			if ((iti18AuditMsgTemplate == null) ||
 				(iti43AuditMsgTemplate == null))

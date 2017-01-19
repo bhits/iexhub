@@ -91,6 +91,8 @@ public class XdsBRepositoryManager
 {
 	/** Logger */
     public static final Logger log = Logger.getLogger(XdsBRepositoryManager.class);
+	public static final int SYSLOG_SERVER_PORT_MIN = 0;
+	public static final int SYSLOG_SERVER_PORT_MAX = 65535;
 
 	private static boolean testMode = false;
 
@@ -283,7 +285,7 @@ public class XdsBRepositoryManager
 		int syslogServerPort = IExHubConfig.getProperty("SyslogServerPort", -1);
 		if ((syslogServerHost != null) &&
 			(syslogServerHost.length() > 0) &&
-			(syslogServerPort > 0 && syslogServerPort <= 65535))
+			(syslogServerPort > SYSLOG_SERVER_PORT_MIN && syslogServerPort <= SYSLOG_SERVER_PORT_MAX))
 		{
 			if (iti41AuditMsgTemplate == null)
 			{
