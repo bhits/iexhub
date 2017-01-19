@@ -23,8 +23,7 @@ import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.soap.SOAPFactory;
 import org.apache.log4j.Logger;
-import org.iexhub.exceptions.UnexpectedServerException;
-import org.iexhub.services.client.DocumentRegistry_ServiceStub.*;
+import org.iexhub.config.IExHubConfig;
 import org.iexhub.services.client.DocumentRepository_ServiceStub.DocumentResponse_type0;
 import org.iexhub.services.client.DocumentRepository_ServiceStub.RetrieveDocumentSetResponse;
 import org.junit.Before;
@@ -48,10 +47,8 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-import java.io.*;
 import java.text.DateFormat;
 import java.util.HashMap;
-import java.util.Properties;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
@@ -84,36 +81,19 @@ public class XdsBTest
 	private static XdsB xdsB = null;
 	private static final SOAPFactory soapFactory = OMAbstractFactory.getSOAP12Factory();
 
-	private static String propertiesFile = "/temp/IExHub.properties";
 	private static String registryEndpointURI = "http://ihexds.nist.gov:80/tf6/services/xdsregistryb";
 	private static String repositoryEndpointURI = "http://ihexds.nist.gov:80/tf6/services/xdsrepositoryb";
 	private static String patientIdentifier = "'086666c2fd154f7^^^&1.3.6.1.4.1.21367.2005.13.20.3000&ISO'";
 
 	@Before
 	public void loadProperties(){
-		Properties props = new Properties();
-		try
-		{
-			props.load(new FileInputStream(propertiesFile));
-			registryEndpointURI = props.getProperty("XdsBRegistryEndpointURI");
-			repositoryEndpointURI = props.getProperty("XdsBRepositoryEndpointURI");
-			patientIdentifier = props.getProperty("PatientIdToRetrieve");
-			xdsBRepositoryUniqueId = props.getProperty("XdsBRepositoryUniqueId");
-			Boolean.parseBoolean(props.getProperty("DebugSSL"));
-			props.getProperty("SyslogServerHost");
-			Integer.parseInt(props.getProperty("SyslogServerPort"));
-		}
-		catch (IOException e)
-		{
-			log.error("Error encountered loading properties file, "
-					+ propertiesFile
-					+ ", "
-					+ e.getMessage());
-			throw new UnexpectedServerException("Error encountered loading properties file, "
-					+ propertiesFile
-					+ ", "
-					+ e.getMessage());
-		}
+		registryEndpointURI = IExHubConfig.getProperty("XdsBRegistryEndpointURI");
+		repositoryEndpointURI = IExHubConfig.getProperty("XdsBRepositoryEndpointURI");
+		patientIdentifier = IExHubConfig.getProperty("PatientIdToRetrieve");
+		xdsBRepositoryUniqueId = IExHubConfig.getProperty("XdsBRepositoryUniqueId");
+		Boolean.parseBoolean(IExHubConfig.getProperty("DebugSSL"));
+		IExHubConfig.getProperty("SyslogServerHost");
+		Integer.parseInt(IExHubConfig.getProperty("SyslogServerPort"));
 	}
 
 	/**
@@ -209,8 +189,6 @@ public class XdsBTest
 	@Test
 	public void testRegistryStoredQuery()
 	{
-		Properties props = new Properties();
-
 		try
 		{
 			log.info("Registry stored query (ITI-18) unit test started...");
@@ -337,7 +315,7 @@ public class XdsBTest
 						String mimeType = docResponseArray[0].getMimeType().getLongName();
 						if (mimeType.compareToIgnoreCase("text/xml") == 0)
 						{
-							String filename = /*"test/"*/ "c:/temp/Output/" + document.getDocumentUniqueId().getLongName() + ".xml";
+							String filename = IExHubConfig.getConfigLocationPath("Output/" + document.getDocumentUniqueId().getLongName() + ".xml");
 							DataHandler dh = document.getDocument();
 							File file = new File(filename);
 							FileOutputStream fileOutStream = new FileOutputStream(file);
@@ -403,7 +381,7 @@ public class XdsBTest
 						String mimeType = docResponseArray[0].getMimeType().getLongName();
 						if (mimeType.compareToIgnoreCase("text/xml") == 0)
 						{
-							String filename = "/temp/Output/" + document.getDocumentUniqueId().getLongName() + ".xml";
+							String filename = IExHubConfig.getConfigLocationPath("Output/" + document.getDocumentUniqueId().getLongName() + ".xml");
 							DataHandler dh = document.getDocument();
 							File file = new File(filename);
 							FileOutputStream fileOutStream = new FileOutputStream(file);
@@ -481,7 +459,7 @@ public class XdsBTest
 						String mimeType = docResponseArray[0].getMimeType().getLongName();
 						if (mimeType.compareToIgnoreCase("text/xml") == 0)
 						{
-							String filename = /*"test/"*/ "c:/temp/Output/" + document.getDocumentUniqueId().getLongName() + ".xml";
+							String filename = IExHubConfig.getConfigLocationPath("Output/" + document.getDocumentUniqueId().getLongName() + ".xml");
 							DataHandler dh = document.getDocument();
 							File file = new File(filename);
 							FileOutputStream fileOutStream = new FileOutputStream(file);
@@ -543,7 +521,7 @@ public class XdsBTest
 						String mimeType = docResponseArray[0].getMimeType().getLongName();
 						if (mimeType.compareToIgnoreCase("text/xml") == 0)
 						{
-							String filename = "/temp/Output/" + document.getDocumentUniqueId().getLongName() + ".xml";
+							String filename = IExHubConfig.getConfigLocationPath("Output/" + document.getDocumentUniqueId().getLongName() + ".xml");
 							DataHandler dh = document.getDocument();
 							File file = new File(filename);
 							FileOutputStream fileOutStream = new FileOutputStream(file);
@@ -573,7 +551,7 @@ public class XdsBTest
 	@Test
     public void testXslTransform() throws ParserConfigurationException, FileNotFoundException, SAXException, IOException, XPathExpressionException, TransformerException
 	{
-		String filename = "C:/temp/1.1.1^SallyShare CCDA1.xml";
+		String filename = IExHubConfig.getConfigLocationPath("1.1.1^SallyShare CCDA1.xml");
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 		Document doc = dBuilder.parse(new FileInputStream(filename));
@@ -598,8 +576,8 @@ public class XdsBTest
 
 					TransformerFactory transformerFactory = TransformerFactory.newInstance();
 
-					Transformer transformer = transformerFactory.newTransformer(new StreamSource("c:/temp/CDA_to_JSON.xsl"));
-					String jsonFilename = "c:/temp/test.json";
+					Transformer transformer = transformerFactory.newTransformer(new StreamSource(IExHubConfig.getConfigLocationPath("CDA_to_JSON.xsl")));
+					String jsonFilename = IExHubConfig.getConfigLocationPath("test.json");
 					File jsonFile = new File(jsonFilename);
 					FileOutputStream jsonFileOutStream = new FileOutputStream(jsonFile);
 					StreamResult result = new StreamResult(jsonFileOutStream);

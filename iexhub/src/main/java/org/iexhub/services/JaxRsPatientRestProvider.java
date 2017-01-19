@@ -16,6 +16,30 @@
  *******************************************************************************/
 package org.iexhub.services;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.Serializable;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+import javax.ejb.Local;
+import javax.ejb.Stateless;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.xml.bind.JAXBElement;
+import org.apache.log4j.Logger;
+import org.iexhub.config.IExHubConfig;
+import org.iexhub.connectors.PDQQueryManager;
+import org.iexhub.connectors.PIXManager;
+import org.iexhub.exceptions.FamilyNameParamMissingException;
+import org.iexhub.exceptions.PatientIdParamMissingException;
+import org.iexhub.exceptions.UnexpectedServerException;
+
 import PDQSupplier.org.hl7.v3.AD;
 import PDQSupplier.org.hl7.v3.COCTMT150003UV03ContactParty;
 import PDQSupplier.org.hl7.v3.COCTMT150003UV03Organization;
@@ -100,9 +124,7 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 	private static PIXManager pixManager = null;
 	private static PDQQueryManager pdqQueryManager = null;
 
-	private static Properties props = null;
 	private static boolean testMode = false;
-	private static String propertiesFile = "/temp/IExHub.properties";
 	private static String cdaToJsonTransformXslt = null;
 	private static String iExHubDomainOid = "2.16.840.1.113883.3.72.5.9.1";
 	private static String iExHubAssigningAuthority = "ISO";
@@ -124,38 +146,17 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 	public JaxRsPatientRestProvider()
 	{
 		super(fhirCtxt, JaxRsPatientRestProvider.class);
+		loadProperties();
 	}
 
 	private void loadProperties()
 	{
-		try
-		{
-			props = new Properties();
-			props.load(new FileInputStream(propertiesFile));
-			JaxRsPatientRestProvider.testMode = (props.getProperty("TestMode") == null) ? JaxRsPatientRestProvider.testMode
-					: Boolean.parseBoolean(props.getProperty("TestMode"));
-			JaxRsPatientRestProvider.cdaToJsonTransformXslt = (props.getProperty("CDAToJSONTransformXSLT") == null) ? JaxRsPatientRestProvider.cdaToJsonTransformXslt
-					: props.getProperty("CDAToJSONTransformXSLT");
-			JaxRsPatientRestProvider.iExHubDomainOid = (props.getProperty("IExHubDomainOID") == null) ? JaxRsPatientRestProvider.iExHubDomainOid
-					: props.getProperty("IExHubDomainOID");
-			JaxRsPatientRestProvider.iExHubAssigningAuthority = (props.getProperty("IExHubAssigningAuthority") == null) ? JaxRsPatientRestProvider.iExHubAssigningAuthority
-					: props.getProperty("IExHubAssigningAuthority");
-			JaxRsPatientRestProvider.pixManagerEndpointUri = (props.getProperty("PIXManagerEndpointURI") == null) ? JaxRsPatientRestProvider.pixManagerEndpointUri
-					: props.getProperty("PIXManagerEndpointURI");
-			JaxRsPatientRestProvider.pdqManagerEndpointUri = (props.getProperty("PDQManagerEndpointURI") == null) ? JaxRsPatientRestProvider.pdqManagerEndpointUri
-					: props.getProperty("PDQManagerEndpointURI");
-		}
-		catch (IOException e)
-		{
-			log.error("Error encountered loading properties file, "
-					+ propertiesFile
-					+ ", "
-					+ e.getMessage());
-			throw new UnexpectedServerException("Error encountered loading properties file, "
-					+ propertiesFile
-					+ ", "
-					+ e.getMessage());
-		}
+		JaxRsPatientRestProvider.testMode = IExHubConfig.getProperty("TestMode", JaxRsPatientRestProvider.testMode);
+		JaxRsPatientRestProvider.cdaToJsonTransformXslt = IExHubConfig.getProperty("CDAToJSONTransformXSLT", JaxRsPatientRestProvider.cdaToJsonTransformXslt);
+		JaxRsPatientRestProvider.iExHubDomainOid = IExHubConfig.getProperty("IExHubDomainOID", JaxRsPatientRestProvider.iExHubDomainOid);
+		JaxRsPatientRestProvider.iExHubAssigningAuthority = IExHubConfig.getProperty("IExHubAssigningAuthority", JaxRsPatientRestProvider.iExHubAssigningAuthority);
+		JaxRsPatientRestProvider.pixManagerEndpointUri = IExHubConfig.getProperty("PIXManagerEndpointURI", JaxRsPatientRestProvider.pixManagerEndpointUri);
+		JaxRsPatientRestProvider.pdqManagerEndpointUri = IExHubConfig.getProperty("PDQManagerEndpointURI", JaxRsPatientRestProvider.pdqManagerEndpointUri);
 	}
 	
 	/**
@@ -169,11 +170,6 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 	public MethodOutcome create(@ResourceParam final Patient patient, @ConditionalUrlParam String theConditional) throws Exception
 	{
 		log.info("Entered FHIR Patient create service");
-
-		if (props == null)
-		{
-			loadProperties();
-		}
 
 		MethodOutcome result = new MethodOutcome().setCreated(false);
 		result.setResource(patient);
@@ -485,14 +481,6 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 		log.info(String.format("Entered FHIR Patient find (by ID) service, ID=%s",
 				id.getValue()));
 
-		if (props == null)
-		{
-			if (props == null)
-			{
-				loadProperties();
-			}
-		}
-
 		Patient result = null;
 		
 		if ((pdqManagerEndpointUri != null) &&
@@ -637,14 +625,6 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 					(addressCity == null) ? "" : addressCity,
 					(addressState == null) ? "" : addressState,
 					(addressPostalCode == null) ? "" : addressPostalCode));
-		
-		if (props == null)
-		{
-			if (props == null)
-			{
-				loadProperties();
-			}
-		}
 
 		List<Patient> result = null;
 		

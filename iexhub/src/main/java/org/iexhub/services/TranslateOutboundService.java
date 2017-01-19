@@ -33,6 +33,8 @@ import jersey.repackaged.com.google.common.collect.Collections2;
 import jersey.repackaged.com.google.common.collect.MapDifference;
 import jersey.repackaged.com.google.common.collect.Maps;
 
+import org.apache.commons.lang3.StringUtils;
+import org.iexhub.config.IExHubConfig;
 import org.iexhub.exceptions.InvalidExchangeFormatException;
 import org.iexhub.exceptions.InvalidSourceModelException;
 import org.iexhub.exceptions.InvalidTargetModelException;
@@ -56,13 +58,20 @@ import org.openhealthtools.mdht.mdmi.model.MdmiBusinessElementReference;
 @Path("/TranslateOutbound")
 public class TranslateOutboundService
 {
+	private final String testOutputPath;
+
+	public TranslateOutboundService() {
+		this.testOutputPath = IExHubConfig.getProperty("TestOutputPath");
+		assert StringUtils.isNotBlank(this.testOutputPath) : "'TestOutputPath' property must be configured";
+	}
+
 	@GET
 	@Produces("application/xml")
 	public Response translateOutbound(@QueryParam("applicationId") String applicationId,
 			@QueryParam("exchangeFormat") String exchangeFormat,
 			@QueryParam("sourceDataSet") String sourceDataSet)
 	{
-		String srcMap = "test/EhrMap.xmi";
+		String srcMap = this.testOutputPath + "/EhrMap.xmi";
 		String srcMdl = "EHR1.ModelName";
 		String trgMdl = null;
 		String trgMsg = null;
@@ -81,16 +90,16 @@ public class TranslateOutboundService
 			String trgMap = null;
 			if (exchangeFormat.compareToIgnoreCase("ccda") == 0)
 			{
-				trgMap = "test/CCDAMap.9.1.xmi";
+				trgMap = this.testOutputPath + "/CCDAMap.9.1.xmi";
 				trgMdl = "CCDMessageGroup.CCD";
-				trgMsg = "test/target_minimal.xml";
+				trgMsg = this.testOutputPath + "/target_minimal.xml";
 			}
 			else
 			if (exchangeFormat.compareToIgnoreCase("fhir") == 0)
 			{
-				trgMap = "test/FhirPatient.xmi";
+				trgMap = this.testOutputPath + "/FhirPatient.xmi";
 				trgMdl = "FHIRLocalTestMap.FHIRTest99";
-				trgMsg = "test/PatientTarget.xml";
+				trgMsg = this.testOutputPath + "/PatientTarget.xml";
 			}
 			else
 			{

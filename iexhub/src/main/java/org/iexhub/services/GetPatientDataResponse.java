@@ -18,28 +18,30 @@ package org.iexhub.services;
 
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author A. Sute
- *
  */
 @Deprecated
 @XmlRootElement
-public class GetPatientDataResponse
-{
-	public ArrayList<Object> getDocuments() {
-		return documents;
-	}
-	public void setDocuments(ArrayList<Object> documents) {
-		this.documents = documents;
-	}
-	public ArrayList<String> getErrorMsgs() {
-		return errorMsgs;
-	}
-	public void setErrorMsgs(ArrayList<String> errorMsgs) {
-		this.errorMsgs = errorMsgs;
-	}
+public class GetPatientDataResponse {
+    private List<Object> documents = new ArrayList<>();
+    private List<String> errorMsgs = new ArrayList<>();
 
-    private ArrayList<Object> documents = new ArrayList<Object>();
-    private ArrayList<String> errorMsgs = new ArrayList<String>();
+    public List<Object> getDocuments() {
+        return documents;
+    }
+
+    public void setDocuments(List<Object> documents) {
+        this.documents = documents;
+    }
+
+    public List<String> getErrorMsgs() {
+        return errorMsgs;
+    }
+
+    public void setErrorMsgs(List<String> errorMsgs) {
+        this.errorMsgs = errorMsgs;
+    }
 }

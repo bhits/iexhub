@@ -33,6 +33,8 @@ import jersey.repackaged.com.google.common.collect.Collections2;
 import jersey.repackaged.com.google.common.collect.MapDifference;
 import jersey.repackaged.com.google.common.collect.Maps;
 
+import org.apache.commons.lang3.StringUtils;
+import org.iexhub.config.IExHubConfig;
 import org.iexhub.exceptions.InvalidExchangeFormatException;
 import org.iexhub.exceptions.InvalidSourceModelException;
 import org.iexhub.exceptions.InvalidTargetModelException;
@@ -56,21 +58,28 @@ import org.openhealthtools.mdht.mdmi.model.MdmiBusinessElementReference;
 @Path("/TranslateInbound")
 public class TranslateInboundService
 {
+	private final String testOutputPath;
+
+	public TranslateInboundService() {
+		this.testOutputPath = IExHubConfig.getProperty("TestOutputPath");
+		assert StringUtils.isNotBlank(this.testOutputPath) : "'TestOutputPath' property must be configured";
+	}
+
 	@GET
 	@Produces("application/xml")
 	public Response translateInbound(@QueryParam("applicationId") String applicationId,
 			@QueryParam("exchangeFormat") String exchangeFormat,
 			@QueryParam("sourceDataSet") String sourceDataSet)
 	{
-		String trgMap = "test/EhrMap.xmi";
+		String trgMap = this.testOutputPath + "/EhrMap.xmi";
 		String trgMdl = "EHR1.ModelName";
-		String trgMsg = "test/targetehr.xml";
+		String trgMsg = this.testOutputPath + "/targetehr.xml";
 		String srcMap = null;
 		String srcMdl = null;
 		String cnvElm = "";
 		File sourceDataSetFile = null;
 		
-		File rootDir = new File(System.getProperties().getProperty("user.dir"));
+		File rootDir = new File(System.getProperties().getProperty(this.testOutputPath));
 
 		// initialize the runtime, using the current folder as the root folder
 		Mdmi.INSTANCE.initialize(rootDir);
@@ -81,13 +90,13 @@ public class TranslateInboundService
 		{
 			if (exchangeFormat.compareToIgnoreCase("ccda") == 0)
 			{
-				srcMap = "test/CCDAMap.9.1.xmi";
+				srcMap = this.testOutputPath + "/CCDAMap.9.1.xmi";
 				srcMdl = "CCDMessageGroup.CCD";
 			}
 			else
 			if (exchangeFormat.compareToIgnoreCase("fhir") == 0)
 			{
-				srcMap = "test/FhirPatient.xmi";
+				srcMap = this.testOutputPath + "/FhirPatient.xmi";
 				srcMdl = "FHIRLocalTestMap.FHIRTest99";
 			}
 			else

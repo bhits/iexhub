@@ -44,6 +44,7 @@ import org.hl7.fhir.dstu3.model.Reference;
 import org.hl7.fhir.dstu3.model.Resource;
 import org.hl7.fhir.dstu3.model.StringType;
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.iexhub.config.IExHubConfig;
 import org.iexhub.exceptions.DocumentTypeUnsupportedException;
 import org.iexhub.exceptions.UnexpectedServerException;
 import org.joda.time.DateTime;
@@ -66,7 +67,6 @@ import javax.xml.xpath.XPathFactory;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -77,7 +77,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 import java.util.UUID;
 
 
@@ -92,15 +91,16 @@ public class XdsBRepositoryManager
 {
 	/** Logger */
     public static final Logger log = Logger.getLogger(XdsBRepositoryManager.class);
+	public static final int SYSLOG_SERVER_PORT_MIN = 0;
+	public static final int SYSLOG_SERVER_PORT_MAX = 65535;
 
-	private static final String propertiesFile = "/temp/IExHub.properties";
 	private static boolean testMode = false;
 
 	private static boolean logXdsBRequestMessages = false;
-	private static String logOutputPath = "/temp/";
+	private static String logOutputPath = "/java/iexhub/logs";
 	private static boolean logSyslogAuditMsgsLocally = false;
 
-    private static String keyStoreFile = "/temp/1264.jks";
+    private static String keyStoreFile = IExHubConfig.getConfigLocationPath("1264.jks");
 	private static String keyStorePwd = "IEXhub";
 	private static String cipherSuites = "TLS_RSA_WITH_AES_128_CBC_SHA";
 	private static String httpsProtocols = "TLSv1";
@@ -205,184 +205,118 @@ public class XdsBRepositoryManager
 			String repositoryEndpointURI,
 			boolean enableTLS) throws AxisFault, Exception
 	{
-		Properties props = new Properties();
-		try
+		XdsBRepositoryManager.logSyslogAuditMsgsLocally = IExHubConfig.getProperty("LogSyslogAuditMsgsLocally", XdsBRepositoryManager.logSyslogAuditMsgsLocally);
+		XdsBRepositoryManager.logOutputPath = IExHubConfig.getProperty("LogOutputPath", XdsBRepositoryManager.logOutputPath);
+		XdsBRepositoryManager.logXdsBRequestMessages = IExHubConfig.getProperty("LogXdsBRequestMessages", XdsBRepositoryManager.logXdsBRequestMessages);
+		XdsBRepositoryManager.debugSsl = IExHubConfig.getProperty("DebugSSL", XdsBRepositoryManager.debugSsl);
+		XdsBRepositoryManager.testMode = IExHubConfig.getProperty("TestMode", XdsBRepositoryManager.testMode);
+		XdsBRepositoryManager.iExHubDomainOid = IExHubConfig.getProperty("IExHubDomainOID", XdsBRepositoryManager.iExHubDomainOid);
+		XdsBRepositoryManager.keyStoreFile = IExHubConfig.getProperty("XdsBKeyStoreFile", XdsBRepositoryManager.keyStoreFile);
+		XdsBRepositoryManager.keyStorePwd = IExHubConfig.getProperty("XdsBKeyStorePwd", XdsBRepositoryManager.keyStorePwd);
+		XdsBRepositoryManager.cipherSuites = IExHubConfig.getProperty("XdsBCipherSuites", XdsBRepositoryManager.cipherSuites);
+		XdsBRepositoryManager.httpsProtocols = IExHubConfig.getProperty("XdsBHttpsProtocols", XdsBRepositoryManager.httpsProtocols);
+
+		XdsBRepositoryManager.documentAuthorClassificationScheme = IExHubConfig.getProperty("XdsBDocumentAuthorClassificationScheme", XdsBRepositoryManager.documentAuthorClassificationScheme);
+
+		// ClassCode
+		XdsBRepositoryManager.documentClassCodesClassificationScheme = IExHubConfig.getProperty("XdsBDocumentClassCodesClassificationScheme", XdsBRepositoryManager.documentClassCodesClassificationScheme);
+		XdsBRepositoryManager.documentClassCodesNodeRepresentation = IExHubConfig.getProperty("XdsBDocumentClassCodesNodeRepresentation", XdsBRepositoryManager.documentClassCodesNodeRepresentation);
+		XdsBRepositoryManager.documentClassCodesNodeRepresentationContract = IExHubConfig.getProperty("XdsBDocumentClassCodesNodeRepresentationContract", XdsBRepositoryManager.documentClassCodesNodeRepresentationContract);
+		XdsBRepositoryManager.documentClassCodesCodingScheme = IExHubConfig.getProperty("XdsBDocumentClassCodesCodingScheme", XdsBRepositoryManager.documentClassCodesCodingScheme);
+		XdsBRepositoryManager.documentClassCodesName = IExHubConfig.getProperty("XdsBDocumentClassCodesName", XdsBRepositoryManager.documentClassCodesName);
+
+
+		XdsBRepositoryManager.documentConfidentialityCodesClassificationScheme = IExHubConfig.getProperty("XdsBDocumentConfidentialityCodesClassificationScheme", XdsBRepositoryManager.documentConfidentialityCodesClassificationScheme);
+		XdsBRepositoryManager.documentContentTypeClassificationScheme = IExHubConfig.getProperty("XdsBDocumentContentTypeClassificationScheme", XdsBRepositoryManager.documentContentTypeClassificationScheme);
+
+		XdsBRepositoryManager.documentFormatCodesClassificationScheme = IExHubConfig.getProperty("XdsBDocumentFormatCodesClassificationScheme", XdsBRepositoryManager.documentFormatCodesClassificationScheme);
+		XdsBRepositoryManager.documentFormatCodesNodeRepresentation = IExHubConfig.getProperty("XdsBDocumentFormatCodesNodeRepresentation", XdsBRepositoryManager.documentFormatCodesNodeRepresentation);
+		XdsBRepositoryManager.documentFormatCodesCodingScheme = IExHubConfig.getProperty("XdsBDocumentFormatCodesCodingScheme", XdsBRepositoryManager.documentFormatCodesCodingScheme);
+		XdsBRepositoryManager.documentFormatCodesName = IExHubConfig.getProperty("XdsBDocumentFormatCodesName", XdsBRepositoryManager.documentFormatCodesName);
+
+		XdsBRepositoryManager.documentHealthcareFacilityTypeCodesClassificationScheme = IExHubConfig.getProperty("XdsBDocumentHealthcareFacilityTypeCodesClassificationScheme", XdsBRepositoryManager.documentHealthcareFacilityTypeCodesClassificationScheme);
+		XdsBRepositoryManager.documentHealthcareFacilityTypeCodesNodeRepresentation = IExHubConfig.getProperty("XdsBDocumentHealthcareFacilityTypeCodesNodeRepresentation", XdsBRepositoryManager.documentHealthcareFacilityTypeCodesNodeRepresentation);
+		XdsBRepositoryManager.documentHealthcareFacilityTypeCodesCodingScheme = IExHubConfig.getProperty("XdsBDocumentHealthcareFacilityTypeCodesCodingScheme", XdsBRepositoryManager.documentHealthcareFacilityTypeCodesCodingScheme);
+		XdsBRepositoryManager.documentHealthcareFacilityTypeCodesName = IExHubConfig.getProperty("XdsBDocumentHealthcareFacilityTypeCodesName", XdsBRepositoryManager.documentHealthcareFacilityTypeCodesName);
+
+		XdsBRepositoryManager.documentPracticeSettingCodesClassificationScheme = IExHubConfig.getProperty("XdsBDocumentPracticeSettingCodesClassificationScheme", XdsBRepositoryManager.documentPracticeSettingCodesClassificationScheme);
+		XdsBRepositoryManager.documentPracticeSettingCodesNodeRepresentation = IExHubConfig.getProperty("XdsBDocumentPracticeSettingCodesNodeRepresentation", XdsBRepositoryManager.documentPracticeSettingCodesNodeRepresentation);
+		XdsBRepositoryManager.documentPracticeSettingCodesCodingScheme = IExHubConfig.getProperty("XdsBDocumentPracticeSettingCodesCodingScheme", XdsBRepositoryManager.documentPracticeSettingCodesCodingScheme);
+		XdsBRepositoryManager.documentHealthcareFacilityTypeCodesCodingScheme = IExHubConfig.getProperty("XdsBDocumentHealthcareFacilityTypeCodesCodingScheme", XdsBRepositoryManager.documentHealthcareFacilityTypeCodesCodingScheme);
+		XdsBRepositoryManager.documentHealthcareFacilityTypeCodesName = IExHubConfig.getProperty("XdsBDocumentHealthcareFacilityTypeCodesName", XdsBRepositoryManager.documentHealthcareFacilityTypeCodesName);
+		XdsBRepositoryManager.documentPracticeSettingCodesDisplayName = IExHubConfig.getProperty("XdsBDocumentPracticeSettingCodesDisplayName", XdsBRepositoryManager.documentPracticeSettingCodesDisplayName);
+
+		XdsBRepositoryManager.extrinsicObjectExternalIdentifierPatientIdIdentificationScheme = IExHubConfig.getProperty("XdsBExtrinsicObjectExternalIdentifierPatientIdIdentificationScheme", XdsBRepositoryManager.extrinsicObjectExternalIdentifierPatientIdIdentificationScheme);
+		XdsBRepositoryManager.extrinsicObjectExternalIdentifierPatientIdName = IExHubConfig.getProperty("XdsBExtrinsicObjectExternalIdentifierPatientIdName", XdsBRepositoryManager.extrinsicObjectExternalIdentifierPatientIdName);
+		XdsBRepositoryManager.extrinsicObjectExternalIdentifierUniqueIdIdentificationScheme = IExHubConfig.getProperty("XdsBExtrinsicObjectExternalIdentifierUniqueIdIdentificationScheme", XdsBRepositoryManager.extrinsicObjectExternalIdentifierUniqueIdIdentificationScheme);
+		XdsBRepositoryManager.extrinsicObjectExternalIdentifierUniqueIdName = IExHubConfig.getProperty("XdsBExtrinsicObjectExternalIdentifierUniqueIdName", XdsBRepositoryManager.extrinsicObjectExternalIdentifierUniqueIdName);
+		XdsBRepositoryManager.extrinsicObjectExternalIdentifierEntryUuidIdentificationScheme = IExHubConfig.getProperty("XdsBExtrinsicObjectExternalIdentifierEntryUuidIdentificationScheme", XdsBRepositoryManager.extrinsicObjectExternalIdentifierEntryUuidIdentificationScheme);
+		XdsBRepositoryManager.extrinsicObjectExternalIdentifierEntryUuidName = IExHubConfig.getProperty("XdsBExtrinsicObjectExternalIdentifierEntryUuidName", XdsBRepositoryManager.extrinsicObjectExternalIdentifierEntryUuidName);
+
+		XdsBRepositoryManager.registryPackageAuthorClassificationScheme = IExHubConfig.getProperty("XdsBRegistryPackageAuthorClassificationScheme", XdsBRepositoryManager.registryPackageAuthorClassificationScheme);
+		XdsBRepositoryManager.registryPackageContentTypeCodesClassificationScheme = IExHubConfig.getProperty("XdsBRegistryPackageContentTypeCodesClassificationScheme", XdsBRepositoryManager.registryPackageContentTypeCodesClassificationScheme);
+		XdsBRepositoryManager.registryPackageSubmissionSetUniqueIdIdentificationScheme = IExHubConfig.getProperty("XdsBRegistryPackageSubmissionSetUniqueIdIdentificationScheme", XdsBRepositoryManager.registryPackageSubmissionSetUniqueIdIdentificationScheme);
+		XdsBRepositoryManager.registryPackageSubmissionSetSourceIdIdentificationScheme = IExHubConfig.getProperty("XdsBRegistryPackageSubmissionSetSourceIdIdentificationScheme", XdsBRepositoryManager.registryPackageSubmissionSetSourceIdIdentificationScheme);
+		XdsBRepositoryManager.registryPackageSubmissionSetPatientIdIdentificationScheme = IExHubConfig.getProperty("XdsBRegistryPackageSubmissionSetPatientIdIdentificationScheme", XdsBRepositoryManager.registryPackageSubmissionSetPatientIdIdentificationScheme);
+		XdsBRepositoryManager.registryObjectListSubmissionSetClassificationNode = IExHubConfig.getProperty("XdsBRegistryObjectListSubmissionSetClassificationNode", XdsBRepositoryManager.registryObjectListSubmissionSetClassificationNode);
+
+		XdsBRepositoryManager.externalIdentifierSubmissionSetUniqueIdName = IExHubConfig.getProperty("XdsBExternalIdentifierSubmissionSetUniqueIdName", XdsBRepositoryManager.externalIdentifierSubmissionSetUniqueIdName);
+		XdsBRepositoryManager.externalIdentifierSubmissionSetSourceIdName = IExHubConfig.getProperty("XdsBExternalIdentifierSubmissionSetSourceIdName", XdsBRepositoryManager.externalIdentifierSubmissionSetSourceIdName);
+		XdsBRepositoryManager.externalIdentifierSubmissionSetPatientIdName = IExHubConfig.getProperty("XdsBExternalIdentifierSubmissionSetPatientIdName", XdsBRepositoryManager.externalIdentifierSubmissionSetPatientIdName);
+
+		XdsBRepositoryManager.submissionSetOid = IExHubConfig.getProperty("XdsBSubmissionSetOid", XdsBRepositoryManager.submissionSetOid);
+
+		// If endpoint URI's are null, then set to the values in the properties file...
+		if (registryEndpointURI == null)
 		{
-			props.load(new FileInputStream(propertiesFile));
-			
-			XdsBRepositoryManager.logSyslogAuditMsgsLocally = (props.getProperty("LogSyslogAuditMsgsLocally") == null) ? XdsBRepositoryManager.logSyslogAuditMsgsLocally
-					: Boolean.parseBoolean(props.getProperty("LogSyslogAuditMsgsLocally"));
-			XdsBRepositoryManager.logOutputPath = (props.getProperty("LogOutputPath") == null) ? XdsBRepositoryManager.logOutputPath
-					: props.getProperty("LogOutputPath");
-			XdsBRepositoryManager.logXdsBRequestMessages = (props.getProperty("LogXdsBRequestMessages") == null) ? XdsBRepositoryManager.logXdsBRequestMessages
-					: Boolean.parseBoolean(props.getProperty("LogXdsBRequestMessages"));
-			XdsBRepositoryManager.debugSsl = (props.getProperty("DebugSSL") == null) ? XdsBRepositoryManager.debugSsl
-					: Boolean.parseBoolean(props.getProperty("DebugSSL"));
-			XdsBRepositoryManager.testMode = (props.getProperty("TestMode") == null) ? XdsBRepositoryManager.testMode
-					: Boolean.parseBoolean(props.getProperty("TestMode"));
-			XdsBRepositoryManager.iExHubDomainOid = (props.getProperty("IExHubDomainOID") == null) ? XdsBRepositoryManager.iExHubDomainOid
-					: props.getProperty("IExHubDomainOID");
-			XdsBRepositoryManager.keyStoreFile = (props.getProperty("XdsBKeyStoreFile") == null) ? XdsBRepositoryManager.keyStoreFile
-					: props.getProperty("XdsBKeyStoreFile");
-			XdsBRepositoryManager.keyStorePwd = (props.getProperty("XdsBKeyStorePwd") == null) ? XdsBRepositoryManager.keyStorePwd
-					: props.getProperty("XdsBKeyStorePwd");
-			XdsBRepositoryManager.cipherSuites = (props.getProperty("XdsBCipherSuites") == null) ? XdsBRepositoryManager.cipherSuites
-					: props.getProperty("XdsBCipherSuites");
-			XdsBRepositoryManager.httpsProtocols = (props.getProperty("XdsBHttpsProtocols") == null) ? XdsBRepositoryManager.httpsProtocols
-					: props.getProperty("XdsBHttpsProtocols");
-
-			XdsBRepositoryManager.documentAuthorClassificationScheme = (props.getProperty("XdsBDocumentAuthorClassificationScheme") == null) ? XdsBRepositoryManager.documentAuthorClassificationScheme
-					: props.getProperty("XdsBDocumentAuthorClassificationScheme");
-
-			// ClassCode
-			XdsBRepositoryManager.documentClassCodesClassificationScheme = (props.getProperty("XdsBDocumentClassCodesClassificationScheme") == null) ? XdsBRepositoryManager.documentClassCodesClassificationScheme
-					: props.getProperty("XdsBDocumentClassCodesClassificationScheme");
-			XdsBRepositoryManager.documentClassCodesNodeRepresentation = (props.getProperty("XdsBDocumentClassCodesNodeRepresentation") == null) ? XdsBRepositoryManager.documentClassCodesNodeRepresentation
-					: props.getProperty("XdsBDocumentClassCodesNodeRepresentation");
-			XdsBRepositoryManager.documentClassCodesNodeRepresentationContract = (props.getProperty("XdsBDocumentClassCodesNodeRepresentationContract") == null) ? XdsBRepositoryManager.documentClassCodesNodeRepresentationContract
-					: props.getProperty("XdsBDocumentClassCodesNodeRepresentationContract");
-			XdsBRepositoryManager.documentClassCodesCodingScheme = (props.getProperty("XdsBDocumentClassCodesCodingScheme") == null) ? XdsBRepositoryManager.documentClassCodesCodingScheme
-					: props.getProperty("XdsBDocumentClassCodesCodingScheme");
-			XdsBRepositoryManager.documentClassCodesName = (props.getProperty("XdsBDocumentClassCodesName") == null) ? XdsBRepositoryManager.documentClassCodesName
-					: props.getProperty("XdsBDocumentClassCodesName");
-
-
-			XdsBRepositoryManager.documentConfidentialityCodesClassificationScheme = (props.getProperty("XdsBDocumentConfidentialityCodesClassificationScheme") == null) ? XdsBRepositoryManager.documentConfidentialityCodesClassificationScheme
-					: props.getProperty("XdsBDocumentConfidentialityCodesClassificationScheme");
-			XdsBRepositoryManager.documentContentTypeClassificationScheme = (props.getProperty("XdsBDocumentContentTypeClassificationScheme") == null) ? XdsBRepositoryManager.documentContentTypeClassificationScheme
-					: props.getProperty("XdsBDocumentContentTypeClassificationScheme");
-
-			XdsBRepositoryManager.documentFormatCodesClassificationScheme = (props.getProperty("XdsBDocumentFormatCodesClassificationScheme") == null) ? XdsBRepositoryManager.documentFormatCodesClassificationScheme
-					: props.getProperty("XdsBDocumentFormatCodesClassificationScheme");
-			XdsBRepositoryManager.documentFormatCodesNodeRepresentation = (props.getProperty("XdsBDocumentFormatCodesNodeRepresentation") == null) ? XdsBRepositoryManager.documentFormatCodesNodeRepresentation
-					: props.getProperty("XdsBDocumentFormatCodesNodeRepresentation");
-			XdsBRepositoryManager.documentFormatCodesCodingScheme = (props.getProperty("XdsBDocumentFormatCodesCodingScheme") == null) ? XdsBRepositoryManager.documentFormatCodesCodingScheme
-					: props.getProperty("XdsBDocumentFormatCodesCodingScheme");
-			XdsBRepositoryManager.documentFormatCodesName = (props.getProperty("XdsBDocumentFormatCodesName") == null) ? XdsBRepositoryManager.documentFormatCodesName
-					: props.getProperty("XdsBDocumentFormatCodesName");
-
-			XdsBRepositoryManager.documentHealthcareFacilityTypeCodesClassificationScheme = (props.getProperty("XdsBDocumentHealthcareFacilityTypeCodesClassificationScheme") == null) ? XdsBRepositoryManager.documentHealthcareFacilityTypeCodesClassificationScheme
-					: props.getProperty("XdsBDocumentHealthcareFacilityTypeCodesClassificationScheme");
-			XdsBRepositoryManager.documentHealthcareFacilityTypeCodesNodeRepresentation = (props.getProperty("XdsBDocumentHealthcareFacilityTypeCodesNodeRepresentation") == null) ? XdsBRepositoryManager.documentHealthcareFacilityTypeCodesNodeRepresentation
-					: props.getProperty("XdsBDocumentHealthcareFacilityTypeCodesNodeRepresentation");
-			XdsBRepositoryManager.documentHealthcareFacilityTypeCodesCodingScheme = (props.getProperty("XdsBDocumentHealthcareFacilityTypeCodesCodingScheme") == null) ? XdsBRepositoryManager.documentHealthcareFacilityTypeCodesCodingScheme
-					: props.getProperty("XdsBDocumentHealthcareFacilityTypeCodesCodingScheme");
-			XdsBRepositoryManager.documentHealthcareFacilityTypeCodesName = (props.getProperty("XdsBDocumentHealthcareFacilityTypeCodesName") == null) ? XdsBRepositoryManager.documentHealthcareFacilityTypeCodesName
-					: props.getProperty("XdsBDocumentHealthcareFacilityTypeCodesName");
-
-			XdsBRepositoryManager.documentPracticeSettingCodesClassificationScheme = (props.getProperty("XdsBDocumentPracticeSettingCodesClassificationScheme") == null) ? XdsBRepositoryManager.documentPracticeSettingCodesClassificationScheme
-					: props.getProperty("XdsBDocumentPracticeSettingCodesClassificationScheme");
-			XdsBRepositoryManager.documentPracticeSettingCodesNodeRepresentation = (props.getProperty("XdsBDocumentPracticeSettingCodesNodeRepresentation") == null) ? XdsBRepositoryManager.documentPracticeSettingCodesNodeRepresentation
-					: props.getProperty("XdsBDocumentPracticeSettingCodesNodeRepresentation");
-			XdsBRepositoryManager.documentPracticeSettingCodesCodingScheme = (props.getProperty("XdsBDocumentPracticeSettingCodesCodingScheme") == null) ? XdsBRepositoryManager.documentPracticeSettingCodesCodingScheme
-					: props.getProperty("XdsBDocumentPracticeSettingCodesCodingScheme");
-			XdsBRepositoryManager.documentHealthcareFacilityTypeCodesCodingScheme = (props.getProperty("XdsBDocumentHealthcareFacilityTypeCodesCodingScheme") == null) ? XdsBRepositoryManager.documentHealthcareFacilityTypeCodesCodingScheme
-					: props.getProperty("XdsBDocumentHealthcareFacilityTypeCodesCodingScheme");
-			XdsBRepositoryManager.documentHealthcareFacilityTypeCodesName = (props.getProperty("XdsBDocumentHealthcareFacilityTypeCodesName") == null) ? XdsBRepositoryManager.documentHealthcareFacilityTypeCodesName
-					: props.getProperty("XdsBDocumentHealthcareFacilityTypeCodesName");
-			XdsBRepositoryManager.documentPracticeSettingCodesDisplayName = (props.getProperty("XdsBDocumentPracticeSettingCodesDisplayName") == null) ? XdsBRepositoryManager.documentPracticeSettingCodesDisplayName
-					: props.getProperty("XdsBDocumentPracticeSettingCodesDisplayName");
-
-			XdsBRepositoryManager.extrinsicObjectExternalIdentifierPatientIdIdentificationScheme = (props.getProperty("XdsBExtrinsicObjectExternalIdentifierPatientIdIdentificationScheme") == null) ? XdsBRepositoryManager.extrinsicObjectExternalIdentifierPatientIdIdentificationScheme
-					: props.getProperty("XdsBExtrinsicObjectExternalIdentifierPatientIdIdentificationScheme");
-			XdsBRepositoryManager.extrinsicObjectExternalIdentifierPatientIdName = (props.getProperty("XdsBExtrinsicObjectExternalIdentifierPatientIdName") == null) ? XdsBRepositoryManager.extrinsicObjectExternalIdentifierPatientIdName
-					: props.getProperty("XdsBExtrinsicObjectExternalIdentifierPatientIdName");
-			XdsBRepositoryManager.extrinsicObjectExternalIdentifierUniqueIdIdentificationScheme = (props.getProperty("XdsBExtrinsicObjectExternalIdentifierUniqueIdIdentificationScheme") == null) ? XdsBRepositoryManager.extrinsicObjectExternalIdentifierUniqueIdIdentificationScheme
-					: props.getProperty("XdsBExtrinsicObjectExternalIdentifierUniqueIdIdentificationScheme");
-			XdsBRepositoryManager.extrinsicObjectExternalIdentifierUniqueIdName = (props.getProperty("XdsBExtrinsicObjectExternalIdentifierUniqueIdName") == null) ? XdsBRepositoryManager.extrinsicObjectExternalIdentifierUniqueIdName
-					: props.getProperty("XdsBExtrinsicObjectExternalIdentifierUniqueIdName");
-			XdsBRepositoryManager.extrinsicObjectExternalIdentifierEntryUuidIdentificationScheme = (props.getProperty("XdsBExtrinsicObjectExternalIdentifierEntryUuidIdentificationScheme") == null) ? XdsBRepositoryManager.extrinsicObjectExternalIdentifierEntryUuidIdentificationScheme
-					: props.getProperty("XdsBExtrinsicObjectExternalIdentifierEntryUuidIdentificationScheme");
-			XdsBRepositoryManager.extrinsicObjectExternalIdentifierEntryUuidName = (props.getProperty("XdsBExtrinsicObjectExternalIdentifierEntryUuidName") == null) ? XdsBRepositoryManager.extrinsicObjectExternalIdentifierEntryUuidName
-					: props.getProperty("XdsBExtrinsicObjectExternalIdentifierEntryUuidName");
-			
-			XdsBRepositoryManager.registryPackageAuthorClassificationScheme = (props.getProperty("XdsBRegistryPackageAuthorClassificationScheme") == null) ? XdsBRepositoryManager.registryPackageAuthorClassificationScheme
-					: props.getProperty("XdsBRegistryPackageAuthorClassificationScheme");
-			XdsBRepositoryManager.registryPackageContentTypeCodesClassificationScheme = (props.getProperty("XdsBRegistryPackageContentTypeCodesClassificationScheme") == null) ? XdsBRepositoryManager.registryPackageContentTypeCodesClassificationScheme
-					: props.getProperty("XdsBRegistryPackageContentTypeCodesClassificationScheme");
-			XdsBRepositoryManager.registryPackageSubmissionSetUniqueIdIdentificationScheme = (props.getProperty("XdsBRegistryPackageSubmissionSetUniqueIdIdentificationScheme") == null) ? XdsBRepositoryManager.registryPackageSubmissionSetUniqueIdIdentificationScheme
-					: props.getProperty("XdsBRegistryPackageSubmissionSetUniqueIdIdentificationScheme");
-			XdsBRepositoryManager.registryPackageSubmissionSetSourceIdIdentificationScheme = (props.getProperty("XdsBRegistryPackageSubmissionSetSourceIdIdentificationScheme") == null) ? XdsBRepositoryManager.registryPackageSubmissionSetSourceIdIdentificationScheme
-					: props.getProperty("XdsBRegistryPackageSubmissionSetSourceIdIdentificationScheme");
-			XdsBRepositoryManager.registryPackageSubmissionSetPatientIdIdentificationScheme = (props.getProperty("XdsBRegistryPackageSubmissionSetPatientIdIdentificationScheme") == null) ? XdsBRepositoryManager.registryPackageSubmissionSetPatientIdIdentificationScheme
-					: props.getProperty("XdsBRegistryPackageSubmissionSetPatientIdIdentificationScheme");
-			XdsBRepositoryManager.registryObjectListSubmissionSetClassificationNode = (props.getProperty("XdsBRegistryObjectListSubmissionSetClassificationNode") == null) ? XdsBRepositoryManager.registryObjectListSubmissionSetClassificationNode
-					: props.getProperty("XdsBRegistryObjectListSubmissionSetClassificationNode");
-
-			XdsBRepositoryManager.externalIdentifierSubmissionSetUniqueIdName = (props.getProperty("XdsBExternalIdentifierSubmissionSetUniqueIdName") == null) ? XdsBRepositoryManager.externalIdentifierSubmissionSetUniqueIdName
-					: props.getProperty("XdsBExternalIdentifierSubmissionSetUniqueIdName");
-			XdsBRepositoryManager.externalIdentifierSubmissionSetSourceIdName = (props.getProperty("XdsBExternalIdentifierSubmissionSetSourceIdName") == null) ? XdsBRepositoryManager.externalIdentifierSubmissionSetSourceIdName
-					: props.getProperty("XdsBExternalIdentifierSubmissionSetSourceIdName");
-			XdsBRepositoryManager.externalIdentifierSubmissionSetPatientIdName = (props.getProperty("XdsBExternalIdentifierSubmissionSetPatientIdName") == null) ? XdsBRepositoryManager.externalIdentifierSubmissionSetPatientIdName
-					: props.getProperty("XdsBExternalIdentifierSubmissionSetPatientIdName");
-
-			XdsBRepositoryManager.submissionSetOid = (props.getProperty("XdsBSubmissionSetOid") == null) ? XdsBRepositoryManager.submissionSetOid
-					: props.getProperty("XdsBSubmissionSetOid");
-
-			// If endpoint URI's are null, then set to the values in the properties file...
-			if (registryEndpointURI == null)
-			{
-				registryEndpointURI = props.getProperty("XdsBRegistryEndpointURI");
-			}
-			
-			if (repositoryEndpointURI == null)
-			{
-				repositoryEndpointURI = props.getProperty("XdsBRepositoryEndpointURI");
-			}
-			
-			XdsBRepositoryManager.repositoryEndpointUri = repositoryEndpointURI;
-
-			// If Syslog server host is specified, then configure...
-			iti41AuditMsgTemplate = props.getProperty("Iti41AuditMsgTemplate");
-			String syslogServerHost = props.getProperty("SyslogServerHost");
-			int syslogServerPort = (props.getProperty("SyslogServerPort") != null) ? Integer.parseInt(props.getProperty("SyslogServerPort"))
-					: -1;
-			if ((syslogServerHost != null) &&
-				(syslogServerHost.length() > 0) &&
-				(syslogServerPort > -1))
-			{
-				if (iti41AuditMsgTemplate == null)
-				{
-					log.error("ITI-41 audit message template not specified in properties file, "
-							+ propertiesFile);
-					throw new UnexpectedServerException("ITI-41 audit message template not specified in properties file, "
-							+ propertiesFile);
-				}
-
-				System.setProperty("https.cipherSuites",
-						cipherSuites);
-				System.setProperty("https.protocols",
-						httpsProtocols);
-				
-				if (debugSsl)
-				{
-					System.setProperty("javax.net.debug",
-							"ssl");
-				}
-
-				sysLogConfig = new SSLTCPNetSyslogConfig();
-				sysLogConfig.setHost(syslogServerHost);
-				sysLogConfig.setPort(syslogServerPort);
-				sysLogConfig.setKeyStore(keyStoreFile);
-				sysLogConfig.setKeyStorePassword(keyStorePwd);
-				sysLogConfig.setTrustStore(keyStoreFile);
-				sysLogConfig.setTrustStorePassword(keyStorePwd);
-				sysLogConfig.setUseStructuredData(true);
-				sysLogConfig.setMaxMessageLength(8192);
-				Syslog.createInstance("sslTcp",
-						sysLogConfig);
-			}
+			registryEndpointURI = IExHubConfig.getProperty("XdsBRegistryEndpointURI");
 		}
-		catch (IOException e)
+
+		if (repositoryEndpointURI == null)
 		{
-			log.error("Error encountered loading properties file, "
-					+ propertiesFile
-					+ ", "
-					+ e.getMessage());
-			throw new UnexpectedServerException("Error encountered loading properties file, "
-					+ propertiesFile
-					+ ", "
-					+ e.getMessage());
+			repositoryEndpointURI = IExHubConfig.getProperty("XdsBRepositoryEndpointURI");
+		}
+
+		XdsBRepositoryManager.repositoryEndpointUri = repositoryEndpointURI;
+
+		// If Syslog server host is specified, then configure...
+		iti41AuditMsgTemplate = IExHubConfig.getProperty("Iti41AuditMsgTemplate");
+		String syslogServerHost = IExHubConfig.getProperty("SyslogServerHost");
+		int syslogServerPort = IExHubConfig.getProperty("SyslogServerPort", -1);
+		if ((syslogServerHost != null) &&
+			(syslogServerHost.length() > 0) &&
+			(syslogServerPort > SYSLOG_SERVER_PORT_MIN && syslogServerPort <= SYSLOG_SERVER_PORT_MAX))
+		{
+			if (iti41AuditMsgTemplate == null)
+			{
+				log.error("ITI-41 audit message template not specified in properties file, "
+						+ IExHubConfig.CONFIG_FILE);
+				throw new UnexpectedServerException("ITI-41 audit message template not specified in properties file, "
+						+ IExHubConfig.CONFIG_FILE);
+			}
+
+			System.setProperty("https.cipherSuites",
+					cipherSuites);
+			System.setProperty("https.protocols",
+					httpsProtocols);
+
+			if (debugSsl)
+			{
+				System.setProperty("javax.net.debug",
+						"ssl");
+			}
+
+			sysLogConfig = new SSLTCPNetSyslogConfig();
+			sysLogConfig.setHost(syslogServerHost);
+			sysLogConfig.setPort(syslogServerPort);
+			sysLogConfig.setKeyStore(keyStoreFile);
+			sysLogConfig.setKeyStorePassword(keyStorePwd);
+			sysLogConfig.setTrustStore(keyStoreFile);
+			sysLogConfig.setTrustStorePassword(keyStorePwd);
+			sysLogConfig.setUseStructuredData(true);
+			sysLogConfig.setMaxMessageLength(8192);
+			Syslog.createInstance("sslTcp",
+					sysLogConfig);
 		}
 
 		try
@@ -1284,7 +1218,7 @@ public class XdsBRepositoryManager
 		                    "ProvideAndRegisterDocumentSetRequest")),
 		                new javax.xml.namespace.QName("urn:ihe:iti:xds-b:2007",
 		    				"ProvideAndRegisterDocumentSetRequest"));
-				Files.write(Paths.get(logOutputPath + documentId + "_ProvideAndRegisterDocumentSetRequest.xml"),
+				Files.write(Paths.get(logOutputPath + "/" + documentId + "_ProvideAndRegisterDocumentSetRequest.xml"),
 						requestElement.toString().getBytes());
 			}
 
@@ -1902,7 +1836,7 @@ public class XdsBRepositoryManager
 		                    "ProvideAndRegisterDocumentSetRequest")),
 		                new javax.xml.namespace.QName("urn:ihe:iti:xds-b:2007",
 		    				"ProvideAndRegisterDocumentSetRequest"));
-				Files.write(Paths.get(logOutputPath + newDocumentUuid.toString() + "_ProvideAndRegisterDocumentSetRequest.xml"),
+				Files.write(Paths.get(logOutputPath + "/" + newDocumentUuid.toString() + "_ProvideAndRegisterDocumentSetRequest.xml"),
 						requestElement.toString().getBytes());
 			}
 

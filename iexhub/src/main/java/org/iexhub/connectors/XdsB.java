@@ -23,6 +23,7 @@ import org.apache.axis2.AxisFault;
 import org.apache.axis2.Constants;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.iexhub.config.IExHubConfig;
 import org.iexhub.exceptions.UnexpectedServerException;
 import org.iexhub.services.client.DocumentRegistry_ServiceStub;
 import org.iexhub.services.client.DocumentRegistry_ServiceStub.AdhocQueryRequest;
@@ -47,14 +48,12 @@ import org.productivity.java.syslog4j.Syslog;
 import org.productivity.java.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.Properties;
 import java.util.UUID;
 
 
@@ -68,11 +67,13 @@ import java.util.UUID;
 
 public class XdsB
 {
+	public static final int SYSLOG_SERVER_PORT_MIN = 0;
+	public static final int SYSLOG_SERVER_PORT_MAX = 65535;
 	private static boolean logXdsBRequestMessages = false;
-	private static String logOutputPath = "c:/temp/";
+	private static String logOutputPath = "/java/iexhub/logs";
 	private static boolean logSyslogAuditMsgsLocally = false;
 
-	private static String keyStoreFile = "c:/temp/1264.jks";
+	private static String keyStoreFile = IExHubConfig.getConfigLocationPath("1264.jks");
 	private static String keyStorePwd = "IEXhub";
 	private static String cipherSuites = "TLS_RSA_WITH_AES_128_CBC_SHA";
 	private static String httpsProtocols = "TLSv1";
@@ -82,8 +83,6 @@ public class XdsB
 	
 	/** Logger */
     public static Logger log = Logger.getLogger(XdsB.class);
-
-	private static final String propertiesFile = "/temp/IExHub.properties";
 
     private static DocumentRegistry_ServiceStub registryStub = null;
 	private static DocumentRepository_ServiceStub repositoryStub = null;
@@ -147,97 +146,70 @@ public class XdsB
 			String repositoryEndpointURI,
 			boolean enableTLS) throws AxisFault, Exception
 	{
-		Properties props = new Properties();
-		try
+		XdsB.logSyslogAuditMsgsLocally = IExHubConfig.getProperty("LogSyslogAuditMsgsLocally", XdsB.logSyslogAuditMsgsLocally);
+		XdsB.logOutputPath = IExHubConfig.getProperty("LogOutputPath", XdsB.logOutputPath);
+		XdsB.logXdsBRequestMessages = IExHubConfig.getProperty("LogXdsBRequestMessages", XdsB.logXdsBRequestMessages);
+		XdsB.debugSsl = IExHubConfig.getProperty("DebugSSL", XdsB.debugSsl);
+		XdsB.testMode  = IExHubConfig.getProperty("TestMode", XdsB.testMode);
+		XdsB.keyStoreFile = IExHubConfig.getProperty("XdsBKeyStoreFile", XdsB.keyStoreFile);
+		XdsB.keyStorePwd = IExHubConfig.getProperty("XdsBKeyStorePwd", XdsB.keyStorePwd);
+		XdsB.cipherSuites = IExHubConfig.getProperty("XdsBCipherSuites", XdsB.cipherSuites);
+		XdsB.httpsProtocols = IExHubConfig.getProperty("XdsBHttpsProtocols", XdsB.httpsProtocols);
+
+		// If endpoint URI's are null, then set to the values in the properties file...
+		if (registryEndpointURI == null)
 		{
-			props.load(new FileInputStream(propertiesFile));
-			
-			XdsB.logSyslogAuditMsgsLocally = (props.getProperty("LogSyslogAuditMsgsLocally") == null) ? XdsB.logSyslogAuditMsgsLocally
-					: Boolean.parseBoolean(props.getProperty("LogSyslogAuditMsgsLocally"));
-			XdsB.logOutputPath = (props.getProperty("LogOutputPath") == null) ? XdsB.logOutputPath
-					: props.getProperty("LogOutputPath");
-			XdsB.logXdsBRequestMessages = (props.getProperty("LogXdsBRequestMessages") == null) ? XdsB.logXdsBRequestMessages
-					: Boolean.parseBoolean(props.getProperty("LogXdsBRequestMessages"));
-			XdsB.debugSsl = (props.getProperty("DebugSSL") == null) ? XdsB.debugSsl
-					: Boolean.parseBoolean(props.getProperty("DebugSSL"));
-			XdsB.testMode  = (props.getProperty("TestMode") == null) ? XdsB.testMode
-					: Boolean.parseBoolean(props.getProperty("TestMode"));
-			XdsB.keyStoreFile = (props.getProperty("XdsBKeyStoreFile") == null) ? XdsB.keyStoreFile
-					: props.getProperty("XdsBKeyStoreFile");
-			XdsB.keyStorePwd = (props.getProperty("XdsBKeyStorePwd") == null) ? XdsB.keyStorePwd
-					: props.getProperty("XdsBKeyStorePwd");
-			XdsB.cipherSuites = (props.getProperty("XdsBCipherSuites") == null) ? XdsB.cipherSuites
-					: props.getProperty("XdsBCipherSuites");
-			XdsB.httpsProtocols = (props.getProperty("XdsBHttpsProtocols") == null) ? XdsB.httpsProtocols
-					: props.getProperty("XdsBHttpsProtocols");
-			
-			// If endpoint URI's are null, then set to the values in the properties file...
-			if (registryEndpointURI == null)
-			{
-				registryEndpointURI = props.getProperty("XdsBRegistryEndpointURI");
-			}
-			
-			if (repositoryEndpointURI == null)
-			{
-				repositoryEndpointURI = props.getProperty("XdsBRepositoryEndpointURI");
-			}
-
-			XdsB.registryEndpointUri = registryEndpointURI;
-			XdsB.repositoryEndpointUri = repositoryEndpointURI;
-
-			// If Syslog server host is specified, then configure...
-			iti18AuditMsgTemplate = props.getProperty("Iti18AuditMsgTemplate");
-			iti43AuditMsgTemplate = props.getProperty("Iti43AuditMsgTemplate");
-			String syslogServerHost = props.getProperty("SyslogServerHost");
-			int syslogServerPort = (props.getProperty("SyslogServerPort") != null) ? Integer.parseInt(props.getProperty("SyslogServerPort"))
-					: -1;
-			if ((syslogServerHost != null) &&
-				(syslogServerHost.length() > 0) &&
-				(syslogServerPort > -1))
-			{
-				if ((iti18AuditMsgTemplate == null) ||
-					(iti43AuditMsgTemplate == null))
-				{
-					log.error("ITI-18 audit message template or ITI-43 audit message template not specified in properties file, "
-							+ propertiesFile);
-					throw new UnexpectedServerException("ITI-18 audit message template or ITI-43 audit message template not specified in properties file, "
-							+ propertiesFile);
-				}
-
-				System.setProperty("https.cipherSuites",
-						cipherSuites);
-				System.setProperty("https.protocols",
-						httpsProtocols);
-				
-				if (debugSsl)
-				{
-					System.setProperty("javax.net.debug",
-							"ssl");
-				}
-
-				sysLogConfig = new SSLTCPNetSyslogConfig();
-				sysLogConfig.setHost(syslogServerHost);
-				sysLogConfig.setPort(syslogServerPort);
-				sysLogConfig.setKeyStore(keyStoreFile);
-				sysLogConfig.setKeyStorePassword(keyStorePwd);
-				sysLogConfig.setTrustStore(keyStoreFile);
-				sysLogConfig.setTrustStorePassword(keyStorePwd);
-				sysLogConfig.setUseStructuredData(true);
-				sysLogConfig.setMaxMessageLength(8192);
-				Syslog.createInstance("sslTcp",
-						sysLogConfig);
-			}
+			registryEndpointURI = IExHubConfig.getProperty("XdsBRegistryEndpointURI");
 		}
-		catch (IOException e)
+
+		if (repositoryEndpointURI == null)
 		{
-			log.error("Error encountered loading properties file, "
-					+ propertiesFile
-					+ ", "
-					+ e.getMessage());
-			throw new UnexpectedServerException("Error encountered loading properties file, "
-					+ propertiesFile
-					+ ", "
-					+ e.getMessage());
+			repositoryEndpointURI = IExHubConfig.getProperty("XdsBRepositoryEndpointURI");
+		}
+
+		XdsB.registryEndpointUri = registryEndpointURI;
+		XdsB.repositoryEndpointUri = repositoryEndpointURI;
+
+		// If Syslog server host is specified, then configure...
+		iti18AuditMsgTemplate = IExHubConfig.getProperty("Iti18AuditMsgTemplate");
+		iti43AuditMsgTemplate = IExHubConfig.getProperty("Iti43AuditMsgTemplate");
+		String syslogServerHost = IExHubConfig.getProperty("SyslogServerHost");
+		int syslogServerPort = IExHubConfig.getProperty("SyslogServerPort", -1);
+		if ((syslogServerHost != null) &&
+			(syslogServerHost.length() > 0) &&
+			(syslogServerPort > SYSLOG_SERVER_PORT_MIN && syslogServerPort <= SYSLOG_SERVER_PORT_MAX))
+		{
+			if ((iti18AuditMsgTemplate == null) ||
+				(iti43AuditMsgTemplate == null))
+			{
+				log.error("ITI-18 audit message template or ITI-43 audit message template not specified in properties file, "
+						+ IExHubConfig.CONFIG_FILE);
+				throw new UnexpectedServerException("ITI-18 audit message template or ITI-43 audit message template not specified in properties file, "
+						+ IExHubConfig.CONFIG_FILE);
+			}
+
+			System.setProperty("https.cipherSuites",
+					cipherSuites);
+			System.setProperty("https.protocols",
+					httpsProtocols);
+
+			if (debugSsl)
+			{
+				System.setProperty("javax.net.debug",
+						"ssl");
+			}
+
+			sysLogConfig = new SSLTCPNetSyslogConfig();
+			sysLogConfig.setHost(syslogServerHost);
+			sysLogConfig.setPort(syslogServerPort);
+			sysLogConfig.setKeyStore(keyStoreFile);
+			sysLogConfig.setKeyStorePassword(keyStorePwd);
+			sysLogConfig.setTrustStore(keyStoreFile);
+			sysLogConfig.setTrustStorePassword(keyStorePwd);
+			sysLogConfig.setUseStructuredData(true);
+			sysLogConfig.setMaxMessageLength(8192);
+			Syslog.createInstance("sslTcp",
+					sysLogConfig);
 		}
 
 		try
@@ -653,7 +625,7 @@ public class XdsB
 
 			if (logXdsBRequestMessages)
 			{
-				Files.write(Paths.get(logOutputPath + UUID.randomUUID().toString() + "_RegistryStoredQueryRequest.xml"),
+				Files.write(Paths.get(logOutputPath + "/" + UUID.randomUUID().toString() + "_RegistryStoredQueryRequest.xml"),
 						requestElement.toString().getBytes());
 			}
 
@@ -713,7 +685,7 @@ public class XdsB
 			{
 				OMElement requestElement = documentSetRequest.getOMElement(RetrieveDocumentSetRequest.MY_QNAME,
 						soapFactory);
-				Files.write(Paths.get(logOutputPath + UUID.randomUUID().toString() + "_RetrieveDocumentSetRequest.xml"),
+				Files.write(Paths.get(logOutputPath + "/" + UUID.randomUUID().toString() + "_RetrieveDocumentSetRequest.xml"),
 						requestElement.toString().getBytes());
 			}
 
