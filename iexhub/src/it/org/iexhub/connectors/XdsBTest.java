@@ -24,6 +24,11 @@ import org.apache.axiom.om.OMElement;
 import org.apache.axiom.soap.SOAPFactory;
 import org.apache.log4j.Logger;
 import org.iexhub.config.IExHubConfig;
+import org.iexhub.services.client.DocumentRegistry_ServiceStub.AdhocQueryResponse;
+import org.iexhub.services.client.DocumentRegistry_ServiceStub.ExternalIdentifierType;
+import org.iexhub.services.client.DocumentRegistry_ServiceStub.ExtrinsicObjectType;
+import org.iexhub.services.client.DocumentRegistry_ServiceStub.IdentifiableType;
+import org.iexhub.services.client.DocumentRegistry_ServiceStub.RegistryObjectListType;
 import org.iexhub.services.client.DocumentRepository_ServiceStub.DocumentResponse_type0;
 import org.iexhub.services.client.DocumentRepository_ServiceStub.RetrieveDocumentSetResponse;
 import org.junit.Before;
@@ -47,6 +52,11 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.util.HashMap;
 
@@ -134,7 +144,7 @@ public class XdsBTest
 						// Determine if the "home" attribute (homeCommunityId in XCA parlance) is present...
 						String home = ((((ExtrinsicObjectType)identifiable).getHome() != null) && (((ExtrinsicObjectType)identifiable).getHome().toString() != null) && (((ExtrinsicObjectType)identifiable).getHome().toString().length() > 0)) ? ((ExtrinsicObjectType)identifiable).getHome().toString()
 								: null;
-						
+
 						ExternalIdentifierType[] externalIdentifiers = ((ExtrinsicObjectType)identifiable).getExternalIdentifier();
 						
 						// Find the ExternalIdentifier that has the "XDSDocumentEntry.uniqueId" value...
