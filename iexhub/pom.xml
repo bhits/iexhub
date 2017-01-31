@@ -82,7 +82,7 @@
 		<XmlSchema.version>1.4.7</XmlSchema.version>
 		<wss4j.version>1.5.5</wss4j.version>
 		<jersey.version>2.22</jersey.version>
-		<iexhub-generated.version>1.0.0-SNAPSHOT</iexhub-generated.version>
+		<iexhub-generated.version>1.0.0</iexhub-generated.version>
 		<phloc-schematron.version>2.7.1</phloc-schematron.version>
 		<phloc-commons.version>4.4.5</phloc-commons.version>
 		<javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
