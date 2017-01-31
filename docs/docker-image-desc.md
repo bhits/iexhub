@@ -28,25 +28,49 @@ Be sure to familiarize yourself with the repository's [README.md](https://github
 
 ## Configure
 
-This API runs with a [default configuration](https://github.com/bhits/iexhub/blob/master/iexhub/src/main/resources/IExHub.properties) that is primarily targeted for the development environment.
+This API runs with a [default configuration](https://github.com/bhits/iexhub/blob/master/iexhub/src/main/resources/IExHub.properties) that is primarily targeted for the development environment. As of know, this entire file **MUST** be provided externally to IExHub.
 
 ### Using a custom configuration file
 
-To use custom `IExHub.properties`, mount the file to the docker container under `/temp`.
+To use custom `IExHub.properties`, mount the file to the docker container under `/java/iexhub/config/IExHub.properties`.
 
-`docker run -v "/path/on/dockerhost/IExHub.properties:/temp/IExHub.properties" -d bhits/iexhub:latest`
+`docker run -v "/path/on/dockerhost/IExHub.properties:/java/iexhub/config/IExHub.properties" -d bhits/iexhub:latest`
 
 ## Environment Variables
 
 When you start the IExHub image, you can edit the configuration of the IExHub instance by passing one or more environment variables on the command line. 
 
-### JAVA_OPTS 
+### CATALINA_OPTS 
 
 This environment variable is used to setup JVM argument, such as memory configuration, logger configuration.
 
 Example to setup logger level: 
 
-`docker run --name iexhub -e JAVA_OPTS="-Dlog4j.debug" -d bhits/iexhub:latest`
+`docker run --name iexhub -e CATALINA_OPTS="-Dlog4j.debug" -d bhits/iexhub:latest`
+
+#### iexhub.logging.file
+
+The existing `log4j.properties` in classpath depends on this variable, so it **MUST** be provided for saving the log file somewhere on the file system. If a `log4j.configuration` is provided and the `log4j.properties` file that is loaded from this location has an absolute log file location specified in `log4j.appender.LOG_FILE.File` property, `iexhub.logging.file` property is omitted.
+
+Example:
+
+`docker run -d -e CATALINA_OPTS="-Diexhub.logging.file=/java/iexhub/logs/InfoExchangeHub.log" bhits/iexhub:latest`
+
+#### iexhub.config.location
+
+The folder location for the external configuration files. Defaults to `/java/iexhub/config`.
+
+Example:
+
+`docker run -d -e CATALINA_OPTS="-Diexhub.config.location=/path/to/iexhub/config/folder" bhits/iexhub:latest`
+
+#### iexhub.config.filename
+
+The file name for the properties file that will be loaded from `iexhub.config.location`. Defaults to `IExHub.properties`.
+
+Example:
+
+`docker run -d -e CATALINA_OPTS="-Diexhub.config.filename=Config.properties" bhits/iexhub:latest`
 
 # Supported Docker versions
 
