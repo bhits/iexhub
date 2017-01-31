@@ -1,5 +1,5 @@
 # Short Description
-Information Exchange Hub (IExHub) API is a connector for Consent2Share to perform HIE operations.
+The Information Exchange Hub (IExHub) API is a connector for Consent2Share to perform HIE operations.
 
 # Full Description
 
@@ -11,7 +11,7 @@ For more information about this image, the source code, and its history, please 
 
 # What is IExHub?
 
-Information Exchange Hub (IExHub) consists of connectors, services, and transformation components intended to allow applications to interoperate with standards-based Health Information Exchange (HIE) organizations.
+The Information Exchange Hub (IExHub) consists of connectors, services, and transformation components intended to allow applications to interoperate with standards-based Health Information Exchange (HIE) organizations.
 
 For more information and related downloads for Consent2Share, please visit [Consent2Share](https://bhits.github.io/consent2share/).
 
@@ -23,12 +23,12 @@ Be sure to familiarize yourself with the repository's [README.md](https://github
 
 `docker run --name iexhub -d bhits/iexhub:latest`
 
-*NOTE: In order for this API to fully function as a microservice in the Consent2Share application, it is required to setup the dependency microservices and support level infrastructure. Please refer to the [Consent2Share Deployment Guide](https://github.com/bhits/consent2share/releases/download/2.0.0/c2s-deployment-guide.pdf) for instructions to setup the Consent2Share infrastructure.*
+*NOTE: In order for this API to fully function as a microservice in the Consent2Share application, it is required to setup the dependency microservices and the support level infrastructure. Please refer to the [Consent2Share Deployment Guide](https://github.com/bhits/consent2share/releases/download/2.0.0/c2s-deployment-guide.pdf) for instructions to setup the Consent2Share infrastructure.*
 
 
 ## Configure
 
-This API runs with a [default configuration](https://github.com/bhits/iexhub/blob/master/iexhub/src/main/resources/IExHub.properties) that is primarily targeted for the development environment. As of know, this entire file **MUST** be provided externally to IExHub.
+This API runs with a [default configuration](https://github.com/bhits/iexhub/blob/master/iexhub/src/main/resources/IExHub.properties) that is primarily targeted for the development environment. As of now, this entire file **MUST** be provided externally to the IExHub.
 
 ### Using a custom configuration file
 
@@ -42,9 +42,9 @@ When you start the IExHub image, you can edit the configuration of the IExHub in
 
 ### CATALINA_OPTS 
 
-This environment variable is used to setup JVM argument, such as memory configuration, logger configuration.
+This environment variable is used to setup a JVM argument, such as memory configuration and logger configuration.
 
-Example to setup logger level: 
+An example to setup the logger level: 
 
 `docker run --name iexhub -e CATALINA_OPTS="-Dlog4j.debug" -d bhits/iexhub:latest`
 
