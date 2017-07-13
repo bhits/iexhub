@@ -16,30 +16,6 @@
  *******************************************************************************/
 package org.iexhub.services;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.Serializable;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-import javax.ejb.Local;
-import javax.ejb.Stateless;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.xml.bind.JAXBElement;
-import org.apache.log4j.Logger;
-import org.iexhub.config.IExHubConfig;
-import org.iexhub.connectors.PDQQueryManager;
-import org.iexhub.connectors.PIXManager;
-import org.iexhub.exceptions.FamilyNameParamMissingException;
-import org.iexhub.exceptions.PatientIdParamMissingException;
-import org.iexhub.exceptions.UnexpectedServerException;
-
 import PDQSupplier.org.hl7.v3.AD;
 import PDQSupplier.org.hl7.v3.COCTMT150003UV03ContactParty;
 import PDQSupplier.org.hl7.v3.COCTMT150003UV03Organization;
@@ -59,7 +35,6 @@ import ca.uhn.fhir.rest.annotation.Create;
 import ca.uhn.fhir.rest.annotation.IdParam;
 import ca.uhn.fhir.rest.annotation.OptionalParam;
 import ca.uhn.fhir.rest.annotation.Read;
-import ca.uhn.fhir.rest.annotation.RequiredParam;
 import ca.uhn.fhir.rest.annotation.ResourceParam;
 import ca.uhn.fhir.rest.annotation.Search;
 import ca.uhn.fhir.rest.api.MethodOutcome;
@@ -73,7 +48,6 @@ import ca.uhn.fhir.rest.server.ETagSupportEnum;
 import ca.uhn.fhir.rest.server.IPagingProvider;
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
 import ca.uhn.fhir.rest.server.interceptor.IServerInterceptor;
-import ca.uhn.fhir.validation.FhirValidator;
 import org.apache.log4j.Logger;
 import org.hl7.fhir.dstu3.model.Address;
 import org.hl7.fhir.dstu3.model.Enumerations.AdministrativeGender;
@@ -82,9 +56,10 @@ import org.hl7.fhir.dstu3.model.IdType;
 import org.hl7.fhir.dstu3.model.Organization;
 import org.hl7.fhir.dstu3.model.Organization.OrganizationContactComponent;
 import org.hl7.fhir.dstu3.model.Patient;
+import org.iexhub.config.IExHubConfig;
 import org.iexhub.connectors.PDQQueryManager;
 import org.iexhub.connectors.PIXManager;
-import org.iexhub.exceptions.FamilyNameParamMissingException;
+import org.iexhub.exceptions.MinimumCriteriaForPatientSearchIsMissingException;
 import org.iexhub.exceptions.PatientIdParamMissingException;
 import org.iexhub.exceptions.UnexpectedServerException;
 
@@ -94,17 +69,17 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBElement;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 
 
 
@@ -140,7 +115,7 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 	{
 		PAGE_PROVIDER = JaxRsPatientPageProvider.PAGE_PROVIDER;
 	}
-	
+
 	static final String PATH = "/Patient";
 
 	public JaxRsPatientRestProvider()
@@ -158,7 +133,7 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 		JaxRsPatientRestProvider.pixManagerEndpointUri = IExHubConfig.getProperty("PIXManagerEndpointURI", JaxRsPatientRestProvider.pixManagerEndpointUri);
 		JaxRsPatientRestProvider.pdqManagerEndpointUri = IExHubConfig.getProperty("PDQManagerEndpointURI", JaxRsPatientRestProvider.pdqManagerEndpointUri);
 	}
-	
+
 	/**
 	 * Patient create
 	 * @param patient
@@ -173,7 +148,7 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 
 		MethodOutcome result = new MethodOutcome().setCreated(false);
 		result.setResource(patient);
-		
+
 		try
 		{
 			if (pixManager == null)
@@ -195,7 +170,7 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 		{
 			// ITI-44-Source-Feed message
 			MCCIIN000002UV01 pixRegistrationResponse = pixManager.registerPatient(patient);
-			
+
 			if ((pixRegistrationResponse.getAcknowledgement().get(0).getTypeCode().getCode().compareToIgnoreCase("CA") == 0) ||
 				(pixRegistrationResponse.getAcknowledgement().get(0).getTypeCode().getCode().compareToIgnoreCase("AA") == 0))
 			{
@@ -253,7 +228,7 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 				}
 			}
 		}
-		
+
 		return fhirAddr;
 	}
 
@@ -297,14 +272,14 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 				}
 			}
 		}
-		
+
 		return fhirAddr;
 	}
 
 	/**
 	 * Parses the V3 Patient structure returned by PDQV Query
 	 * @param queryResponse Query response message containing matching patient records
-	 * @return ArrayList<Patient> containing FHIR Patient object 
+	 * @return ArrayList<Patient> containing FHIR Patient object
 	 * @throws ParseException
 	 */
 	private ArrayList<Patient> populatePatientObject(PRPAIN201306UV02 queryResponse) throws ParseException
@@ -315,7 +290,7 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 		for (PRPAIN201306UV02MFMIMT700711UV01Subject1 subject : queryResponse.getControlActProcess().getSubject())
 		{
 			Patient patient = new Patient();
-			
+
 			if ((subject.getRegistrationEvent() != null) &&
 				(subject.getRegistrationEvent().getSubject1() != null) &&
 				(subject.getRegistrationEvent().getSubject1().getPatient() != null) &&
@@ -326,15 +301,15 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 						.append(subject.getRegistrationEvent().getSubject1().getPatient().getId().get(0).getRoot())
 						.append("^")
 						.append(subject.getRegistrationEvent().getSubject1().getPatient().getId().get(0).getExtension()).toString());
-				
-				PRPAMT201310UV02Person patientPerson = subject.getRegistrationEvent().getSubject1().getPatient().getPatientPerson().getValue(); 
+
+				PRPAMT201310UV02Person patientPerson = subject.getRegistrationEvent().getSubject1().getPatient().getPatientPerson().getValue();
 
 				// Extract other identifiers...
 				for (PRPAMT201310UV02OtherIDs otherId : patientPerson.getAsOtherIDs())
 				{
 					patient.addIdentifier().setSystem(otherId.getId().get(0).getRoot()).setValue(otherId.getId().get(0).getExtension());
 				}
-				
+
 				// Extract name if present...
 				if (patientPerson.getName() != null)
 				{
@@ -355,11 +330,11 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 								fhirName.addGiven(((PDQSupplier.org.hl7.v3.EnGiven)testNameComponent.getValue()).getContent().get(0).toString());
 							}
 						}
-						
+
 						patient.addName(fhirName);
 					}
 				}
-				
+
 				// Extract gender if present...
 				if (patientPerson.getAdministrativeGenderCode() != null)
 				{
@@ -367,7 +342,7 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 							: (patientPerson.getAdministrativeGenderCode().getCode().compareToIgnoreCase("F") == 0) ? AdministrativeGender.FEMALE
 									: AdministrativeGender.UNKNOWN);
 				}
-				
+
 				// Extract telecom if present...
 				if (patientPerson.getTelecom() != null)
 				{
@@ -376,7 +351,7 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 						patient.addTelecom().setValue(telecom.getValue());
 					}
 				}
-				
+
 				// Extract birth date if present...
 				if (patientPerson.getBirthTime() != null)
 				{
@@ -390,23 +365,24 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 							.append(String.format("%02d", (birthDateCalendar.get(Calendar.MONTH) + 1)))
 							.append("-")
 							.append(String.format("%02d", birthDateCalendar.get(Calendar.DAY_OF_MONTH))).toString());
-					patient.setBirthDate(new Date(patientPerson.getBirthTime().getValue()));
+					final Date bdate = Date.from(LocalDate.parse(patientPerson.getBirthTime().getValue(), DateTimeFormatter.BASIC_ISO_DATE).atStartOfDay(ZoneId.systemDefault()).toInstant());
+					patient.setBirthDate(bdate);
 				}
-				
+
 				// Extract address if present...
 				if (patientPerson.getAddr() != null)
 				{
 					patient.addAddress(populateFhirAddress(patientPerson));
 				}
 			}
-			
+
 			if ((subject.getRegistrationEvent() != null) &&
 				(subject.getRegistrationEvent().getSubject1() != null) &&
 				(subject.getRegistrationEvent().getSubject1().getPatient() != null) &&
 				(subject.getRegistrationEvent().getSubject1().getPatient().getProviderOrganization() != null))
 			{
-				COCTMT150003UV03Organization provider = subject.getRegistrationEvent().getSubject1().getPatient().getProviderOrganization().getValue(); 
-				
+				COCTMT150003UV03Organization provider = subject.getRegistrationEvent().getSubject1().getPatient().getProviderOrganization().getValue();
+
 				// Create Organization FHIR resource and set its ID...
 				Organization organization = new Organization();
 				organization.setId(provider.getId().get(0).getRoot());
@@ -427,13 +403,13 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 						}
 					}
 				}
-					
+
 				if (provider.getContactParty() != null)
 				{
 					for (COCTMT150003UV03ContactParty contact : provider.getContactParty())
 					{
 						OrganizationContactComponent organizationContact = new OrganizationContactComponent();
-						
+
 						if (contact.getTelecom() != null)
 						{
 							for (TEL telecom : contact.getTelecom())
@@ -441,13 +417,13 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 								organizationContact.addTelecom().setValue(telecom.getValue());
 							}
 						}
-						
+
 						if (contact.getAddr() != null)
 						{
 							//  While the PDQ ITI-47 response can contain multiple providerOrganization contact addresses, FHIR only allows one contact address to be specified...
 							organizationContact.setAddress(populateFhirAddress(contact));
 						}
-						
+
 						organization.getContact().add(organizationContact);
 					}
 				}
@@ -456,13 +432,13 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 
 				patient.getContained().add(organization);
 			}
-			
+
 			result.add(patient);
 		}
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * Patient find
 	 * @param id
@@ -482,26 +458,11 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 				id.getValue()));
 
 		Patient result = null;
-		
+
 		if ((pdqManagerEndpointUri != null) &&
 			(pdqManagerEndpointUri.length() > 0))
 		{
-			try
-			{
-				if (pdqQueryManager == null)
-				{
-					log.info("Instantiating PDQQueryManager connector...");
-					pdqQueryManager = new PDQQueryManager(null,
-							false);
-					log.info("PDQQueryManager connector successfully started");
-				}
-			}
-			catch (Exception e)
-			{
-				log.error("Error encountered instantiating PDQQueryManager connector, "
-						+ e.getMessage());
-				throw new UnexpectedServerException("Error - " + e.getMessage());
-			}
+			initializePdqQueryManager();
 
 			try
 			{
@@ -522,7 +483,7 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 								: null,
 						null,
 						null);
-				
+
 				// Determine if demographics data is present.
 				if ((pdqQueryResponse != null) &&
 					(pdqQueryResponse.getAcknowledgement() != null) &&
@@ -545,7 +506,7 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 				throw e;
 			}
 		}
-			
+
 		log.info("Exiting FHIR Patient find (by ID) service");
 		return result;
 	}
@@ -597,8 +558,8 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 	}
 
 	@Search
-	public List<Patient> search(@RequiredParam(name = Patient.SP_FAMILY) final StringParam familyName,
-			@RequiredParam(name = Patient.SP_GIVEN) final StringParam givenName,
+	public List<Patient> search(@OptionalParam(name = Patient.SP_FAMILY) final StringParam familyName,
+			@OptionalParam(name = Patient.SP_GIVEN) final StringParam givenName,
 			@OptionalParam(name = Patient.SP_GENDER) final StringParam gender,
 			@OptionalParam(name = Patient.SP_BIRTHDATE) final DateParam birthDate,
 			@OptionalParam(name = Patient.SP_ADDRESS) final StringParam addressLine,
@@ -608,116 +569,107 @@ public class JaxRsPatientRestProvider extends AbstractJaxRsResourceProvider<Pati
 			@OptionalParam(name = Patient.SP_IDENTIFIER) final TokenParam patientId,
 			@OptionalParam(name = Patient.SP_TELECOM) final TokenParam telecom) throws Exception
 	{
-		if ((familyName == null) ||
-			(familyName.isEmpty()) ||
-			(givenName == null) ||
-			(givenName.isEmpty()))
-		{
-			throw new FamilyNameParamMissingException("Patient familyName and givenName missing");
-		}
+        if ((patientId == null || patientId.isEmpty()) &&
+				((familyName == null || familyName.isEmpty()) || (givenName == null || givenName.isEmpty()))) {
+            throw new MinimumCriteriaForPatientSearchIsMissingException("Either (patientId) or (familyName and givenName) must be provided");
+        }
 
-		log.info(String.format("Entered FHIR Patient search service, familyName=%s, givenName=%s, gender=%s, birthDate=%s, addressLine=%s, addressCity=%s, addressState=%s, addressPostalCode=%s",
-					(familyName == null) ? "" : familyName,
-					(givenName == null) ? "" : givenName,
-					(gender == null) ? "" : gender,
-					(birthDate == null) ? "" : birthDate,
-					(addressLine == null) ? "" : addressLine,
-					(addressCity == null) ? "" : addressCity,
-					(addressState == null) ? "" : addressState,
-					(addressPostalCode == null) ? "" : addressPostalCode));
+        log.info(String.format("Entered FHIR Patient search service, familyName=%s, givenName=%s, gender=%s, birthDate=%s, addressLine=%s, addressCity=%s, addressState=%s, addressPostalCode=%s",
+                (familyName == null) ? "" : familyName,
+                (givenName == null) ? "" : givenName,
+                (gender == null) ? "" : gender,
+                (birthDate == null) ? "" : birthDate,
+                (addressLine == null) ? "" : addressLine,
+                (addressCity == null) ? "" : addressCity,
+                (addressState == null) ? "" : addressState,
+                (addressPostalCode == null) ? "" : addressPostalCode));
 
-		List<Patient> result = null;
-		
-		// First try PDQ ITI-47 retrieval if PDQ endpoint is specified...
-		if ((pdqManagerEndpointUri != null) &&
-			(pdqManagerEndpointUri.length() > 0))
-		{
-			try
-			{
-				if (pdqQueryManager == null)
-				{
-					log.info("Instantiating PDQQueryManager connector...");
-					pdqQueryManager = new PDQQueryManager(null,
-							false);
-					log.info("PDQQueryManager connector successfully started");
-				}
-			}
-			catch (Exception e)
-			{
-				log.error("Error encountered instantiating PDQQueryManager connector, "
-						+ e.getMessage());
-				throw new UnexpectedServerException("Error - " + e.getMessage());
-			}
+        List<Patient> result = null;
 
-			try
-			{
-				// ITI-47-Consumer-Query-Patient-PatientId message
-				Calendar birthDateCalendar = Calendar.getInstance();
-				if (birthDate != null)
-				{
-					birthDateCalendar.setTime(birthDate.getValue());
-				}
-				
-				PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.queryPatientDemographics(givenName.getValue(),
-						familyName.getValue(),
-						null,
-						(birthDate == null) ? null
-								: new StringBuilder()
-									.append(String.format("%02d", (birthDateCalendar.get(Calendar.MONTH) + 1)))
-									.append("/")
-									.append(String.format("%02d", birthDateCalendar.get(Calendar.DAY_OF_MONTH)))
-									.append("/")
-									.append(birthDateCalendar.get(Calendar.YEAR)).toString(),
-						(gender == null) ? null
-								: gender.getValue(),
-						null,
-						(addressLine == null) ? null
-								: addressLine.getValue(),
-						(addressCity == null) ? null
-								: addressCity.getValue(),
-						(addressState == null) ? null
-								: addressState.getValue(),
-						(addressPostalCode == null) ? null
-								: addressPostalCode.getValue(),
-						null,
-						null,
-						null,
-						(telecom == null) ? null
-								: telecom.getValue());
-				
-				// Determine if demographics data is present.
-				if ((pdqQueryResponse != null) &&
-					(pdqQueryResponse.getAcknowledgement() != null) &&
-					((pdqQueryResponse.getAcknowledgement().get(0).getTypeCode().getCode().equalsIgnoreCase("AA")) ||
-					 (pdqQueryResponse.getAcknowledgement().get(0).getTypeCode().getCode().equalsIgnoreCase("CA"))) &&
-					(pdqQueryResponse.getControlActProcess() != null) &&
-					(pdqQueryResponse.getControlActProcess().getSubject() != null) &&
-					(!pdqQueryResponse.getControlActProcess().getSubject().isEmpty()))
-				{
-					result = populatePatientObject(pdqQueryResponse);
-				}
-				else
-				{
-					throw new ResourceNotFoundException(String.format("Patient not found, familyName=%s, givenName=%s, gender=%s, birthDate=%s, addressLine=%s, addressCity=%s, addressState=%s, addressPostalCode=%s",
-									(familyName == null) ? "" : familyName,
-									(givenName == null) ? "" : givenName,
-									(gender == null) ? "" : gender,
-									(birthDate == null) ? "" : birthDate,
-									(addressLine == null) ? "" : addressLine,
-									(addressCity == null) ? "" : addressCity,
-									(addressState == null) ? "" : addressState,
-									(addressPostalCode == null) ? "" : addressPostalCode));
-				}
-			}
-			catch (Exception e)
-			{
-				log.error("Error encountered, "
-						+ e.getMessage());
-				throw e;
-			}
-		}
-			
-		log.info("Exiting FHIR Patient search service");
-		return result;
+        // First try PDQ ITI-47 retrieval if PDQ endpoint is specified...
+        if ((pdqManagerEndpointUri != null) &&
+                (pdqManagerEndpointUri.length() > 0)) {
+            initializePdqQueryManager();
+
+            try {
+                // ITI-47-Consumer-Query-Patient-PatientId message
+                Calendar birthDateCalendar = Calendar.getInstance();
+                if (birthDate != null) {
+                    birthDateCalendar.setTime(birthDate.getValue());
+                }
+
+                PRPAIN201306UV02 pdqQueryResponse = pdqQueryManager.queryPatientDemographics(
+                		givenName == null ? null : givenName.getValue(),
+                        familyName == null ? null : familyName.getValue(),
+                        null,
+                        (birthDate == null) ? null
+                                : new StringBuilder()
+                                .append(String.format("%02d", (birthDateCalendar.get(Calendar.MONTH) + 1)))
+                                .append("/")
+                                .append(String.format("%02d", birthDateCalendar.get(Calendar.DAY_OF_MONTH)))
+                                .append("/")
+                                .append(birthDateCalendar.get(Calendar.YEAR)).toString(),
+                        (gender == null) ? null
+                                : gender.getValue(),
+                        null,
+                        (addressLine == null) ? null
+                                : addressLine.getValue(),
+                        (addressCity == null) ? null
+                                : addressCity.getValue(),
+                        (addressState == null) ? null
+                                : addressState.getValue(),
+                        (addressPostalCode == null) ? null
+                                : addressPostalCode.getValue(),
+                        patientId == null ? null : patientId.getValue(),
+                        patientId == null ? null : patientId.getSystem(),
+                        null,
+                        (telecom == null) ? null
+                                : telecom.getValue());
+
+                // Determine if demographics data is present.
+                if ((pdqQueryResponse != null) &&
+                        (pdqQueryResponse.getAcknowledgement() != null) &&
+                        ((pdqQueryResponse.getAcknowledgement().get(0).getTypeCode().getCode().equalsIgnoreCase("AA")) ||
+                                (pdqQueryResponse.getAcknowledgement().get(0).getTypeCode().getCode().equalsIgnoreCase("CA"))) &&
+                        (pdqQueryResponse.getControlActProcess() != null) &&
+                        (pdqQueryResponse.getControlActProcess().getSubject() != null) &&
+                        (!pdqQueryResponse.getControlActProcess().getSubject().isEmpty())) {
+                    result = populatePatientObject(pdqQueryResponse);
+                } else {
+                    throw new ResourceNotFoundException(String.format("Patient not found, familyName=%s, givenName=%s, gender=%s, birthDate=%s, addressLine=%s, addressCity=%s, addressState=%s, addressPostalCode=%s",
+                            (familyName == null) ? "" : familyName,
+                            (givenName == null) ? "" : givenName,
+                            (gender == null) ? "" : gender,
+                            (birthDate == null) ? "" : birthDate,
+                            (addressLine == null) ? "" : addressLine,
+                            (addressCity == null) ? "" : addressCity,
+                            (addressState == null) ? "" : addressState,
+                            (addressPostalCode == null) ? "" : addressPostalCode));
+                }
+            } catch (Exception e) {
+                log.error("Error encountered, "
+                        + e.getMessage());
+                throw e;
+            }
+        }
+
+        log.info("Exiting FHIR Patient search service");
+        return result;
+
+	}
+
+	private void initializePdqQueryManager() {
+		try {
+            if (pdqQueryManager == null) {
+                log.info("Instantiating PDQQueryManager connector...");
+                pdqQueryManager = new PDQQueryManager(null,
+                        false);
+                log.info("PDQQueryManager connector successfully started");
+            }
+        } catch (Exception e) {
+            log.error("Error encountered instantiating PDQQueryManager connector, "
+                    + e.getMessage());
+            throw new UnexpectedServerException("Error - " + e.getMessage());
+        }
 	}
 }
