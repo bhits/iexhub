@@ -54,7 +54,6 @@
 		<javax.inject.version>2.4.0-b31</javax.inject.version>
 		<geronimo-activation.version>1.1</geronimo-activation.version>
 		<javax.activation.version>1.1</javax.activation.version>
-		<jsr311-api.version>1.1.1</jsr311-api.version>
 		<hapi-fhir.version>2.2</hapi-fhir.version>
 		<mdmi.version>1.0.0-SNAPSHOT</mdmi.version>
 		<opensaml.version>2.6.4</opensaml.version>
@@ -172,11 +171,6 @@
 			<version>${hapi-fhir.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>javax.ws.rs</groupId>
-			<artifactId>jsr311-api</artifactId>
-			<version>${jsr311-api.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>javax.activation</groupId>
 			<artifactId>activation</artifactId>
 			<version>${javax.activation.version}</version>
@@ -237,6 +231,12 @@
 			<groupId>org.apache.axis2</groupId>
 			<artifactId>axis2-transport-local</artifactId>
 			<version>${axis2.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>javax.ws.rs</groupId>
+					<artifactId>jsr311-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.axis2</groupId>
